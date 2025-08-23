@@ -10,6 +10,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth, provider } from './firebase/auth';
+import Button from './components/Button';
 
 function App() {
   const navigate = useNavigate();
@@ -53,16 +54,16 @@ function App() {
   console.log(user);
 
   return (
-    <>
+    <div className="flex h-dvh flex-col items-center justify-center border-1 border-black">
       {!user ? (
-        <button onClick={handleGoogleClicked}>Sign in with Google</button>
+        <Button handleClick={handleGoogleClicked}>Sign in with Google</Button>
       ) : (
         <>
           <p>{user.displayName}</p>
-          <button onClick={handleSignOut}>Sign Out</button>
+          <Button handleClick={handleSignOut}>Sign Out</Button>
         </>
       )}
-    </>
+    </div>
   );
 }
 
