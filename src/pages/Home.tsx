@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './App.css';
+import './Home.css';
 import {
   getAdditionalUserInfo,
   GoogleAuthProvider,
@@ -9,12 +9,12 @@ import {
   signOut,
   type User,
 } from 'firebase/auth';
-import { auth, provider } from './firebase/auth';
+import { auth, provider } from '../firebase/auth';
 
 import logo from '/logo-spaced.svg';
-import Button from './components/Button';
+import Button from '../components/Button';
 
-function App() {
+function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
 
@@ -38,7 +38,9 @@ function App() {
       console.log('token: ', token);
       console.log('user: ', user);
       console.log('idP: ', idP);
-      // navigate('/test');
+      if (user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1') {
+        navigate('/app');
+      }
     } catch (err: any) {
       if (err.code === 'auth/cancelled-popup-request') return;
       throw err;
@@ -73,4 +75,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;
