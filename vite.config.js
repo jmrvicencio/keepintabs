@@ -4,6 +4,6 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/keepin-tabs-test/',
+  base: '/keepintabs/',
   plugins: [react(), tailwindcss()],
 });

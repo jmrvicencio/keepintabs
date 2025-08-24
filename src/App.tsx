@@ -10,6 +10,8 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth, provider } from './firebase/auth';
+
+import logo from '/logo-spaced.svg';
 import Button from './components/Button';
 
 function App() {
@@ -36,7 +38,7 @@ function App() {
       console.log('token: ', token);
       console.log('user: ', user);
       console.log('idP: ', idP);
-      navigate('/test');
+      // navigate('/test');
     } catch (err: any) {
       if (err.code === 'auth/cancelled-popup-request') return;
       throw err;
@@ -54,7 +56,11 @@ function App() {
   console.log(user);
 
   return (
-    <div className="flex h-dvh flex-col items-center justify-center border-1 border-black">
+    <div className="bg-olive font-outfit text-cream flex h-dvh flex-col items-center justify-center border-1 border-black">
+      <div className="flex-rows flex items-center">
+        <img src={logo} className="h-8" />
+        <p className="font-outfit text-lg">Keepin' Tabs</p>
+      </div>
       {!user ? (
         <Button handleClick={handleGoogleClicked}>Sign in with Google</Button>
       ) : (
