@@ -6,3 +6,9 @@
   --color-olive: #282722;
   --color-cream: #f0e4c3;
 }
+
+@layer base {
+  ::selection {
+    @apply bg-cream text-black;
+  }
+}
