@@ -2,6 +2,7 @@ import { createHashRouter } from 'react-router-dom';
 import Home from '../pages/Home';
 import Test from '../pages/Test';
 import App from '../pages/App';
+import Dashboard from '../pages/App/Dashboard';
 
 const router = createHashRouter([
   {
@@ -15,6 +16,12 @@ const router = createHashRouter([
   {
     path: '/app',
     Component: App,
+    children: [
+      {
+        index: true,
+        Component: Dashboard,
+      },
+    ],
   },
 ]);
 

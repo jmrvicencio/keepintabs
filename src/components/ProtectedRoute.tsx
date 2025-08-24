@@ -17,7 +17,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (loading) return <>{console.log('i am now loading')}</>;
-  else return user && user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1' ? children : <Navigate to="/" replace />;
+  else
+    return import.meta.env.VITE_USE_EMULATORS === 'true' || (user && user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1') ? (
+      children
+    ) : (
+      <Navigate to="/" replace />
+    );
 }
 
 export default ProtectedRoute;

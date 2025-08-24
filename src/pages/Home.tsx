@@ -38,7 +38,7 @@ function Home() {
       console.log('token: ', token);
       console.log('user: ', user);
       console.log('idP: ', idP);
-      if (user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1') {
+      if (user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1' || import.meta.env.VITE_USE_EMULATORS === 'true') {
         navigate('/app');
       }
     } catch (err: any) {
