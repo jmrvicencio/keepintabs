@@ -6,4 +6,14 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   base: '/keepintabs/',
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+        },
+      },
+    },
+  },
 });

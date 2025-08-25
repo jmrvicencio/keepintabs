@@ -2,7 +2,7 @@ import { createHashRouter } from 'react-router-dom';
 import Home from '../pages/Home';
 import Test from '../pages/Test';
 import App from '../pages/App';
-import Dashboard from '../pages/App/Dashboard';
+// import Dashboard from '../pages/App/Dashboard';
 
 const router = createHashRouter([
   {
@@ -19,7 +19,10 @@ const router = createHashRouter([
     children: [
       {
         index: true,
-        Component: Dashboard,
+        lazy: async () => {
+          let module = await import('../pages/App/Dashboard');
+          return { Component: module.default };
+        },
       },
     ],
   },
