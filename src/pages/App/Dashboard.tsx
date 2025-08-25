@@ -1,25 +1,70 @@
 import { auth } from '../../firebase/auth';
 
-import { User as UserImage } from 'lucide-react';
+import { User as UserImage, Plus } from 'lucide-react';
 import logo from '/logo-spaced.svg';
+import UserIcon from '../../components/user_stack/UserIcon';
 
 function Dashboard() {
   console.log('current user: ', auth.currentUser);
   return (
-    <div className="bg-olive text-cream flex h-dvh w-full flex-row items-center justify-between px-3">
-      <div className="flex items-center">
-        <img src={logo} className="h-8" />
-        <p className="font-outfit text-lg">Keepin' Tabs</p>
-      </div>
-      <div className="h-6 w-6 cursor-pointer rounded-sm bg-white/10">
-        {auth.currentUser && auth.currentUser.photoURL ? (
-          <img src={auth.currentUser.photoURL as string} className="w-full" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center p-0.5">
-            <UserImage className="w-full" />
+    <div className="flex w-full flex-col gap-8 p-3">
+      <header className="flex flex-row justify-between">
+        <div className="flex items-center">
+          <img src={logo} className="h-8" />
+          <p className="font-outfit text-lg">Keepin' Tabs</p>
+        </div>
+        <div className="h-6 w-6 cursor-pointer overflow-clip rounded-sm bg-white/10">
+          {auth.currentUser && auth.currentUser.photoURL ? (
+            <img src={auth.currentUser.photoURL as string} className="w-full" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center p-0.5">
+              <UserImage className="w-full" />
+            </div>
+          )}
+        </div>
+      </header>
+      <main className="flex flex-col items-start gap-8">
+        <section className="flex flex-col items-start gap-1">
+          <h1 className="font-noto-sans text-sand text-4xl font-medium">Debts Clear!</h1>
+          <p>No outstanding balance</p>
+        </section>
+        <section className="w-full">
+          <div className="mb-4 flex flex-row gap-2">
+            <p className="font-normal">Groups</p>
+            <div className="bg-accent-600 flex h-7 w-fit cursor-pointer items-center rounded-xl px-3">
+              <Plus className="w-4" />
+            </div>
           </div>
-        )}
-      </div>
+          <div className="flex flex-col gap-2">
+            <div className="bg-charcoal-800 flex w-full cursor-pointer flex-col gap-2 rounded-xl p-1">
+              <div className="text-sand flex flex-row items-center justify-between px-2">
+                <p className="font-medium">Coffee with the Boys</p>
+                <div className="border-charcoal-600 flex flex-row items-center rounded-full border-1 p-1 pl-2">
+                  <p className="font-noto-sans mr-2 align-top text-base/4">1</p>
+                  <UserIcon />
+                  <UserIcon />
+                  <UserIcon />
+                </div>
+              </div>
+              <div className="bg-charcoal-700 flex w-full flex-row justify-between gap-2 rounded-lg p-2">
+                <div className="bg-accent-200 w-2 rounded-xs" />
+                <p className="grow-1 text-left">You Owe</p>
+                <p className="font-noto-sans text-accent-200">PHP 4,260.00</p>
+              </div>
+            </div>
+            <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
+              <div className="text-sand flex flex-row items-center justify-between px-2">
+                <p className="font-medium">Non Grouped Expenses</p>
+              </div>
+              <div className="bg-charcoal-500 flex w-full flex-row justify-between gap-2 rounded-lg p-2">
+                <div className="bg-accent-200 w-2 rounded-xs" />
+                <p className="grow-1 text-left">You Owe</p>
+                <p className="font-noto-sans text-accent-200">PHP 4,260.00</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

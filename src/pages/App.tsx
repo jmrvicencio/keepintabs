@@ -21,7 +21,9 @@ function App() {
 
   return (
     <ProtectedRoute>
-      <Outlet />
+      <div className="bg-olive text-cream flex h-dvh w-full">
+        <Outlet />
+      </div>
     </ProtectedRoute>
   );
 }
