@@ -13,3 +13,6 @@ if (import.meta.env.VITE_USE_EMULATORS === 'true') {
 }
 
 export const provider = new GoogleAuthProvider();
+provider.setCustomParameters({
+  prompt: 'select_account',
+});

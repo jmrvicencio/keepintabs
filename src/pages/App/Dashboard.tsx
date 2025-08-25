@@ -10,10 +10,10 @@ function Dashboard() {
     <div className="flex w-full flex-col gap-8 p-3">
       <header className="flex flex-row justify-between">
         <div className="flex items-center">
-          <img src={logo} className="h-8" />
-          <p className="font-outfit text-lg">Keepin' Tabs</p>
+          <img src={logo} className="h-9" />
+          <p className="font-outfit text-xl">Keepin' Tabs</p>
         </div>
-        <div className="h-6 w-6 cursor-pointer overflow-clip rounded-sm bg-white/10">
+        <div className="h-7 w-7 cursor-pointer overflow-clip rounded-md bg-white/10">
           {auth.currentUser && auth.currentUser.photoURL ? (
             <img src={auth.currentUser.photoURL as string} className="w-full" />
           ) : (
