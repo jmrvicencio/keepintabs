@@ -1,19 +1,31 @@
 import { auth } from '../../firebase/auth';
-
 import { User as UserImage, Plus } from 'lucide-react';
+import { useAtom } from 'jotai';
+
 import logo from '/logo-spaced.svg';
 import UserIcon from '../../components/user_stack/UserIcon';
+import { showSidebarAtom } from '../../components/sidebar/Sidebar';
 
 function Dashboard() {
+  const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
+  const handleProfileClick = () => {
+    setShowSidebar(!showSidebar);
+  };
+  const handleOverlayClicked = () => {
+    setShowSidebar(false);
+  };
+
   console.log('current user: ', auth.currentUser);
+
   return (
-    <div className="flex w-full flex-col gap-8 p-3">
+    <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
+      {showSidebar && <div className="absolute inset-0 h-full w-full bg-black/60" onClick={handleOverlayClicked}></div>}
       <header className="flex flex-row justify-between">
         <div className="flex items-center">
           <img src={logo} className="h-9" />
           <p className="font-outfit text-xl">Keepin' Tabs</p>
         </div>
-        <div className="h-7 w-7 cursor-pointer overflow-clip rounded-md bg-white/10">
+        <div className="h-7 w-7 cursor-pointer overflow-clip rounded-md bg-white/10" onClick={handleProfileClick}>
           {auth.currentUser && auth.currentUser.photoURL ? (
             <img src={auth.currentUser.photoURL as string} className="w-full" />
           ) : (
