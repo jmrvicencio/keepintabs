@@ -1,9 +1,21 @@
 import { auth } from '../../firebase/auth';
 import { User as UserImage, Plus } from 'lucide-react';
 import { useAtom } from 'jotai';
-import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  getDocs,
+  query,
+  where,
+  getDoc,
+  documentId,
+  type DocumentSnapshot,
+} from 'firebase/firestore';
 import { db } from '../../firebase/firestore';
 import { v4 as uuid } from 'uuid';
+import { useEffect, useState } from 'react';
 
 import logo from '/logo-spaced.svg';
 import UserIcon from '../../components/user_stack/UserIcon';
@@ -13,7 +25,31 @@ import IconButton from '../../components/buttons/IconButton';
 import { showSidebarAtom } from '../../components/sidebar/Sidebar';
 
 function Dashboard() {
-  console.log(auth.currentUser);
+  const [groups, setGroups] = useState<DocumentSnapshot[]>([]);
+  useEffect(() => {
+    async function fetchGroups() {
+      const q = query(collection(db, 'groupMembers'), where('userId', '==', auth.currentUser!.uid));
+      const groupsMembersSnap = await getDocs(q);
+      const groupMembers = [...groupsMembersSnap.docs].map((doc) => ({
+        id: doc.id,
+        groupId: doc.data().groupId,
+      }));
+
+      const groupsSnap = await Promise.all(
+        groupMembers.map((groupMembers) => {
+          return getDoc(doc(db, `groups/${groupMembers.groupId}`));
+        }),
+      );
+
+      groupsSnap.forEach((doc) => console.log(doc.data()));
+      setGroups(groupsSnap);
+    }
+
+    fetchGroups();
+  }, []);
+
+  groups.forEach((doc) => console.log('document: ', doc.data()));
+
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
 
   const handleProfileClick = () => {
@@ -46,8 +82,6 @@ function Dashboard() {
       inviteKey,
     });
   };
-
-  console.log('current user: ', auth.currentUser);
 
   return (
     <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">

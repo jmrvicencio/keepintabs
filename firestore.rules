@@ -7,6 +7,7 @@ service cloud.firestore {
     // }
 
     match /groups/{groupId} {
+      allow read: if true;
       allow create: if request.auth != null && request.resource.data.keys().hasAll(['inviteKey']);
     }
 
