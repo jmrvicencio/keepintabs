@@ -12,7 +12,7 @@ import {
 import { auth, provider } from '../firebase/auth';
 
 import logo from '/logo-spaced.svg';
-import Button from '../components/Button';
+import Button from '../components/buttons/Button';
 
 function Home() {
   const navigate = useNavigate();

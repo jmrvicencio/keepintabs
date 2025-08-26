@@ -2,8 +2,28 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    // match /{document=**} {
+    //   allow read, write: if true;
+    // }
+
+    match /groups/{groupId} {
+      allow create: if request.auth != null && request.resource.data.keys().hasAll(['inviteKey']);
     }
+
+    match /groupMembers/{docId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId
+        && docId == request.resource.data.userId + "_" + request.resource.data.groupId
+        && get(/databases/$(database)/documents/groups/$(request.resource.data.groupId)).data.inviteKey == request.resource.data.inviteKey;
+    }
+
+    // function isGroupMember(groupId) {
+    //   return exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId));
+    // }
+
+    // function checkKeys(){
+    //   return true;
+    // }
   }
 }
