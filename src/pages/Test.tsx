@@ -1,5 +1,9 @@
+import { useNavigate } from 'react-router-dom';
+
 function Test() {
-  return <p>This is a test</p>;
+  const navigate = useNavigate();
+
+  return <p onClick={() => navigate('/app')}>This is a test</p>;
 }
 
 export default Test;

@@ -1,10 +1,10 @@
 import UserIcon from './user_stack/UserIcon';
 
-function TabGroup() {
+function TabGroup({ name }: { name: string }) {
   return (
     <div className="bg-charcoal-800 flex w-full cursor-pointer flex-col gap-2 rounded-xl p-1">
       <div className="text-sand flex flex-row items-center justify-between px-2">
-        <p className="font-medium">Coffee with the Boys</p>
+        <p className="font-medium">{name}</p>
         <div className="border-charcoal-600 flex flex-row items-center rounded-full border-1 p-1 pl-2">
           <p className="font-noto-sans mr-2 align-top text-base/4">1</p>
           <UserIcon />

@@ -7,11 +7,13 @@ import {
   doc,
   setDoc,
   getDocs,
+  getDocsFromCache,
   query,
   where,
   getDoc,
   documentId,
   type DocumentSnapshot,
+  type QuerySnapshot,
 } from 'firebase/firestore';
 import { db } from '../../firebase/firestore';
 import { v4 as uuid } from 'uuid';
@@ -23,34 +25,38 @@ import ProfileIcon from '../../components/ProfileIcon';
 import TabGroup from '../../components/TabGroup';
 import IconButton from '../../components/buttons/IconButton';
 import { showSidebarAtom } from '../../components/sidebar/Sidebar';
+import { dataFetchedAtom } from '../App';
 
 function Dashboard() {
   const [groups, setGroups] = useState<DocumentSnapshot[]>([]);
+  const [toggleFetch, setToggleFetch] = useState(false);
+  const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
+  const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
+
+  // Fetch all groups to display on dashboard
   useEffect(() => {
     async function fetchGroups() {
-      const q = query(collection(db, 'groupMembers'), where('userId', '==', auth.currentUser!.uid));
-      const groupsMembersSnap = await getDocs(q);
-      const groupMembers = [...groupsMembersSnap.docs].map((doc) => ({
-        id: doc.id,
-        groupId: doc.data().groupId,
-      }));
+      try {
+        const q = query(collection(db, 'groups'), where('members', 'array-contains', auth.currentUser!.uid));
+        let groupsSnap: QuerySnapshot;
 
-      const groupsSnap = await Promise.all(
-        groupMembers.map((groupMembers) => {
-          return getDoc(doc(db, `groups/${groupMembers.groupId}`));
-        }),
-      );
+        if (dataFetched) {
+          groupsSnap = await getDocsFromCache(q);
+        } else {
+          groupsSnap = await getDocs(q);
+          setDataFetched(true);
+        }
 
-      groupsSnap.forEach((doc) => console.log(doc.data()));
-      setGroups(groupsSnap);
+        groupsSnap.forEach((doc) => console.log('from cache: ', doc.metadata.fromCache));
+        groupsSnap.forEach((doc) => console.log('data: ', doc.data()));
+        setGroups(groupsSnap.docs);
+      } catch (err) {
+        throw err;
+      }
     }
 
     fetchGroups();
-  }, []);
-
-  groups.forEach((doc) => console.log('document: ', doc.data()));
-
-  const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
+  }, [toggleFetch]);
 
   const handleProfileClick = () => {
     setShowSidebar(!showSidebar);
@@ -71,16 +77,23 @@ function Dashboard() {
     const inviteKey = uuid();
     const groups = doc(db, `groups/${groupId}`);
     const groupMembers = doc(db, `groupMembers/${auth.currentUser!.uid}_${groupId}`);
+    const groupSettings = doc(db, `groupSettings/${groupId}`);
 
-    setDoc(groups, {
-      name: groupName,
+    setDoc(groupSettings, {
       inviteKey,
+    });
+    setDoc(groups, {
+      inviteKey,
+      name: groupName,
+      members: [userId],
     });
     setDoc(groupMembers, {
       userId,
       groupId,
       inviteKey,
     });
+
+    setToggleFetch(!toggleFetch);
   };
 
   return (
@@ -106,7 +119,10 @@ function Dashboard() {
             </IconButton>
           </div>
           <div className="flex flex-col gap-2">
-            <TabGroup />
+            {groups.map((doc) => (
+              <TabGroup name={doc.data()!.name} />
+            ))}
+            {/* <TabGroup name="CWDB" /> */}
             <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
               <div className="text-sand flex flex-row items-center justify-between px-2">
                 <p className="font-medium">Non Grouped Expenses</p>
