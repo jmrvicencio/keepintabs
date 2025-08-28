@@ -1,8 +1,18 @@
+import { useNavigate } from 'react-router-dom';
 import UserIcon from './user_stack/UserIcon';
 
-function TabGroup({ name }: { name: string }) {
+function TabGroup({ name, id }: { name: string; id: string }) {
+  const navigate = useNavigate();
+
+  const handleGroupClicked = () => {
+    navigate(`${id}`);
+  };
+
   return (
-    <div className="bg-charcoal-800 flex w-full cursor-pointer flex-col gap-2 rounded-xl p-1">
+    <div
+      className="bg-charcoal-800 flex w-full cursor-pointer flex-col gap-2 rounded-xl p-1"
+      onClick={handleGroupClicked}
+    >
       <div className="text-sand flex flex-row items-center justify-between px-2">
         <p className="font-medium">{name}</p>
         <div className="border-charcoal-600 flex flex-row items-center rounded-full border-1 p-1 pl-2">

@@ -3,17 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { atom, useAtom } from 'jotai';
 import { auth } from '../../firebase/auth';
+import { dataFetchedAtom } from '../../pages/App';
 
 export const showSidebarAtom = atom(false);
 
 function Sidebar() {
   const navigate = useNavigate();
+  const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
 
   const handleSignoutClick = () => {
     auth.signOut();
     setShowSidebar(false);
+    setDataFetched(false);
     navigate('/');
   };
 
@@ -28,6 +31,7 @@ function Sidebar() {
       <div
         className="flex w-[60dvw] flex-row items-center justify-baseline gap-2 p-4"
         onClick={() => {
+          setShowSidebar(false);
           navigate('/test');
         }}
       >

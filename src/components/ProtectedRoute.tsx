@@ -8,13 +8,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+    async function awaitAuth() {
+      await auth.authStateReady();
 
-    return unsub;
-  }, []);
+      setLoading(false);
+      setUser(auth.currentUser);
+    }
+
+    awaitAuth();
+  });
 
   if (loading) return <>{console.log('i am now loading')}</>;
   else

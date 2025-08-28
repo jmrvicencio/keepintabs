@@ -12,8 +12,10 @@ import {
   where,
   getDoc,
   documentId,
+  serverTimestamp,
   type DocumentSnapshot,
   type QuerySnapshot,
+  orderBy,
 } from 'firebase/firestore';
 import { db } from '../../firebase/firestore';
 import { v4 as uuid } from 'uuid';
@@ -37,7 +39,11 @@ function Dashboard() {
   useEffect(() => {
     async function fetchGroups() {
       try {
-        const q = query(collection(db, 'groups'), where('members', 'array-contains', auth.currentUser!.uid));
+        const q = query(
+          collection(db, 'groups'),
+          where('members', 'array-contains', auth.currentUser!.uid),
+          orderBy('createdAt'),
+        );
         let groupsSnap: QuerySnapshot;
 
         if (dataFetched) {
@@ -47,8 +53,8 @@ function Dashboard() {
           setDataFetched(true);
         }
 
-        groupsSnap.forEach((doc) => console.log('from cache: ', doc.metadata.fromCache));
-        groupsSnap.forEach((doc) => console.log('data: ', doc.data()));
+        // groupsSnap.forEach((doc) => console.log('from cache: ', doc.metadata.fromCache));
+        // groupsSnap.forEach((doc) => console.log('data: ', doc.data()));
         setGroups(groupsSnap.docs);
       } catch (err) {
         throw err;
@@ -83,6 +89,7 @@ function Dashboard() {
       inviteKey,
     });
     setDoc(groups, {
+      createdAt: serverTimestamp(),
       inviteKey,
       name: groupName,
       members: [userId],
@@ -120,7 +127,7 @@ function Dashboard() {
           </div>
           <div className="flex flex-col gap-2">
             {groups.map((doc) => (
-              <TabGroup name={doc.data()!.name} />
+              <TabGroup key={doc.id} name={doc.data()!.name} id={doc.id} />
             ))}
             {/* <TabGroup name="CWDB" /> */}
             <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
