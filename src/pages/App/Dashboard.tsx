@@ -109,8 +109,8 @@ function Dashboard() {
         <section className="w-full">
           <div className="mb-4 flex flex-row gap-2">
             <p className="font-normal">Groups</p>
-            <IconButton>
-              <Plus className="w-4" onClick={handleAddGroupClicked} />
+            <IconButton onClick={handleAddGroupClicked}>
+              <Plus className="w-4" />
             </IconButton>
           </div>
           <div className="flex flex-col gap-2">
