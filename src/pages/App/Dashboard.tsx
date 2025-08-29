@@ -24,14 +24,14 @@ import { useEffect, useState } from 'react';
 import TabGroup from '../../components/TabGroup';
 import IconButton from '../../components/buttons/IconButton';
 import Header from '../../components/Header';
-import { showSidebarAtom } from '../../components/sidebar/Sidebar';
+import Sidebar from '../../components/sidebar/Sidebar';
 import { dataFetchedAtom } from '../App';
 
 function Dashboard() {
   const [groups, setGroups] = useState<DocumentSnapshot[]>([]);
   const [toggleFetch, setToggleFetch] = useState(false);
   const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
-  const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   // Fetch all groups to display on dashboard
   useEffect(() => {
@@ -61,6 +61,10 @@ function Dashboard() {
 
     fetchGroups();
   }, [toggleFetch]);
+
+  const handleProfileClicked = () => {
+    setShowSidebar(!showSidebar);
+  };
 
   const handleOverlayClicked = () => {
     setShowSidebar(false);
@@ -98,40 +102,46 @@ function Dashboard() {
   };
 
   return (
-    <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
-      {showSidebar && <div className="absolute inset-0 h-full w-full bg-black/60" onClick={handleOverlayClicked}></div>}
-      <Header />
-      <main className="flex flex-col items-start gap-8">
-        <section className="flex flex-col items-start gap-1">
-          <h1 className="font-noto-sans text-sand text-4xl font-medium">Debts Clear!</h1>
-          <p>No outstanding balance</p>
-        </section>
-        <section className="w-full">
-          <div className="mb-4 flex flex-row gap-2">
-            <p className="font-normal">Groups</p>
-            <IconButton onClick={handleAddGroupClicked}>
-              <Plus className="w-4" />
-            </IconButton>
-          </div>
-          <div className="flex flex-col gap-2">
-            {groups.map((doc) => (
-              <TabGroup key={doc.id} name={doc.data()!.name} id={doc.id} />
-            ))}
-            {/* <TabGroup name="CWDB" /> */}
-            <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
-              <div className="text-sand flex flex-row items-center justify-between px-2">
-                <p className="font-medium">Non Grouped Expenses</p>
-              </div>
-              <div className="bg-charcoal-500 flex w-full flex-row justify-between gap-2 rounded-lg p-2">
-                <div className="bg-accent-200 w-2 rounded-xs" />
-                <p className="grow-1 text-left">You Owe</p>
-                <p className="font-noto-sans text-accent-200">PHP 4,260.00</p>
+    <>
+      <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
+        {showSidebar && (
+          <div className="absolute inset-0 h-full w-full bg-black/60" onClick={handleOverlayClicked}></div>
+        )}
+        <Header onProfileClicked={handleProfileClicked} />
+        <main className="flex flex-col items-start gap-8">
+          <section className="flex flex-col items-start gap-1">
+            <h1 className="font-noto-sans text-sand text-4xl font-medium">Debts Clear!</h1>
+            <p>No outstanding balance</p>
+          </section>
+          <section className="w-full">
+            <div className="mb-4 flex flex-row gap-2">
+              <p className="font-normal">Groups</p>
+              <IconButton onClick={handleAddGroupClicked}>
+                <Plus className="w-4" />
+              </IconButton>
+            </div>
+            <div className="flex flex-col gap-2">
+              {groups.map((doc) => {
+                console.log(doc.metadata.fromCache);
+                return <TabGroup key={doc.id} name={doc.data()!.name} id={doc.id} />;
+              })}
+              {/* <TabGroup name="CWDB" /> */}
+              <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
+                <div className="text-sand flex flex-row items-center justify-between px-2">
+                  <p className="font-medium">Non Grouped Expenses</p>
+                </div>
+                <div className="bg-charcoal-500 flex w-full flex-row justify-between gap-2 rounded-lg p-2">
+                  <div className="bg-accent-200 w-2 rounded-xs" />
+                  <p className="grow-1 text-left">You Owe</p>
+                  <p className="font-noto-sans text-accent-200">PHP 4,260.00</p>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      </main>
-    </div>
+          </section>
+        </main>
+      </div>
+      <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
+    </>
   );
 }
 

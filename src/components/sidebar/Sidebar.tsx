@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { atom, useAtom } from 'jotai';
@@ -7,10 +6,9 @@ import { dataFetchedAtom } from '../../pages/App';
 
 export const showSidebarAtom = atom(false);
 
-function Sidebar() {
+function Sidebar({ showSidebar, setShowSidebar }: { showSidebar: boolean; setShowSidebar: (state: boolean) => void }) {
   const navigate = useNavigate();
   const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
-  const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
 
   const handleSignoutClick = () => {
