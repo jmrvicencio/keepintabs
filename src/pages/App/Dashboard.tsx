@@ -21,11 +21,9 @@ import { db } from '../../firebase/firestore';
 import { v4 as uuid } from 'uuid';
 import { useEffect, useState } from 'react';
 
-import logo from '/logo-spaced.svg';
-import UserIcon from '../../components/user_stack/UserIcon';
-import ProfileIcon from '../../components/ProfileIcon';
 import TabGroup from '../../components/TabGroup';
 import IconButton from '../../components/buttons/IconButton';
+import Header from '../../components/Header';
 import { showSidebarAtom } from '../../components/sidebar/Sidebar';
 import { dataFetchedAtom } from '../App';
 
@@ -63,10 +61,6 @@ function Dashboard() {
 
     fetchGroups();
   }, [toggleFetch]);
-
-  const handleProfileClick = () => {
-    setShowSidebar(!showSidebar);
-  };
 
   const handleOverlayClicked = () => {
     setShowSidebar(false);
@@ -106,13 +100,7 @@ function Dashboard() {
   return (
     <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
       {showSidebar && <div className="absolute inset-0 h-full w-full bg-black/60" onClick={handleOverlayClicked}></div>}
-      <header className="flex flex-row justify-between">
-        <div className="flex items-center">
-          <img src={logo} className="h-9" />
-          <p className="font-outfit text-xl">Keepin' Tabs</p>
-        </div>
-        <ProfileIcon handleClick={handleProfileClick} />
-      </header>
+      <Header />
       <main className="flex flex-col items-start gap-8">
         <section className="flex flex-col items-start gap-1">
           <h1 className="font-noto-sans text-sand text-4xl font-medium">Debts Clear!</h1>
