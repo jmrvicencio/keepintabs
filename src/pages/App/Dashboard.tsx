@@ -109,9 +109,9 @@ function Dashboard() {
         )}
         <Header onProfileClicked={handleProfileClicked} />
         <main className="flex flex-col items-start gap-8">
-          <section className="flex flex-col items-start gap-1">
-            <h1 className="font-noto-sans text-sand text-4xl font-medium">Debts Clear!</h1>
-            <p>No outstanding balance</p>
+          <section className="flex flex-col items-start gap-3">
+            <h1 className="font-noto-sans text-sand text-left text-4xl font-medium">Debts Clear!</h1>
+            <p className="text-xl font-light">No outstanding balance</p>
           </section>
           <section className="w-full">
             <div className="mb-4 flex flex-row gap-2">
