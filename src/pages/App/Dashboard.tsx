@@ -1,3 +1,4 @@
+import { useEffect, useState, memo, useMemo, useCallback } from 'react';
 import { auth } from '../../firebase/auth';
 import { User as UserImage, Plus } from 'lucide-react';
 import { useAtom } from 'jotai';
@@ -19,7 +20,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../firebase/firestore';
 import { v4 as uuid } from 'uuid';
-import { useEffect, useState } from 'react';
 
 import TabGroup from '../../components/TabGroup';
 import IconButton from '../../components/buttons/IconButton';
@@ -62,9 +62,24 @@ function Dashboard() {
     fetchGroups();
   }, [toggleFetch]);
 
-  const handleProfileClicked = () => {
+  const IconButtonMemo = memo(() => {
+    return (
+      <IconButton onClick={handleAddGroupClicked}>
+        <Plus className="w-4" />
+      </IconButton>
+    );
+  });
+
+  const tabGroups = useMemo(() => {
+    return groups.map((doc) => {
+      const docData = doc.data();
+      return <TabGroup key={doc.id} id={doc.id} name={docData!.name} />;
+    });
+  }, [groups]);
+
+  const handleProfileClicked = useCallback(() => {
     setShowSidebar(!showSidebar);
-  };
+  }, []);
 
   const handleOverlayClicked = () => {
     setShowSidebar(false);
@@ -116,15 +131,14 @@ function Dashboard() {
           <section className="w-full">
             <div className="mb-4 flex flex-row gap-2">
               <p className="font-normal">Groups</p>
-              <IconButton onClick={handleAddGroupClicked}>
-                <Plus className="w-4" />
-              </IconButton>
+              <IconButtonMemo />
             </div>
             <div className="flex flex-col gap-2">
-              {groups.map((doc) => {
+              {tabGroups}
+              {/* {groups.map((doc) => {
                 console.log(doc.metadata.fromCache);
                 return <TabGroup key={doc.id} name={doc.data()!.name} id={doc.id} />;
-              })}
+              })} */}
               {/* <TabGroup name="CWDB" /> */}
               <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
                 <div className="text-sand flex flex-row items-center justify-between px-2">

@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import ProfileIcon from './ProfileIcon';
 import logo from '/logo-spaced.svg';
 
-function Header({ onProfileClicked: handleProfileClicked = () => {} }: { onProfileClicked: () => any }) {
+const Header = memo(({ onProfileClicked: handleProfileClicked = () => {} }: { onProfileClicked: () => any }) => {
   const navigate = useNavigate();
   const handleLogoClick = () => {
     navigate('/app');
@@ -18,6 +19,6 @@ function Header({ onProfileClicked: handleProfileClicked = () => {} }: { onProfi
       <ProfileIcon handleClick={handleProfileClicked} />
     </header>
   );
-}
+});
 
 export default Header;

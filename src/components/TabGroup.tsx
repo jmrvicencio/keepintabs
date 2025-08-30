@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserIcon from './user_stack/UserIcon';
 
-function TabGroup({ name, id }: { name: string; id: string }) {
+const TabGroup = memo(({ name, id }: { name: string; id: string }) => {
   const navigate = useNavigate();
 
   const handleGroupClicked = () => {
@@ -29,6 +30,6 @@ function TabGroup({ name, id }: { name: string; id: string }) {
       </div>
     </div>
   );
-}
+});
 
 export default TabGroup;
