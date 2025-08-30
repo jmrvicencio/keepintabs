@@ -4,6 +4,7 @@ import { atom } from 'jotai';
 
 import ProtectedRoute from '../components/ProtectedRoute';
 import Sidebar from '../components/sidebar/Sidebar';
+import Debug from '../components/Debug';
 import { db } from '../firebase/firestore';
 
 export const dataFetchedAtom = atom(false);
@@ -11,7 +12,6 @@ export const dataFetchedAtom = atom(false);
 function App() {
   const [showDebug, setShowDebug] = useState(false);
   const handleKeyDown = (e: KeyboardEvent) => {
-    console.log(e.key);
     if (e.key === '`') {
       setShowDebug(!showDebug);
     }
@@ -24,7 +24,7 @@ function App() {
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
-        {showDebug && <div className="bg-accent-200/60 absolute top-2 right-2 z-1 p-4">debug</div>}
+        <Debug showDebug={showDebug} />
         <Outlet />
       </div>
     </ProtectedRoute>
