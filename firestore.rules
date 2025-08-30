@@ -10,6 +10,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth != null 
         && get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey == request.resource.data.inviteKey;
+      allow update: if request.auth != null && request.auth.uid in resource.data.members
     }
 
     match /groupSettings/{groupId} {

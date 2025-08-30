@@ -1,9 +1,14 @@
 import { useState, MouseEvent } from 'react';
+import { useParams } from 'react-router-dom';
+import { doc, updateDoc } from 'firebase/firestore';
+
+import { db } from '../firebase/firestore';
 
 function Debug({ showDebug = false }) {
   const [initialPos, setInitialPos] = useState<number[]>([]);
   const [debugPos, setDebugPos] = useState([12, 12]);
   const [oldDebugPos, setOldDebugPos] = useState(debugPos);
+  const { group } = useParams();
 
   const style = {
     top: `${debugPos[1]}px`,
@@ -22,6 +27,29 @@ function Debug({ showDebug = false }) {
     setDebugPos(newPos);
   };
 
+  const handleAddDummyGroupClicked = async () => {
+    console.log(group);
+    const groupDoc = doc(db, `groups/${group}`);
+    const data = {
+      balance: {
+        e4tlfOvO33N4ysI5qSI6oNJ8jcuS: {
+          marlon: 200,
+          julian: 0,
+        },
+        marlon: {
+          e4tlfOvO33N4ysI5qSI6oNJ8jcuS: 100,
+          julian: 0,
+        },
+        julian: {
+          e4tlfOvO33N4ysI5qSI6oNJ8jcuS: 200,
+          marlon: 50,
+        },
+      },
+    };
+
+    await updateDoc(groupDoc, data);
+  };
+
   return (
     <div
       style={style}
@@ -29,7 +57,9 @@ function Debug({ showDebug = false }) {
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
     >
-      <p className="select-none">debug</p>
+      <p className="select-none" onClick={handleAddDummyGroupClicked}>
+        Add Group Dummy
+      </p>
     </div>
   );
 }
