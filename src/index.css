@@ -21,6 +21,12 @@
   --color-shell-300: #cac3ad;
   --color-shell-100: #efe7d2;
   --color-shell-50: #fff7e4;
+
+  --color-positive-300: #d0e995;
+  --color-positive-500: #a2cf37;
+
+  --color-negative-300: #ffc05b;
+  --color-negative-500: #f3533e;
 }
 
 @layer base {

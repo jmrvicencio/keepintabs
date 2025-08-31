@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 
 import { db } from '../firebase/firestore';
+import { auth } from '../firebase/auth';
 
 function Debug({ showDebug = false }) {
   const [initialPos, setInitialPos] = useState<number[]>([]);
@@ -30,18 +31,31 @@ function Debug({ showDebug = false }) {
   const handleAddDummyGroupClicked = async () => {
     console.log(group);
     const groupDoc = doc(db, `groups/${group}`);
+
     const data = {
+      members: {
+        [auth.currentUser!.uid]: {
+          displayName: 'Kyle',
+          linkedUid: auth.currentUser!.uid,
+        },
+        julian: {
+          displayName: 'Julian',
+        },
+        marlon: {
+          displayName: 'Marlon',
+        },
+      },
       balance: {
-        e4tlfOvO33N4ysI5qSI6oNJ8jcuS: {
-          marlon: 200,
+        [auth.currentUser!.uid]: {
+          marlon: 700,
           julian: 0,
         },
         marlon: {
-          e4tlfOvO33N4ysI5qSI6oNJ8jcuS: 100,
+          [auth.currentUser!.uid]: 100,
           julian: 0,
         },
         julian: {
-          e4tlfOvO33N4ysI5qSI6oNJ8jcuS: 200,
+          [auth.currentUser!.uid]: 200,
           marlon: 50,
         },
       },
