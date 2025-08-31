@@ -77,7 +77,7 @@ function Group() {
       }
     }
 
-    for (let member of groupData?.memberUids) {
+    for (let member of Object.keys(balanced)) {
       simplified[member] = simplified[member] ?? {};
       for (let payee of Object.keys(balanced)) {
         simplified[payee] = simplified[payee] ?? {};
@@ -92,6 +92,8 @@ function Group() {
       }
     }
 
+    // Add entry for current member if it doesn't already exist
+    simplified[currMember!.uid] = simplified[currMember!.uid] ?? {};
     const total = Object.values(simplified[currMember!.uid]).reduce((acc, val) => acc + val, 0);
     return { total, records: simplified };
   }, [group]);

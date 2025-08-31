@@ -1,6 +1,6 @@
 import { useState, MouseEvent } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 
 import { db } from '../firebase/firestore';
 import { auth } from '../firebase/auth';
@@ -31,8 +31,11 @@ function Debug({ showDebug = false }) {
   const handleAddDummyGroupClicked = async () => {
     console.log(group);
     const groupDoc = doc(db, `groups/${group}`);
+    const docData = await getDoc(groupDoc);
+    const memberUids = docData.data()?.memberUids;
 
     const data = {
+      memberUids: ['marlon', ...memberUids],
       members: {
         [auth.currentUser!.uid]: {
           displayName: 'Kyle',
