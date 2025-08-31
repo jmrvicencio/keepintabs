@@ -4,16 +4,15 @@ import { User as UserImage, Plus } from 'lucide-react';
 import { useAtom } from 'jotai';
 import {
   collection,
-  addDoc,
   doc,
+  updateDoc,
   setDoc,
   getDocs,
   getDocsFromCache,
   query,
   where,
-  getDoc,
-  documentId,
   serverTimestamp,
+  deleteField,
   type DocumentSnapshot,
   type QuerySnapshot,
   orderBy,
@@ -39,7 +38,7 @@ function Dashboard() {
       try {
         const q = query(
           collection(db, 'groups'),
-          where('members', 'array-contains', auth.currentUser!.uid),
+          where('memberUids', 'array-contains', auth.currentUser!.uid),
           orderBy('createdAt'),
         );
         let groupsSnap: QuerySnapshot;
@@ -85,7 +84,7 @@ function Dashboard() {
     setShowSidebar(false);
   };
 
-  const handleAddGroupClicked = () => {
+  const handleAddGroupClicked = async () => {
     const groupName = prompt('New Group Name');
     if (groupName === '' || !groupName) {
       return alert('Please enter a name for the group');
@@ -105,15 +104,21 @@ function Dashboard() {
       createdAt: serverTimestamp(),
       inviteKey,
       name: groupName,
-      members: [userId],
+      memberUids: [userId],
     });
-    setDoc(groupMembers, {
+    updateDoc(groups, {
+      inviteKey: deleteField(),
+    });
+    await setDoc(groupMembers, {
       userId,
       groupId,
       inviteKey,
     });
+    updateDoc(groupMembers, {
+      inviteKey: deleteField(),
+    });
 
-    setToggleFetch(!toggleFetch);
+    setToggleFetch((prev) => !prev);
   };
 
   return (

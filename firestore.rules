@@ -6,11 +6,24 @@ service cloud.firestore {
     //   allow read, write: if true;
     // }
 
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['username', 'photoUrl'])
+        && request.resource.data.username is string
+        && (request.resource.data.photoUrl is string || request.resource.data.photoUrl == null);
+    }
+
     match /groups/{groupId} {
-      allow read: if true;
-      allow create: if request.auth != null 
-        && get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey == request.resource.data.inviteKey;
-      allow update: if request.auth != null && request.auth.uid in resource.data.members
+      allow read: if request.auth != null && 
+        request.auth.uid in resource.data.memberUids;
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey == request.resource.data.inviteKey;
+      allow update: if request.auth.uid in resource.data.memberUids &&
+        (
+          request.resource.data.keys().hasAll(['memberUids']) &&
+          !request.resource.data.keys().hasAll(['inviteKey'])
+        );
     }
 
     match /groupSettings/{groupId} {
@@ -23,14 +36,7 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.userId
         && docId == request.resource.data.userId + "_" + request.resource.data.groupId
         && get(/databases/$(database)/documents/groupSettings/$(request.resource.data.groupId)).data.inviteKey == request.resource.data.inviteKey;
+      allow update: if request.auth.uid == resource.data.userId;
     }
-
-    // function isGroupMember(groupId) {
-    //   return exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId));
-    // }
-
-    // function checkKeys(){
-    //   return true;
-    // }
   }
 }
