@@ -10,9 +10,11 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth, provider } from '../firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import logo from '/logo-spaced.svg';
 import Button from '../components/buttons/Button';
+import { db } from '../firebase/firestore';
 
 function Home() {
   const navigate = useNavigate();
@@ -32,13 +34,22 @@ function Home() {
 
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const token = credential?.accessToken;
-      const user = result.user;
+      const userData = result.user;
       const idP = getAdditionalUserInfo(result);
-      console.log('i am chekcing state');
+
+      const userDoc = doc(db, 'users', userData.uid);
+      const userSnap = await getDoc(userDoc);
+      if (!userSnap.exists()) {
+        await setDoc(userDoc, {
+          username: userData.displayName,
+          photoUrl: userData.photoURL,
+        });
+      }
+
       console.log('token: ', token);
-      console.log('user: ', user);
+      console.log('user: ', userData);
       console.log('idP: ', idP);
-      if (user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1' || import.meta.env.VITE_USE_EMULATORS === 'true') {
+      if (userData.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1' || import.meta.env.VITE_USE_EMULATORS === 'true') {
         navigate('/app');
       }
     } catch (err: any) {
