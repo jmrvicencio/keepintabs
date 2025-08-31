@@ -49,16 +49,16 @@ function Debug({ showDebug = false }) {
         },
       },
       balance: {
-        [auth.currentUser!.uid]: {
-          marlon: 700,
-          julian: 0,
-        },
+        // [auth.currentUser!.uid]: {
+        //   marlon: 700,
+        //   julian: 0,
+        // },
         marlon: {
-          [auth.currentUser!.uid]: 100,
+          // [auth.currentUser!.uid]: 100,
           julian: 0,
         },
         julian: {
-          [auth.currentUser!.uid]: 200,
+          // [auth.currentUser!.uid]: 200,
           marlon: 50,
         },
       },

@@ -155,14 +155,9 @@ function Group() {
                 )}
               </p>
             </div>
-            <div className="bg-charcoal-500 rounded-xl p-3 text-left text-base">
-              {listDebts}
-              {/* {Object.entries(balance?.debts[auth.currentUser!.uid] ?? {}).map(([key, val]) => (
-                <></>
-              ))} */}
-              {/* <p>Julian owes you Php 20,000</p>
-              <p>You owe Marlon Php 20,000</p> */}
-            </div>
+            {balance?.total != 0 && (
+              <div className="bg-charcoal-500 rounded-xl p-3 text-left text-base">{listDebts}</div>
+            )}
             <p className="text-xs opacity-72">Debts are being simplified</p>
             <div className="border-charcoal-300 cursor-pointer rounded-xl border-1 px-3 py-1">See full breakdown</div>
           </section>
