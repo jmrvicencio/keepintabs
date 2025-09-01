@@ -8,6 +8,10 @@
   --color-olive: #282722;
   --color-cream: #f0e4c3;
   --color-sand: #f8f1e0;
+
+  --color-leather-900: #171715;
+  --color-leather-700: #7a6c56;
+
   --color-accent-600: #f3533e;
   --color-accent-400: #f3792e;
   --color-accent-200: #ffc05b;
@@ -33,4 +37,8 @@
   ::selection {
     @apply bg-cream text-black;
   }
+}
+
+.firebase-emulator-warning {
+  display: none;
 }

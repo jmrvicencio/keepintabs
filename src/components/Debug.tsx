@@ -1,6 +1,6 @@
 import { useState, MouseEvent } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, deleteField } from 'firebase/firestore';
 
 import { db } from '../firebase/firestore';
 import { auth } from '../firebase/auth';
@@ -35,36 +35,58 @@ function Debug({ showDebug = false }) {
     const memberUids = docData.data()?.memberUids;
 
     const data = {
-      memberUids: ['marlon', ...memberUids],
+      memberUids: [...memberUids],
       members: {
         [auth.currentUser!.uid]: {
           displayName: 'Kyle',
           linkedUid: auth.currentUser!.uid,
         },
-        julian: {
+        testId1234: {
           displayName: 'Julian',
         },
-        marlon: {
+        testId3214: {
           displayName: 'Marlon',
+        },
+        testIdabd: {
+          displayName: 'Jayni',
         },
       },
       balance: {
-        // [auth.currentUser!.uid]: {
-        //   marlon: 700,
-        //   julian: 0,
-        // },
-        marlon: {
-          // [auth.currentUser!.uid]: 100,
-          julian: 0,
+        [auth.currentUser!.uid]: {
+          testId3214: 0,
+          testId1234: 0,
         },
-        julian: {
-          // [auth.currentUser!.uid]: 200,
-          marlon: 50,
+        testId3214: {
+          [auth.currentUser!.uid]: 150,
+          testId1234: 0,
+        },
+        testId1234: {
+          [auth.currentUser!.uid]: 200,
+          testId3214: 50,
+        },
+        testIdabd: {
+          testId1234: 100,
         },
       },
     };
 
     await updateDoc(groupDoc, data);
+  };
+
+  const handleClearAllData = async () => {
+    const groupDoc = doc(db, `groups/${group}`);
+
+    await updateDoc(groupDoc, {
+      balance: deleteField(),
+      // members: {
+      //   [auth.currentUser!.uid]: {
+      //     displayName: 'Kyle',
+      //     linkedUid: auth.currentUser!.uid,
+      //   },
+      // },
+    });
+    // const docData = await getDoc(groupDoc);
+    // const memberUids = docData.data()?.memberUids;
   };
 
   return (
@@ -76,6 +98,9 @@ function Debug({ showDebug = false }) {
     >
       <p className="select-none" onClick={handleAddDummyGroupClicked}>
         Add Group Dummy
+      </p>
+      <p className="select-none" onClick={handleClearAllData}>
+        Clear Dummy Data
       </p>
     </div>
   );

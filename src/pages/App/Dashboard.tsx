@@ -105,6 +105,12 @@ function Dashboard() {
       inviteKey,
       name: groupName,
       memberUids: [userId],
+      members: {
+        [userId]: {
+          displayName: 'Kyle',
+          linkedUid: userId,
+        },
+      },
     });
     updateDoc(groups, {
       inviteKey: deleteField(),

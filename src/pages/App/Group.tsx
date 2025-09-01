@@ -1,6 +1,14 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { getDocFromCache, getDoc, doc, type DocumentSnapshot, onSnapshot } from 'firebase/firestore';
+import {
+  getDocFromCache,
+  getDoc,
+  updateDoc,
+  doc,
+  increment,
+  type DocumentSnapshot,
+  onSnapshot,
+} from 'firebase/firestore';
 import { useAtom } from 'jotai';
 import { clamp } from '../../functions/helpers';
 import { useQuery } from '@tanstack/react-query';
@@ -20,6 +28,12 @@ type Group = {
   };
   name: string;
   memberUids: string[];
+  members: {
+    [userGroupUid: string]: {
+      linkedUid: string;
+      displayName: string;
+    };
+  };
 };
 
 type GroupUser = {
@@ -38,6 +52,8 @@ function Group() {
   useEffect(() => {
     const unsubSnapshot = onSnapshot(doc(db, 'groups', groupParam!), (groupSnap) => {
       let member: GroupUser | null = null;
+      console.log('groups', groupSnap.data());
+      console.log('mebmers', groupSnap.data()?.members);
       for (const [memberID, memberData] of Object.entries(groupSnap.data()?.members)) {
         const data = memberData as { linkedUid: string; displayName: string };
         if (data.linkedUid == auth.currentUser!.uid) {
@@ -59,7 +75,7 @@ function Group() {
   const groupData = group?.data() as Group | undefined;
 
   const balance = useMemo(() => {
-    console.log(groupData);
+    console.log('group data: ', groupData);
     if (!groupData?.balance) return null;
 
     const totalBorrowed: Record<string, number> = {};
@@ -103,16 +119,18 @@ function Group() {
 
     const records = balance.records[currMember!.uid];
     return Object.entries(records).map(([key, val]) => {
+      const payeeName = groupData?.members[key]?.displayName ?? 'Unkown';
       if (val < 0) {
         return (
           <p>
-            You owe {key} <span className="font-outfit text-negative-300 font-bold">Php {Math.abs(val)}</span>
+            You owe {payeeName}&nbsp;
+            <span className="font-outfit text-negative-300 font-bold">Php {Math.abs(val)}</span>
           </p>
         );
       } else {
         return (
           <p>
-            {key} owes you <span className="font-outfit text-positive-300 font-bold">Php {Math.abs(val)}</span>
+            {payeeName} owes you <span className="font-outfit text-positive-300 font-bold">Php {Math.abs(val)}</span>
           </p>
         );
       }
@@ -123,6 +141,14 @@ function Group() {
     if (state) setShowSidebar(state);
     else setShowSidebar((prev) => !prev);
   }, []);
+
+  const handleAddClicked = async () => {
+    const groupRef = doc(db, 'groups', groupParam!);
+
+    await updateDoc(groupRef, {
+      [`balance.testId1234.${auth.currentUser!.uid}`]: increment(50),
+    });
+  };
 
   return (
     <>
@@ -155,16 +181,28 @@ function Group() {
                 )}
               </p>
             </div>
-            {balance?.total != 0 && (
+            {balance?.total != 0 && balance?.total != null && (
               <div className="bg-charcoal-500 rounded-xl p-3 text-left text-base">{listDebts}</div>
             )}
             <p className="text-xs opacity-72">Debts are being simplified</p>
             <div className="border-charcoal-300 cursor-pointer rounded-xl border-1 px-3 py-1">See full breakdown</div>
           </section>
-          <section className="bg-shell-300 h-full w-full rounded-3xl">This is a test</section>
+          <section className="bg-shell-300 flex h-full w-full flex-col rounded-t-3xl">
+            <div className="text-leather-900 flex w-full flex-row items-baseline justify-between px-6 py-4">
+              <h2 className="text-2xl">
+                August <span className="font-bold">2024</span>
+              </h2>
+              <p>2 Transactions</p>
+            </div>
+            <div className="bg-shell-100 h-1 grow-1 rounded-t-3xl"></div>
+          </section>
         </main>
       </div>
       <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
+      <div
+        className="bg-accent-200 border-shell-100 absolute inset-x-1/2 bottom-6 z-12 m-auto aspect-square w-12 -translate-x-1/2 cursor-pointer rounded-full border-4"
+        onClick={handleAddClicked}
+      ></div>
     </>
   );
 }

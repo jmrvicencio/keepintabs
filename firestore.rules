@@ -19,11 +19,8 @@ service cloud.firestore {
         request.auth.uid in resource.data.memberUids;
       allow create: if request.auth != null &&
         get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey == request.resource.data.inviteKey;
-      allow update: if request.auth.uid in resource.data.memberUids &&
-        (
-          request.resource.data.keys().hasAll(['memberUids']) &&
-          !request.resource.data.keys().hasAll(['inviteKey'])
-        );
+      allow update: if request.auth.uid in resource.data.memberUids ||
+        request.resource.data.inviteKey == get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey;
     }
 
     match /groupSettings/{groupId} {
