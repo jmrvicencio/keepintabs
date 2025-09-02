@@ -17,7 +17,7 @@ import { db } from '../../firebase/firestore';
 import { dataFetchedAtom } from '../App';
 import Header from '../../components/Header';
 import Sidebar from '../../components/sidebar/Sidebar';
-import { Menu } from 'lucide-react';
+import { Menu, Plus } from 'lucide-react';
 import { auth } from '../../firebase/auth';
 
 type Group = {
@@ -42,6 +42,32 @@ type GroupUser = {
   linkedUid: string;
 };
 
+const generateDebtsList = (
+  balance: { total: number; records: Record<string, Record<string, number>> },
+  groupData: Group | undefined,
+  currMember: GroupUser,
+) => {
+  const records = balance.records[currMember!.uid];
+
+  return Object.entries(records).map(([key, val]) => {
+    const payeeName = groupData?.members[key]?.displayName ?? 'Unkown';
+    if (val < 0) {
+      return (
+        <p>
+          You owe {payeeName}&nbsp;
+          <span className="font-outfit text-negative-300 font-bold">Php {Math.abs(val)}</span>
+        </p>
+      );
+    } else {
+      return (
+        <p>
+          {payeeName} owes you <span className="font-outfit text-positive-300 font-bold">Php {Math.abs(val)}</span>
+        </p>
+      );
+    }
+  });
+};
+
 function Group() {
   const [dataFetched] = useAtom(dataFetchedAtom);
   const [group, setGroup] = useState<DocumentSnapshot | null>(null);
@@ -49,11 +75,13 @@ function Group() {
   const [showSidebar, setShowSidebar] = useState(false);
   const { group: groupParam } = useParams();
 
+  const groupData = group?.data() as Group | undefined;
+
+  // get Snapshot & listener for current selected group
   useEffect(() => {
     const unsubSnapshot = onSnapshot(doc(db, 'groups', groupParam!), (groupSnap) => {
       let member: GroupUser | null = null;
-      console.log('groups', groupSnap.data());
-      console.log('mebmers', groupSnap.data()?.members);
+
       for (const [memberID, memberData] of Object.entries(groupSnap.data()?.members)) {
         const data = memberData as { linkedUid: string; displayName: string };
         if (data.linkedUid == auth.currentUser!.uid) {
@@ -65,15 +93,13 @@ function Group() {
       if (!member) throw new Error('Could not find user in group');
       setCurrMember(member);
 
-      console.log('group updated');
       setGroup(groupSnap);
     });
 
     return unsubSnapshot;
   }, []);
 
-  const groupData = group?.data() as Group | undefined;
-
+  // Calculates the group & current user's total balance for UI display
   const balance = useMemo(() => {
     console.log('group data: ', groupData);
     if (!groupData?.balance) return null;
@@ -114,27 +140,9 @@ function Group() {
     return { total, records: simplified };
   }, [group]);
 
-  const listDebts = useMemo(() => {
+  const debtsList = useMemo(() => {
     if (!balance || !balance.records) return null;
-
-    const records = balance.records[currMember!.uid];
-    return Object.entries(records).map(([key, val]) => {
-      const payeeName = groupData?.members[key]?.displayName ?? 'Unkown';
-      if (val < 0) {
-        return (
-          <p>
-            You owe {payeeName}&nbsp;
-            <span className="font-outfit text-negative-300 font-bold">Php {Math.abs(val)}</span>
-          </p>
-        );
-      } else {
-        return (
-          <p>
-            {payeeName} owes you <span className="font-outfit text-positive-300 font-bold">Php {Math.abs(val)}</span>
-          </p>
-        );
-      }
-    });
+    return generateDebtsList(balance, groupData, currMember!);
   }, [balance]);
 
   const handleShowSidebar = useCallback((state: boolean | null = null) => {
@@ -142,6 +150,7 @@ function Group() {
     else setShowSidebar((prev) => !prev);
   }, []);
 
+  // Event Listeners
   const handleAddClicked = async () => {
     const groupRef = doc(db, 'groups', groupParam!);
 
@@ -154,7 +163,7 @@ function Group() {
     <>
       <div className="relative flex w-dvw shrink-0 flex-col gap-8 pt-3">
         {showSidebar && (
-          <div className="absolute inset-0 h-full w-full bg-black/60" onClick={() => handleShowSidebar()}></div>
+          <div className="absolute inset-0 z-2 h-full w-full bg-black/60" onClick={() => handleShowSidebar()}></div>
         )}
         <div className="px-3">
           <Header onProfileClicked={handleShowSidebar} />
@@ -182,7 +191,7 @@ function Group() {
               </p>
             </div>
             {balance?.total != 0 && balance?.total != null && (
-              <div className="bg-charcoal-500 rounded-xl p-3 text-left text-base">{listDebts}</div>
+              <div className="bg-charcoal-500 rounded-xl p-3 text-left text-base">{debtsList}</div>
             )}
             <p className="text-xs opacity-72">Debts are being simplified</p>
             <div className="border-charcoal-300 cursor-pointer rounded-xl border-1 px-3 py-1">See full breakdown</div>
@@ -194,15 +203,76 @@ function Group() {
               </h2>
               <p>2 Transactions</p>
             </div>
-            <div className="bg-shell-100 h-1 grow-1 rounded-t-3xl"></div>
+            <div className="bg-shell-100 mx-1 flex h-1 grow-1 flex-col gap-1 rounded-t-3xl p-2">
+              <div className="bg-shell-50 flex h-22 flex-row gap-3 rounded-2xl p-2">
+                <div className="bg-accent-400 text-sand flex w-10 flex-col justify-center gap-0 rounded-lg">
+                  <p className="text-base/4">Aug</p>
+                  <p className="text-2xl font-bold">25</p>
+                </div>
+                <div className="text-charcoal-800 grow-1 text-left">
+                  <h3 className="text-leater text-lg/tight font-medium">Mendokoro</h3>
+                  <p className="text-leather-700">You paid Php 2,000</p>
+                  <div>
+                    <p className="text-leather-700 border-shell-300 w-fit rounded-lg border-1 px-1 text-sm/tight">
+                      Gcash
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-charcoal-600 font-medium">Php 2,000</p>
+                  <p className="text-leather-700 text-sm">You lent</p>
+                </div>
+              </div>
+              <div className="bg-shell-50 flex h-22 flex-row gap-3 rounded-2xl p-2">
+                <div className="bg-accent-400 text-sand flex w-10 flex-col justify-center gap-0 rounded-lg">
+                  <p className="text-base/4">Aug</p>
+                  <p className="text-2xl font-bold">25</p>
+                </div>
+                <div className="text-charcoal-800 grow-1 text-left">
+                  <h3 className="text-leater text-lg/tight font-medium">Mendokoro</h3>
+                  <p className="text-leather-700">You paid Php 2,000</p>
+                  <div>
+                    <p className="text-leather-700 border-shell-300 w-fit rounded-lg border-1 px-1 text-sm/tight">
+                      Gcash
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-charcoal-600 font-medium">Php 2,000</p>
+                  <p className="text-leather-700 text-sm">You lent</p>
+                </div>
+              </div>
+              <div className="bg-shell-50 flex h-22 flex-row gap-3 rounded-2xl p-2">
+                <div className="bg-accent-400 text-sand flex w-10 flex-col justify-center gap-0 rounded-lg">
+                  <p className="text-base/4">Aug</p>
+                  <p className="text-2xl font-bold">25</p>
+                </div>
+                <div className="text-charcoal-800 grow-1 text-left">
+                  <h3 className="text-leater text-lg/tight font-medium">Mendokoro</h3>
+                  <p className="text-leather-700">You paid Php 2,000</p>
+                  <div>
+                    <p className="text-leather-700 border-shell-300 w-fit rounded-lg border-1 px-1 text-sm/tight">
+                      Gcash
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-charcoal-600 font-medium">Php 2,000</p>
+                  <p className="text-leather-700 text-sm">You lent</p>
+                </div>
+              </div>
+            </div>
           </section>
         </main>
+        <div
+          className="bg-accent-400 border-shell-100 absolute bottom-6 left-1/2 z-1 m-auto flex -translate-x-1/2 cursor-pointer flex-row items-center justify-center rounded-full border-4 px-3 py-2 text-white"
+          onClick={handleAddClicked}
+        >
+          <Plus />
+          New Transaction
+        </div>
       </div>
       <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
-      <div
-        className="bg-accent-200 border-shell-100 absolute inset-x-1/2 bottom-6 z-12 m-auto aspect-square w-12 -translate-x-1/2 cursor-pointer rounded-full border-4"
-        onClick={handleAddClicked}
-      ></div>
     </>
   );
 }
