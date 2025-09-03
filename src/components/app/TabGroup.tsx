@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UserIcon from './user_stack/UserIcon';
+import UserIcon from '../user_stack/UserIcon';
 
 const TabGroup = memo(({ name, id }: { name: string; id: string }) => {
   const navigate = useNavigate();
