@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { auth } from '../firebase/auth';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -18,7 +18,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     awaitAuth();
   });
 
-  if (loading) return <>{console.log('i am now loading')}</>;
+  if (loading) return <div className="bg-olive text-cream h-dvh">Loading...</div>;
   else
     return (import.meta.env.VITE_USE_EMULATORS === 'true' && user) ||
       (user && user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1') ? (

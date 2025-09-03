@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   getDocFromCache,
@@ -14,11 +14,12 @@ import { clamp } from '../../functions/helpers';
 import { useQuery } from '@tanstack/react-query';
 
 import { db } from '../../firebase/firestore';
+import { auth } from '../../firebase/auth';
 import { dataFetchedAtom } from '../App';
+import { Menu, Plus } from 'lucide-react';
 import Header from '../../components/Header';
 import Sidebar from '../../components/sidebar/Sidebar';
-import { Menu, Plus } from 'lucide-react';
-import { auth } from '../../firebase/auth';
+import PopupOverlay from '../../components/PopupOverlay';
 
 type Group = {
   balance: {
@@ -72,8 +73,20 @@ function Group() {
   const [dataFetched] = useAtom(dataFetchedAtom);
   const [group, setGroup] = useState<DocumentSnapshot | null>(null);
   const [currMember, setCurrMember] = useState<GroupUser | null>(null);
+
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showGroupMenu, setShowGroupMenu] = useState(false);
+
   const { group: groupParam } = useParams();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // if (menuRef.current) {
+  //   const rect = menuRef.current.getBoundingClientRect();
+  //   console.log('reference', menuRef.current, rect);
+  // }
+
+  const menuRect = menuRef.current?.getBoundingClientRect();
+  console.log('reference', menuRect);
 
   const groupData = group?.data() as Group | undefined;
 
@@ -161,6 +174,14 @@ function Group() {
 
   return (
     <>
+      {showGroupMenu && (
+        <PopupOverlay setShowSelf={setShowGroupMenu}>
+          <div
+            className="absolute h-10 w-10 border-1 border-red-500 bg-amber-800"
+            style={{ top: menuRect?.bottom, right: window.innerWidth - (menuRect?.right ?? 0) }}
+          ></div>
+        </PopupOverlay>
+      )}
       <div className="relative flex w-dvw shrink-0 flex-col gap-8 pt-3">
         {showSidebar && (
           <div className="absolute inset-0 z-2 h-full w-full bg-black/60" onClick={() => handleShowSidebar()}></div>
@@ -171,9 +192,9 @@ function Group() {
         <main className="flex h-full flex-col items-start gap-8">
           <section className="flex w-full flex-col items-start gap-3 px-3">
             <div className="flex w-full flex-col gap-2">
-              <div className="flex w-full flex-row items-center justify-between">
+              <div className="flex w-full flex-row items-center justify-between" ref={menuRef}>
                 <h1 className="font-noto-sans text-sand text-left text-4xl font-medium">{groupData?.name}</h1>
-                <Menu className="w-8 cursor-pointer" />
+                <Menu onClick={() => setShowGroupMenu(true)} className="w-8 cursor-pointer" />
               </div>
               <p className="w-fit text-xl font-light">
                 {!balance?.total ? (
