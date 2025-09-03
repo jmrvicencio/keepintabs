@@ -20,17 +20,14 @@ import {
 import { db } from '../../firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
-import TabGroup from '../../components/TabGroup';
+import TabGroup from '../../components/app/TabGroup';
 import IconButton from '../../components/buttons/IconButton';
-import Header from '../../components/Header';
-import Sidebar from '../../components/sidebar/Sidebar';
 import { dataFetchedAtom } from '../App';
 
 function Dashboard() {
   const [groups, setGroups] = useState<DocumentSnapshot[]>([]);
   const [toggleFetch, setToggleFetch] = useState(false);
   const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
-  const [showSidebar, setShowSidebar] = useState(false);
 
   // Fetch all groups to display on dashboard
   useEffect(() => {
@@ -50,8 +47,6 @@ function Dashboard() {
           setDataFetched(true);
         }
 
-        // groupsSnap.forEach((doc) => console.log('from cache: ', doc.metadata.fromCache));
-        // groupsSnap.forEach((doc) => console.log('data: ', doc.data()));
         setGroups(groupsSnap.docs);
       } catch (err) {
         throw err;
@@ -75,14 +70,6 @@ function Dashboard() {
       return <TabGroup key={doc.id} id={doc.id} name={docData!.name} />;
     });
   }, [groups]);
-
-  const handleProfileClicked = useCallback(() => {
-    setShowSidebar(!showSidebar);
-  }, []);
-
-  const handleOverlayClicked = () => {
-    setShowSidebar(false);
-  };
 
   const handleAddGroupClicked = async () => {
     const groupName = prompt('New Group Name');
@@ -130,10 +117,6 @@ function Dashboard() {
   return (
     <>
       <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
-        {showSidebar && (
-          <div className="absolute inset-0 h-full w-full bg-black/60" onClick={handleOverlayClicked}></div>
-        )}
-        <Header onProfileClicked={handleProfileClicked} />
         <main className="flex flex-col items-start gap-8">
           <section className="flex flex-col items-start gap-3">
             <h1 className="font-noto-sans text-sand text-left text-4xl font-medium">Debts Clear!</h1>
@@ -146,11 +129,6 @@ function Dashboard() {
             </div>
             <div className="flex flex-col gap-2">
               {tabGroups}
-              {/* {groups.map((doc) => {
-                console.log(doc.metadata.fromCache);
-                return <TabGroup key={doc.id} name={doc.data()!.name} id={doc.id} />;
-              })} */}
-              {/* <TabGroup name="CWDB" /> */}
               <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
                 <div className="text-sand flex flex-row items-center justify-between px-2">
                   <p className="font-medium">Non Grouped Expenses</p>
@@ -165,7 +143,6 @@ function Dashboard() {
           </section>
         </main>
       </div>
-      <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
     </>
   );
 }

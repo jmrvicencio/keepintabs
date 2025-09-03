@@ -1,8 +1,10 @@
-import { KeyboardEvent, useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { atom } from 'jotai';
+import { KeyboardEvent, useState, memo, useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { atom, useAtom } from 'jotai';
 
+import { showSidebarAtom } from '../components/sidebar/Sidebar';
 import ProtectedRoute from '../components/ProtectedRoute';
+import Header from '../components/Header';
 import Sidebar from '../components/sidebar/Sidebar';
 import Debug from '../components/Debug';
 import { db } from '../firebase/firestore';
@@ -11,11 +13,23 @@ export const dataFetchedAtom = atom(false);
 
 function App() {
   const [showDebug, setShowDebug] = useState(false);
+  const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
+  const location = useLocation();
+
+  useEffect(() => {
+    setShowSidebar(false);
+    console.log('this is a test');
+  }, [location]);
+
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === '`') {
       setShowDebug(!showDebug);
     }
   };
+
+  const Overlay = memo(() => (
+    <div onClick={() => setShowSidebar(false)} className="absolute inset-0 z-2 bg-black/60"></div>
+  ));
 
   return (
     <ProtectedRoute>
@@ -25,7 +39,12 @@ function App() {
         tabIndex={0}
       >
         <Debug showDebug={showDebug} />
-        <Outlet />
+        <div className="relative flex min-h-dvh min-w-full flex-col">
+          {showSidebar && <Overlay />}
+          <Header />
+          <Outlet />
+        </div>
+        <Sidebar />
       </div>
     </ProtectedRoute>
   );

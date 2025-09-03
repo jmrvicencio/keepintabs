@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { atom, useAtom } from 'jotai';
+
 import { auth } from '../../firebase/auth';
 import { dataFetchedAtom } from '../../pages/App';
 
 export const showSidebarAtom = atom(false);
 
-function Sidebar({ showSidebar, setShowSidebar }: { showSidebar: boolean; setShowSidebar: (state: boolean) => void }) {
+function Sidebar() {
   const navigate = useNavigate();
   const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
+  const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
 
   const handleSignoutClick = () => {

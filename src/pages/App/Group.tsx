@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   getDocFromCache,
   getDoc,
@@ -15,10 +15,8 @@ import { useQuery } from '@tanstack/react-query';
 
 import { db } from '../../firebase/firestore';
 import { auth } from '../../firebase/auth';
-import { dataFetchedAtom } from '../App';
 import { Menu, Plus } from 'lucide-react';
-import Header from '../../components/Header';
-import Sidebar from '../../components/sidebar/Sidebar';
+import { dataFetchedAtom } from '../App';
 import PopupOverlay from '../../components/PopupOverlay';
 
 type Group = {
@@ -70,25 +68,18 @@ const generateDebtsList = (
 };
 
 function Group() {
+  const navigate = useNavigate();
   const [dataFetched] = useAtom(dataFetchedAtom);
   const [group, setGroup] = useState<DocumentSnapshot | null>(null);
   const [currMember, setCurrMember] = useState<GroupUser | null>(null);
 
-  const [showSidebar, setShowSidebar] = useState(false);
   const [showGroupMenu, setShowGroupMenu] = useState(false);
 
   const { group: groupParam } = useParams();
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // if (menuRef.current) {
-  //   const rect = menuRef.current.getBoundingClientRect();
-  //   console.log('reference', menuRef.current, rect);
-  // }
-
-  const menuRect = menuRef.current?.getBoundingClientRect();
-  console.log('reference', menuRect);
-
   const groupData = group?.data() as Group | undefined;
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRect = menuRef.current?.getBoundingClientRect();
 
   // get Snapshot & listener for current selected group
   useEffect(() => {
@@ -158,18 +149,14 @@ function Group() {
     return generateDebtsList(balance, groupData, currMember!);
   }, [balance]);
 
-  const handleShowSidebar = useCallback((state: boolean | null = null) => {
-    if (state) setShowSidebar(state);
-    else setShowSidebar((prev) => !prev);
-  }, []);
-
   // Event Listeners
   const handleAddClicked = async () => {
-    const groupRef = doc(db, 'groups', groupParam!);
+    navigate('new');
+    // const groupRef = doc(db, 'groups', groupParam!);
 
-    await updateDoc(groupRef, {
-      [`balance.testId1234.${auth.currentUser!.uid}`]: increment(50),
-    });
+    // await updateDoc(groupRef, {
+    //   [`balance.testId1234.${auth.currentUser!.uid}`]: increment(50),
+    // });
   };
 
   return (
@@ -182,13 +169,7 @@ function Group() {
           ></div>
         </PopupOverlay>
       )}
-      <div className="relative flex w-dvw shrink-0 flex-col gap-8 pt-3">
-        {showSidebar && (
-          <div className="absolute inset-0 z-2 h-full w-full bg-black/60" onClick={() => handleShowSidebar()}></div>
-        )}
-        <div className="px-3">
-          <Header onProfileClicked={handleShowSidebar} />
-        </div>
+      <div className="relative flex shrink-0 grow-1 flex-col gap-8 pt-3">
         <main className="flex h-full flex-col items-start gap-8">
           <section className="flex w-full flex-col items-start gap-3 px-3">
             <div className="flex w-full flex-col gap-2">
@@ -293,7 +274,6 @@ function Group() {
           New Transaction
         </div>
       </div>
-      <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
     </>
   );
 }
