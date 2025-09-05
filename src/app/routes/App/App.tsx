@@ -2,12 +2,11 @@ import { KeyboardEvent, useState, memo, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { atom, useAtom } from 'jotai';
 
-import { showSidebarAtom } from '../components/sidebar/Sidebar';
-import ProtectedRoute from '../components/ProtectedRoute';
-import Header from '../components/Header';
-import Sidebar from '../components/sidebar/Sidebar';
-import Debug from '../components/Debug';
-import { db } from '../firebase/firestore';
+import { showSidebarAtom } from '../../../components/sidebar/Sidebar';
+import ProtectedRoute from '../../../components/ProtectedRoute';
+import Header from '../../../components/Header';
+import Sidebar from '../../../components/sidebar/Sidebar';
+import Debug from '../../../components/Debug';
 
 export const dataFetchedAtom = atom(false);
 

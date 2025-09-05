@@ -1,4 +1,4 @@
-import { auth } from '../firebase/auth';
+import { auth } from '../lib/firebase/auth';
 import { User as UserIcon } from 'lucide-react';
 
 function ProfileIcon({ handleClick }: { handleClick: () => void }) {

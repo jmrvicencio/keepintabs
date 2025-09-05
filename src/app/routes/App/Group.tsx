@@ -1,23 +1,14 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  getDocFromCache,
-  getDoc,
-  updateDoc,
-  doc,
-  increment,
-  type DocumentSnapshot,
-  onSnapshot,
-} from 'firebase/firestore';
+import { doc, type DocumentSnapshot, onSnapshot } from 'firebase/firestore';
 import { useAtom } from 'jotai';
-import { clamp } from '../../functions/helpers';
-import { useQuery } from '@tanstack/react-query';
+import { clamp } from '../../../lib/helpers';
 
-import { db } from '../../firebase/firestore';
-import { auth } from '../../firebase/auth';
+import { db } from '../../../lib/firebase/firestore';
+import { auth } from '../../../lib/firebase/auth';
 import { Menu, Plus } from 'lucide-react';
-import { dataFetchedAtom } from '../App';
-import PopupOverlay from '../../components/PopupOverlay';
+import { dataFetchedAtom } from './App';
+import PopupOverlay from '../../../components/PopupOverlay';
 
 type Group = {
   balance: {

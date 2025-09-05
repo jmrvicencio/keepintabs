@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { atom, useAtom } from 'jotai';
 
-import { auth } from '../../firebase/auth';
-import { dataFetchedAtom } from '../../pages/App';
+import { auth } from '../../lib/firebase/auth';
+import { dataFetchedAtom } from '../../app/routes/App/App';
 
 export const showSidebarAtom = atom(false);
 

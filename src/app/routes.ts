@@ -1,7 +1,7 @@
 import { createHashRouter, Outlet } from 'react-router-dom';
-import Home from '../pages/Home';
-import Test from '../pages/Test';
-// import Dashboard from '../pages/App/Dashboard';
+import Home from './routes/Home';
+import Test from './routes/Test';
+// import Dashboard from '../app/routes/App/Dashboard';
 
 const router = createHashRouter([
   {
@@ -15,14 +15,14 @@ const router = createHashRouter([
   {
     path: 'app',
     lazy: async () => {
-      let App = await import('../pages/App');
+      let App = await import('./routes/App/App');
       return { Component: App.default };
     },
     children: [
       {
         index: true,
         lazy: async () => {
-          let Dashboard = await import('../pages/App/Dashboard');
+          let Dashboard = await import('./routes/App/Dashboard');
           return { Component: Dashboard.default };
         },
       },
@@ -33,14 +33,14 @@ const router = createHashRouter([
           {
             index: true,
             lazy: async () => {
-              let Group = await import('../pages/App/Group');
+              let Group = await import('./routes/App/Group');
               return { Component: Group.default };
             },
           },
           {
             path: 'new',
             lazy: async () => {
-              let AddTransaction = await import('../pages/App/AddTransaction');
+              let AddTransaction = await import('./routes/App/AddTransaction');
               return { Component: AddTransaction.default };
             },
           },

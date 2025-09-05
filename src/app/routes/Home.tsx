@@ -9,12 +9,12 @@ import {
   signOut,
   type User,
 } from 'firebase/auth';
-import { auth, provider } from '../firebase/auth';
+import { auth, provider } from '../../lib/firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import logo from '/logo-spaced.svg';
-import Button from '../components/buttons/Button';
-import { db } from '../firebase/firestore';
+import Button from '../../components/buttons/Button';
+import { db } from '../../lib/firebase/firestore';
 
 function Home() {
   const navigate = useNavigate();

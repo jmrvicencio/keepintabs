@@ -2,8 +2,8 @@ import { useState, MouseEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, updateDoc, getDoc, deleteField } from 'firebase/firestore';
 
-import { db } from '../firebase/firestore';
-import { auth } from '../firebase/auth';
+import { db } from '../lib/firebase/firestore';
+import { auth } from '../lib/firebase/auth';
 
 function Debug({ showDebug = false }) {
   const [initialPos, setInitialPos] = useState<number[]>([]);

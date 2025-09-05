@@ -1,5 +1,5 @@
 import { useEffect, useState, memo, useMemo, useCallback } from 'react';
-import { auth } from '../../firebase/auth';
+import { auth } from '../../../lib/firebase/auth';
 import { User as UserImage, Plus } from 'lucide-react';
 import { useAtom } from 'jotai';
 import {
@@ -17,12 +17,12 @@ import {
   type QuerySnapshot,
   orderBy,
 } from 'firebase/firestore';
-import { db } from '../../firebase/firestore';
+import { db } from '../../../lib/firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
-import TabGroup from '../../components/app/TabGroup';
-import IconButton from '../../components/buttons/IconButton';
-import { dataFetchedAtom } from '../App';
+import TabGroup from '../../../components/app/TabGroup';
+import IconButton from '../../../components/buttons/IconButton';
+import { dataFetchedAtom } from './App';
 
 function Dashboard() {
   const [groups, setGroups] = useState<DocumentSnapshot[]>([]);
