@@ -1,30 +1,13 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, type DocumentSnapshot, onSnapshot } from 'firebase/firestore';
-import { useAtom } from 'jotai';
 import { clamp } from '../../../lib/helpers';
 
+import { type Group } from '../../../features/groups/types/types';
 import { db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import { Menu, Plus } from 'lucide-react';
-import { dataFetchedAtom } from './App';
 import PopupOverlay from '../../../components/PopupOverlay';
-
-type Group = {
-  balance: {
-    [lender: string]: {
-      [borrower: string]: number;
-    };
-  };
-  name: string;
-  memberUids: string[];
-  members: {
-    [userGroupUid: string]: {
-      linkedUid: string;
-      displayName: string;
-    };
-  };
-};
 
 type GroupUser = {
   uid: string;
@@ -60,7 +43,6 @@ const generateDebtsList = (
 
 function Group() {
   const navigate = useNavigate();
-  const [dataFetched] = useAtom(dataFetchedAtom);
   const [group, setGroup] = useState<DocumentSnapshot | null>(null);
   const [currMember, setCurrMember] = useState<GroupUser | null>(null);
 
@@ -143,11 +125,6 @@ function Group() {
   // Event Listeners
   const handleAddClicked = async () => {
     navigate('new');
-    // const groupRef = doc(db, 'groups', groupParam!);
-
-    // await updateDoc(groupRef, {
-    //   [`balance.testId1234.${auth.currentUser!.uid}`]: increment(50),
-    // });
   };
 
   return (
