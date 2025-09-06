@@ -1,14 +1,14 @@
 export interface Group {
-  balance: Record<Lender, Lent>;
+  balance: Record<lender, lent>;
   name: string;
   memberUids: string[];
-  members: Record<UserGroupUid, Member>;
+  members: Record<userGroupUid, Member>;
 }
 
-type Lender = string;
-type Lent = Record<string, number>;
+type lender = string;
+type lent = Record<string, number>;
 
-type UserGroupUid = string;
+type userGroupUid = string;
 export interface Member {
   groupUid?: string;
   linkedUid: string;

@@ -1,76 +1,20 @@
-import { useEffect, useState, memo, useMemo, useCallback } from 'react';
+import { memo, useMemo } from 'react';
 import { auth } from '../../../lib/firebase/auth';
-import { User as UserImage, Plus } from 'lucide-react';
-import { useAtom } from 'jotai';
-import {
-  collection,
-  doc,
-  updateDoc,
-  setDoc,
-  getDocs,
-  getDocsFromCache,
-  query,
-  where,
-  serverTimestamp,
-  deleteField,
-  type DocumentSnapshot,
-  type QuerySnapshot,
-  orderBy,
-} from 'firebase/firestore';
+import { Plus } from 'lucide-react';
+import { doc, updateDoc, setDoc, serverTimestamp, deleteField } from 'firebase/firestore';
 import { db } from '../../../lib/firebase/firestore';
 import { v4 as uuid } from 'uuid';
+import useGroups from '../../../features/groups/hooks/useGroups';
 
-import TabGroup from '../../../components/app/TabGroup';
-import IconButton from '../../../components/buttons/IconButton';
-import { dataFetchedAtom } from './App';
+import TabGroup from '../../../features/groups/components/TabGroup';
+import SmallButton from '../../../components/buttons/SmallButton';
 
-function Dashboard() {
-  const [groups, setGroups] = useState<DocumentSnapshot[]>([]);
-  const [toggleFetch, setToggleFetch] = useState(false);
-  const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
+const Dashboard = memo(() => {
+  const { groups, loading, reload: reloadGroups } = useGroups();
 
-  // Fetch all groups to display on dashboard
-  useEffect(() => {
-    async function fetchGroups() {
-      try {
-        const q = query(
-          collection(db, 'groups'),
-          where('memberUids', 'array-contains', auth.currentUser!.uid),
-          orderBy('createdAt'),
-        );
-        let groupsSnap: QuerySnapshot;
+  const PlusIcon = memo(({ className = 'w-4' }: { className?: string }) => <Plus className={className} />);
 
-        if (dataFetched) {
-          groupsSnap = await getDocsFromCache(q);
-        } else {
-          groupsSnap = await getDocs(q);
-          setDataFetched(true);
-        }
-
-        setGroups(groupsSnap.docs);
-      } catch (err) {
-        throw err;
-      }
-    }
-
-    fetchGroups();
-  }, [toggleFetch]);
-
-  const IconButtonMemo = memo(() => {
-    return (
-      <IconButton onClick={handleAddGroupClicked}>
-        <Plus className="w-4" />
-      </IconButton>
-    );
-  });
-
-  const tabGroups = useMemo(() => {
-    return groups.map((doc) => {
-      const docData = doc.data();
-      return <TabGroup key={doc.id} id={doc.id} name={docData!.name} />;
-    });
-  }, [groups]);
-
+  // TODO: Redirect this to an actual page that adds a new group
   const handleAddGroupClicked = async () => {
     const groupName = prompt('New Group Name');
     if (groupName === '' || !groupName) {
@@ -111,7 +55,7 @@ function Dashboard() {
       inviteKey: deleteField(),
     });
 
-    setToggleFetch((prev) => !prev);
+    reloadGroups();
   };
 
   return (
@@ -125,26 +69,39 @@ function Dashboard() {
           <section className="w-full">
             <div className="mb-4 flex flex-row gap-2">
               <p className="font-normal">Groups</p>
-              <IconButtonMemo />
+              <SmallButton onClick={handleAddGroupClicked}>
+                <PlusIcon />
+              </SmallButton>
             </div>
             <div className="flex flex-col gap-2">
-              {tabGroups}
-              <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
-                <div className="text-sand flex flex-row items-center justify-between px-2">
-                  <p className="font-medium">Non Grouped Expenses</p>
-                </div>
-                <div className="bg-charcoal-500 flex w-full flex-row justify-between gap-2 rounded-lg p-2">
-                  <div className="bg-accent-200 w-2 rounded-xs" />
-                  <p className="grow-1 text-left">You Owe</p>
-                  <p className="font-noto-sans text-accent-200">PHP 4,260.00</p>
-                </div>
-              </div>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <div key={i} className="bg-charcoal-500 h-22 w-full animate-pulse cursor-pointer rounded-xl" />
+                ))
+              ) : (
+                <>
+                  {groups?.map((doc) => {
+                    const docData = doc.data()!;
+                    return <TabGroup key={doc.id} id={doc.id} group={docData} />;
+                  })}
+                  <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
+                    <div className="text-sand flex flex-row items-center justify-between px-2">
+                      <p className="font-medium">Non Grouped Expenses</p>
+                    </div>
+                    <div className="bg-charcoal-500 flex w-full flex-row justify-between gap-2 rounded-lg p-2">
+                      <div className="bg-accent-200 w-2 rounded-xs" />
+                      <p className="grow-1 text-left">You Owe</p>
+                      <p className="font-noto-sans text-accent-200">PHP 4,260.00</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </section>
         </main>
       </div>
     </>
   );
-}
+});
 
 export default Dashboard;

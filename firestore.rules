@@ -24,6 +24,7 @@ service cloud.firestore {
     }
 
     match /groupSettings/{groupId} {
+      allow read: if exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId))
       allow create: if request.auth != null && request.resource.data.keys().hasAll(['inviteKey']);
     }
 

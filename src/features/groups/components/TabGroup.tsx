@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UserIcon from '../user_stack/UserIcon';
+import UserIcon from '../../../components/user_stack/UserIcon';
+import { Group } from '../types';
 
-const TabGroup = memo(({ name, id }: { name: string; id: string }) => {
+const TabGroup = memo(({ id, group }: { id: string; group: Group }) => {
   const navigate = useNavigate();
 
   const handleGroupClicked = () => {
@@ -15,7 +16,7 @@ const TabGroup = memo(({ name, id }: { name: string; id: string }) => {
       onClick={handleGroupClicked}
     >
       <div className="text-sand flex flex-row items-center justify-between px-2">
-        <p className="font-medium">{name}</p>
+        <p className="font-medium">{group.name}</p>
         <div className="border-charcoal-600 flex flex-row items-center rounded-full border-1 p-1 pl-2">
           <p className="font-noto-sans mr-2 align-top text-base/4">1</p>
           <UserIcon />
