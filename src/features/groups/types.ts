@@ -9,7 +9,8 @@ type Lender = string;
 type Lent = Record<string, number>;
 
 type UserGroupUid = string;
-interface Member {
+export interface Member {
+  groupUid?: string;
   linkedUid: string;
   displayName: string;
 }

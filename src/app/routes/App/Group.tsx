@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import useGroupListener from '../../../features/groups/hooks/useGroupsListener';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, type DocumentSnapshot, onSnapshot } from 'firebase/firestore';
 import { clamp } from '../../../lib/helpers';
 
-import { type Group } from '../../../features/groups/types/types';
+import { type Group } from '../../../features/groups/types';
 import { db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import { Menu, Plus } from 'lucide-react';
@@ -53,6 +54,12 @@ function Group() {
 
   const menuRef = useRef<HTMLDivElement>(null);
   const menuRect = menuRef.current?.getBoundingClientRect();
+
+  const { group: testGroup, userData } = useGroupListener(groupParam);
+  console.log('userData: ', userData);
+  useEffect(() => {
+    console.log('group console: ', testGroup?.data());
+  }, [testGroup]);
 
   // get Snapshot & listener for current selected group
   useEffect(() => {
