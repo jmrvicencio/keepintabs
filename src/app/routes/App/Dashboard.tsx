@@ -9,7 +9,7 @@ import useGroups from '../../../features/groups/hooks/useGroups';
 import TabGroup from '../../../features/groups/components/TabGroup';
 import SmallButton from '../../../components/buttons/SmallButton';
 
-const Dashboard = memo(() => {
+const Dashboard = memo(function Dashboard() {
   const { groups, loading, reload: reloadGroups } = useGroups();
 
   const PlusIcon = memo(({ className = 'w-4' }: { className?: string }) => <Plus className={className} />);

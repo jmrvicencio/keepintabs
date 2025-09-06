@@ -17,7 +17,6 @@ function App() {
 
   useEffect(() => {
     setShowSidebar(false);
-    console.log('this is a test');
   }, [location]);
 
   const handleKeyDown = (e: KeyboardEvent) => {

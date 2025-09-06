@@ -4,10 +4,10 @@ import { clamp } from '../../../lib/helpers';
 type UserGroupUid = string;
 type Borrower = UserGroupUid;
 type Lender = UserGroupUid;
+export type SimplifiedBalance = Record<UserGroupUid, Record<Borrower, number>>;
 
-export const getSimplifiedBalance = (group: Group) => {
-  console.log('group data: ', group);
-  if (!group.balance) return null;
+export function getSimplifiedBalance(group?: Group): SimplifiedBalance {
+  if (!group || !group.balance) return {};
 
   const totalBorrowed: Record<Borrower, number> = {};
   const totalLent: Record<Lender, number> = {};
@@ -15,7 +15,7 @@ export const getSimplifiedBalance = (group: Group) => {
   /**
    * Record of all debts owed to a group member, balanced to avoid cyclical debts.
    */
-  const simplified: Record<UserGroupUid, Record<Borrower, number>> = {};
+  const simplified: SimplifiedBalance = {};
 
   // Balance all debts and loans to get the total of how much a user owes/is owed.
   for (let [lender, borrowers] of Object.entries(group.balance)) {
@@ -44,4 +44,14 @@ export const getSimplifiedBalance = (group: Group) => {
   }
 
   return simplified;
-};
+}
+
+export function getTotalFromSimplified(
+  uid: UserGroupUid | null | undefined,
+  balance: SimplifiedBalance | null | undefined,
+) {
+  if (!uid || !balance || !balance[uid]) return 0;
+  return Object.values(balance[uid]).reduce((acc, curr) => {
+    return acc + curr;
+  }, 0);
+}

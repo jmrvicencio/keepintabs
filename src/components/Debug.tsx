@@ -1,6 +1,6 @@
 import { useState, MouseEvent } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, updateDoc, getDoc, deleteField } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, deleteField, increment } from 'firebase/firestore';
 
 import { db } from '../lib/firebase/firestore';
 import { auth } from '../lib/firebase/auth';
@@ -88,6 +88,20 @@ function Debug({ showDebug = false }) {
     // const docData = await getDoc(groupDoc);
     // const memberUids = docData.data()?.memberUids;
   };
+  const handleAddDebtToMarlon = async () => {
+    const groupDoc = doc(db, `groups/${group}`);
+
+    await updateDoc(groupDoc, {
+      [`balance.${auth.currentUser!.uid}.testId3214`]: increment(-50),
+    });
+  };
+  const handleAddLendToMarlon = async () => {
+    const groupDoc = doc(db, `groups/${group}`);
+
+    await updateDoc(groupDoc, {
+      [`balance.${auth.currentUser!.uid}.testId3214`]: increment(50),
+    });
+  };
 
   return (
     <div
@@ -101,6 +115,12 @@ function Debug({ showDebug = false }) {
       </p>
       <p className="select-none" onClick={handleClearAllData}>
         Clear Dummy Data
+      </p>
+      <p className="select-none" onClick={handleAddDebtToMarlon}>
+        Add Debt to Marlon
+      </p>
+      <p className="select-none" onClick={handleAddLendToMarlon}>
+        Add Loan to Marlon
       </p>
     </div>
   );

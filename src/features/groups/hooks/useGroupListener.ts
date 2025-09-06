@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { doc, DocumentSnapshot, onSnapshot } from 'firebase/firestore';
+import { doc, collection, DocumentSnapshot, onSnapshot, DocumentReference } from 'firebase/firestore';
 import { type Group, Member } from '../types';
 import { db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 
 const useGroupListener = (groupId: string = '') => {
-  const [group, setGroup] = useState<DocumentSnapshot | null>(null);
+  const [group, setGroup] = useState<DocumentSnapshot<Group> | null>(null);
   const [userData, setUserData] = useState<Member | null>(null);
 
   useEffect(() => {
-    const unsubscribeToSnapshot = onSnapshot(doc(db, 'groups', groupId), (groupSnap) => {
+    const groupDoc = doc(db, 'groups', groupId) as DocumentReference<Group>;
+    const unsubscribeToSnapshot = onSnapshot(groupDoc, (groupSnap) => {
       setGroup(groupSnap);
 
       const groupData = groupSnap.data() as Group;

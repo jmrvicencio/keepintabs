@@ -8,7 +8,7 @@ export interface Group {
 type lender = string;
 type lent = Record<string, number>;
 
-type userGroupUid = string;
+export type userGroupUid = string;
 export interface Member {
   groupUid?: string;
   linkedUid: string;
