@@ -1,7 +1,6 @@
-import { createHashRouter, Outlet } from 'react-router-dom';
+import { createHashRouter, Outlet, Navigate } from 'react-router-dom';
 import Home from './routes/Home';
 import Test from './routes/Test';
-// import Dashboard from '../app/routes/App/Dashboard';
 
 const router = createHashRouter([
   {
@@ -27,11 +26,11 @@ const router = createHashRouter([
         },
       },
       {
-        path: ':group',
+        path: 'groups',
         Component: Outlet,
         children: [
           {
-            index: true,
+            path: ':group',
             lazy: async () => {
               let Group = await import('./routes/App/Group');
               return { Component: Group.default };
@@ -40,8 +39,8 @@ const router = createHashRouter([
           {
             path: 'new',
             lazy: async () => {
-              let AddTransaction = await import('./routes/App/AddTransaction');
-              return { Component: AddTransaction.default };
+              let AddGroup = await import('./routes/App/AddGroup');
+              return { Component: AddGroup.default };
             },
           },
         ],

@@ -7,7 +7,7 @@ const TabGroup = memo(function TabGroup({ id, group }: { id: string; group: Grou
   const navigate = useNavigate();
 
   const handleGroupClicked = () => {
-    navigate(`${id}`);
+    navigate(`groups/${id}`);
   };
 
   return (

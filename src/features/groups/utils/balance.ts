@@ -9,11 +9,21 @@ export type SimplifiedBalance = Record<UserGroupUid, Record<Borrower, number>>;
 export function getSimplifiedBalance(group?: Group): SimplifiedBalance {
   if (!group || !group.balance) return {};
 
+  /**
+   * Record of total amount each member has borrowed.
+   */
   const totalBorrowed: Record<Borrower, number> = {};
+  /**
+   * Record of total amount each member has lent.
+   */
   const totalLent: Record<Lender, number> = {};
+  /**
+   * Record of the simplified balance of all members. Positive if they are
+   * owed money, and negative if they owe others money.
+   */
   const balanced: Record<UserGroupUid, number> = {};
   /**
-   * Record of all debts owed to a group member, balanced to avoid cyclical debts.
+   * Record of all debts owed/lent to a group member, balanced to avoid cyclical debts.
    */
   const simplified: SimplifiedBalance = {};
 

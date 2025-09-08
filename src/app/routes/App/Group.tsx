@@ -1,8 +1,6 @@
-import { useEffect, useState, useMemo, memo, useCallback, useRef, ReactNode, RefObject } from 'react';
+import { useState, memo, useCallback, useRef, ReactNode, RefObject } from 'react';
 import useGroupListener from '../../../features/groups/hooks/useGroupListener';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, type DocumentSnapshot, onSnapshot } from 'firebase/firestore';
-import { clamp } from '../../../lib/helpers';
 import {
   getSimplifiedBalance,
   getTotalFromSimplified,
@@ -10,8 +8,6 @@ import {
 } from '../../../features/groups/utils/balance';
 
 import { type Group } from '../../../features/groups/types';
-import { db } from '../../../lib/firebase/firestore';
-import { auth } from '../../../lib/firebase/auth';
 import { Menu, Plus } from 'lucide-react';
 import PopupOverlay from '../../../components/popup/PopupOverlay';
 
@@ -28,10 +24,10 @@ const Group = memo(function Group() {
   const menuRef = useRef<HTMLDivElement>(null);
   const menuRect = menuRef.current?.getBoundingClientRect();
 
-  const balance = getSimplifiedBalance(group?.data());
+  const records = getSimplifiedBalance(group?.data());
   const userBalance = {
-    total: getTotalFromSimplified(userData?.groupUid, balance),
-    records: balance,
+    total: getTotalFromSimplified(userData?.groupUid, records),
+    records,
   };
 
   // Event Listeners
