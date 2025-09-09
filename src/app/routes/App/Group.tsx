@@ -1,6 +1,6 @@
 import { useState, memo, useCallback, useRef, ReactNode, RefObject } from 'react';
 import useGroupListener from '../../../features/groups/hooks/useGroupListener';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   getSimplifiedBalance,
   getTotalFromSimplified,
@@ -8,8 +8,9 @@ import {
 } from '../../../features/groups/utils/balance';
 
 import { type Group } from '../../../features/groups/types';
-import { Menu, Plus } from 'lucide-react';
+import { Menu, Plus, ChevronLeft } from 'lucide-react';
 import PopupOverlay from '../../../components/popup/PopupOverlay';
+import { ROUTES } from '../../routes';
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
@@ -149,6 +150,12 @@ const GroupInfo = ({
   return (
     <section className="flex w-full flex-col items-start gap-3 px-3">
       <div className="w-full">
+        <Link to={ROUTES.APP}>
+          <p className="text-accent-200 pointer-cursor mb-4 flex flex-row">
+            <ChevronLeft />
+            Back
+          </p>
+        </Link>
         <div className="mb-2 flex w-full flex-row items-center justify-between" ref={ref}>
           <h1 className="font-noto-sans text-sand text-left text-4xl font-medium">{groupData?.name}</h1>
           <MenuMemo />

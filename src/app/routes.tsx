@@ -1,6 +1,19 @@
 import { createHashRouter, Outlet, Navigate } from 'react-router-dom';
 import Home from './routes/Home';
 import Test from './routes/Test';
+import { groupsLoader } from '../features/groups/hooks/useGroups';
+
+export const ROUTES = {
+  APP: '/app',
+  GROUPS: '/app/groups',
+  NEW_GROUP: '/app/groups/new',
+  TEST: '/test',
+  LANDING: '/',
+};
+
+export const getGroupRoute = (groupId: string) => {
+  return `${ROUTES.GROUPS}/${groupId}`;
+};
 
 const router = createHashRouter([
   {
@@ -20,6 +33,7 @@ const router = createHashRouter([
     children: [
       {
         index: true,
+        loader: groupsLoader,
         lazy: async () => {
           let Dashboard = await import('./routes/App/Dashboard');
           return { Component: Dashboard.default };

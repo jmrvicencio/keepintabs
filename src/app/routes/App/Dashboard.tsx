@@ -3,8 +3,9 @@ import { v4 as uuid } from 'uuid';
 import { doc, updateDoc, setDoc, serverTimestamp, deleteField } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import useGroups from '../../../features/groups/hooks/useGroups';
+import { useGroups } from '../../../features/groups/hooks/useGroups';
 
+import { ROUTES } from '../../routes';
 import { db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import TabGroup from '../../../features/groups/components/TabGroup';
@@ -18,47 +19,47 @@ const Dashboard = memo(function Dashboard() {
 
   // TODO: Redirect this to an actual page that adds a new group
   const handleAddGroupClicked = async () => {
-    navigate('groups/new');
-    // const groupName = prompt('New Group Name');
-    // if (groupName === '' || !groupName) {
-    //   return alert('Please enter a name for the group');
-    // }
+    // navigate(ROUTES.NEW_GROUP);
+    const groupName = prompt('New Group Name');
+    if (groupName === '' || !groupName) {
+      return alert('Please enter a name for the group');
+    }
 
-    // const groupId = uuid();
-    // const userId = auth.currentUser!.uid;
-    // const inviteKey = uuid();
-    // const groups = doc(db, `groups/${groupId}`);
-    // const groupMembers = doc(db, `groupMembers/${auth.currentUser!.uid}_${groupId}`);
-    // const groupSettings = doc(db, `groupSettings/${groupId}`);
+    const groupId = uuid();
+    const userId = auth.currentUser!.uid;
+    const inviteKey = uuid();
+    const groups = doc(db, `groups/${groupId}`);
+    const groupMembers = doc(db, `groupMembers/${auth.currentUser!.uid}_${groupId}`);
+    const groupSettings = doc(db, `groupSettings/${groupId}`);
 
-    // setDoc(groupSettings, {
-    //   inviteKey,
-    // });
-    // setDoc(groups, {
-    //   createdAt: serverTimestamp(),
-    //   inviteKey,
-    //   name: groupName,
-    //   memberUids: [userId],
-    //   members: {
-    //     [userId]: {
-    //       displayName: 'Kyle',
-    //       linkedUid: userId,
-    //     },
-    //   },
-    // });
-    // updateDoc(groups, {
-    //   inviteKey: deleteField(),
-    // });
-    // await setDoc(groupMembers, {
-    //   userId,
-    //   groupId,
-    //   inviteKey,
-    // });
-    // updateDoc(groupMembers, {
-    //   inviteKey: deleteField(),
-    // });
+    setDoc(groupSettings, {
+      inviteKey,
+    });
+    setDoc(groups, {
+      createdAt: serverTimestamp(),
+      inviteKey,
+      name: groupName,
+      memberUids: [userId],
+      members: {
+        [userId]: {
+          displayName: 'Kyle',
+          linkedUid: userId,
+        },
+      },
+    });
+    updateDoc(groups, {
+      inviteKey: deleteField(),
+    });
+    await setDoc(groupMembers, {
+      userId,
+      groupId,
+      inviteKey,
+    });
+    updateDoc(groupMembers, {
+      inviteKey: deleteField(),
+    });
 
-    // reloadGroups();
+    reloadGroups();
   };
 
   return (

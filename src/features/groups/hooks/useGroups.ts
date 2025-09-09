@@ -6,9 +6,11 @@ import {
   collection,
   where,
   orderBy,
-  type QuerySnapshot,
   DocumentSnapshot,
   CollectionReference,
+  onSnapshot,
+  doc,
+  QuerySnapshot,
 } from 'firebase/firestore';
 import { useAtom } from 'jotai';
 import toast from 'react-hot-toast';
@@ -18,7 +20,7 @@ import { db } from '../../../lib/firebase/firestore';
 import { dataFetchedAtom as storeDataFetchedAtom } from '../stores/dataFetched';
 import { Group } from '../types';
 
-const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
+export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
   const [groups, setGroups] = useState<DocumentSnapshot<Group>[]>();
   const [loading, setLoading] = useState(true);
   const [refetch, setRefetch] = useState(false);
@@ -61,4 +63,29 @@ const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
   return { groups, loading, reload };
 };
 
-export default useGroups;
+export const groupsLoader = () => {
+  const fetchData = async () => {
+    await auth.authStateReady();
+    const q = query(
+      collection(db, 'groups') as CollectionReference<Group>,
+      where('memberUids', 'array-contains', auth.currentUser!.uid),
+      orderBy('createdAt'),
+    );
+
+    return new Promise<QuerySnapshot<Group>>((resolve, reject) => {
+      const unsubscribe = onSnapshot(
+        q,
+        (snaps) => {
+          for (let doc of snaps.docChanges()) {
+            console.log('doc: ', doc);
+          }
+          unsubscribe();
+          resolve(snaps);
+        },
+        reject,
+      );
+    });
+  };
+
+  return fetchData();
+};

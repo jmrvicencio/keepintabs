@@ -12,6 +12,7 @@ import {
 import { auth, provider } from '../../lib/firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
+import { ROUTES } from '../routes';
 import logo from '/logo-spaced.svg';
 import Button from '../../components/buttons/Button';
 import { db } from '../../lib/firebase/firestore';
@@ -50,7 +51,7 @@ function Home() {
       console.log('user: ', userData);
       console.log('idP: ', idP);
       if (userData.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1' || import.meta.env.VITE_USE_EMULATORS === 'true') {
-        navigate('/app');
+        navigate(ROUTES.APP);
       }
     } catch (err: any) {
       if (err.code === 'auth/cancelled-popup-request') return;

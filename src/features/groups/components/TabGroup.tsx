@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import UserIcon from '../../../components/user_stack/UserIcon';
 import { Group } from '../types';
 
+import { getGroupRoute } from '../../../app/routes';
+
 const TabGroup = memo(function TabGroup({ id, group }: { id: string; group: Group }) {
   const navigate = useNavigate();
 
   const handleGroupClicked = () => {
-    navigate(`groups/${id}`);
+    navigate(getGroupRoute(id));
   };
 
   return (

@@ -5,6 +5,7 @@ import { useAtom } from 'jotai';
 import { showSidebarAtom } from './sidebar/Sidebar';
 import ProfileIcon from './ProfileIcon';
 import logo from '/logo-spaced.svg';
+import { ROUTES } from '../app/routes';
 
 const Header = memo(function Header() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const Header = memo(function Header() {
   const ProfileIconMemo = memo(() => <ProfileIcon handleClick={() => setShowSidebar(true)} />);
 
   const handleLogoClick = () => {
-    navigate('/app');
+    navigate(ROUTES.APP);
   };
 
   return (

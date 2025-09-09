@@ -4,6 +4,7 @@ import { atom, useAtom } from 'jotai';
 
 import { auth } from '../../lib/firebase/auth';
 import { dataFetchedAtom } from '../../app/routes/App/App';
+import { ROUTES } from '../../app/routes';
 
 export const showSidebarAtom = atom(false);
 
@@ -17,7 +18,7 @@ function Sidebar() {
     auth.signOut();
     setShowSidebar(false);
     setDataFetched(false);
-    navigate('/');
+    navigate(ROUTES.LANDING);
   };
 
   return (
@@ -32,7 +33,7 @@ function Sidebar() {
         className="flex w-[60dvw] flex-row items-center justify-baseline gap-2 p-4"
         onClick={() => {
           setShowSidebar(false);
-          navigate('/test');
+          navigate(ROUTES.TEST);
         }}
       >
         Navigate to Test
