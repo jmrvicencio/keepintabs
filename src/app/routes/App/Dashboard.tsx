@@ -1,9 +1,10 @@
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 import { doc, updateDoc, setDoc, serverTimestamp, deleteField } from 'firebase/firestore';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
+import { useDebug } from '../../../hooks/useDebug';
 
 import { ROUTES } from '../../routes';
 import { db } from '../../../lib/firebase/firestore';
@@ -15,6 +16,22 @@ const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
   const { groups, loading, reload: reloadGroups } = useGroups();
   const { groups: loaderGroups, loading: loaderLoading, reload: loaderReload } = useLoaderData();
+  const { options, addOption, removeOption } = useDebug();
+
+  useEffect(() => {
+    const newOption = {
+      text: 'Test Dashboard',
+      action: () => {
+        console.log('this is a test');
+      },
+    };
+
+    addOption(newOption.text, newOption.action);
+
+    return () => {
+      removeOption(newOption.text);
+    };
+  }, []);
 
   console.log('hookData:', groups);
   console.log('hookLoading:', loading);

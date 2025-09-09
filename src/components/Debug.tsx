@@ -1,15 +1,19 @@
-import { useState, MouseEvent } from 'react';
+import { useState, MouseEvent, type ReactElement } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, updateDoc, getDoc, deleteField, increment } from 'firebase/firestore';
+import { useAtom } from 'jotai';
 
 import { db } from '../lib/firebase/firestore';
 import { auth } from '../lib/firebase/auth';
+import { debugOptionsAtom } from '../store/debugItems';
+import { useDebug } from '../hooks/useDebug';
 
 function Debug({ showDebug = false }) {
   const [initialPos, setInitialPos] = useState<number[]>([]);
   const [debugPos, setDebugPos] = useState([12, 12]);
   const [oldDebugPos, setOldDebugPos] = useState(debugPos);
   const { group } = useParams();
+  const { options } = useDebug();
 
   const style = {
     top: `${debugPos[1]}px`,
@@ -122,8 +126,15 @@ function Debug({ showDebug = false }) {
       <p className="select-none" onClick={handleAddLendToMarlon}>
         Add Loan to Marlon
       </p>
+      {Object.entries(options).map(([text, action]) => (
+        <DebugItem text={text} action={action} />
+      ))}
     </div>
   );
 }
+
+const DebugItem = ({ text, action }: { text: string; action: () => void }) => {
+  return <p onClick={action}>{text}</p>;
+};
 
 export default Debug;
