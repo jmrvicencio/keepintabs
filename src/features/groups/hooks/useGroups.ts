@@ -20,6 +20,12 @@ import { db } from '../../../lib/firebase/firestore';
 import { dataFetchedAtom as storeDataFetchedAtom } from '../stores/dataFetched';
 import { Group } from '../types';
 
+interface GroupData {
+  groups?: QuerySnapshot<Group>;
+  loading: boolean;
+  reload: () => void;
+}
+
 export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
   const [groups, setGroups] = useState<DocumentSnapshot<Group>[]>();
   const [loading, setLoading] = useState(true);
@@ -65,27 +71,58 @@ export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
 
 export const groupsLoader = () => {
   const fetchData = async () => {
-    await auth.authStateReady();
-    const q = query(
-      collection(db, 'groups') as CollectionReference<Group>,
-      where('memberUids', 'array-contains', auth.currentUser!.uid),
-      orderBy('createdAt'),
-    );
-
-    return new Promise<QuerySnapshot<Group>>((resolve, reject) => {
-      const unsubscribe = onSnapshot(
-        q,
-        (snaps) => {
-          for (let doc of snaps.docChanges()) {
-            console.log('doc: ', doc);
-          }
-          unsubscribe();
-          resolve(snaps);
-        },
-        reject,
+    try {
+      await auth.authStateReady();
+      const q = query(
+        collection(db, 'groups') as CollectionReference<Group>,
+        where('memberUids', 'array-contains', auth.currentUser!.uid),
+        orderBy('createdAt'),
       );
-    });
-  };
 
+      const data: GroupData = {
+        groups: undefined,
+        loading: true,
+        reload: () => {},
+      };
+
+      const reload = () => {
+        const unsub = onSnapshot(q, (snap) => {
+          data.groups = snap;
+          unsub();
+        });
+      };
+
+      data.reload = reload;
+
+      return new Promise<GroupData>((resolve, reject) => {
+        const unsubInitial = onSnapshot(
+          q,
+          (snaps) => {
+            data.groups = snaps;
+            unsubInitial();
+            resolve(data);
+          },
+          reject,
+        );
+      });
+
+      // return new Promise<QuerySnapshot<Group>>((resolve, reject) => {
+      //   const unsubscribe = onSnapshot(
+      //     q,
+      //     (snaps) => {
+      //       for (let doc of snaps.docChanges()) {
+      //         console.log('doc: ', doc);
+      //       }
+      //       unsubscribe();
+      //       resolve(snaps);
+      //     },
+      //     reject,
+      //   );
+      // });
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message);
+    }
+  };
   return fetchData();
 };
