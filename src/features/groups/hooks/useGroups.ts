@@ -21,7 +21,7 @@ import { dataFetchedAtom as storeDataFetchedAtom } from '../stores/dataFetched';
 import { Group } from '../types';
 
 interface GroupData {
-  groups?: QuerySnapshot<Group>;
+  groups?: DocumentSnapshot<Group>[];
   loading: boolean;
   reload: () => void;
 }
@@ -85,10 +85,26 @@ export const groupsLoader = () => {
         reload: () => {},
       };
 
-      const reload = () => {
+      const reload = (setState = (state: DocumentSnapshot<Group>[]) => {}) => {
+        let initialCheck = true;
+        data.loading = true;
         const unsub = onSnapshot(q, (snap) => {
-          data.groups = snap;
-          unsub();
+          data.groups = snap.docs;
+          data.loading = false;
+          setState(data.groups);
+
+          if (initialCheck) {
+            initialCheck = false;
+            setTimeout(
+              () => {
+                console.log('manually ubsubbing');
+                unsub();
+              },
+              2 * 60 * 100, // 2 minutes
+            );
+          } else {
+            unsub();
+          }
         });
       };
 
@@ -98,27 +114,15 @@ export const groupsLoader = () => {
         const unsubInitial = onSnapshot(
           q,
           (snaps) => {
-            data.groups = snaps;
+            console.log('snaps!', snaps.docs);
+            data.groups = snaps.docs;
+            data.loading = false;
             unsubInitial();
             resolve(data);
           },
           reject,
         );
       });
-
-      // return new Promise<QuerySnapshot<Group>>((resolve, reject) => {
-      //   const unsubscribe = onSnapshot(
-      //     q,
-      //     (snaps) => {
-      //       for (let doc of snaps.docChanges()) {
-      //         console.log('doc: ', doc);
-      //       }
-      //       unsubscribe();
-      //       resolve(snaps);
-      //     },
-      //     reject,
-      //   );
-      // });
     } catch (err) {
       const error = err as Error;
       toast.error(error.message);
