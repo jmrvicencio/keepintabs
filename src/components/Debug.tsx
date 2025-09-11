@@ -33,7 +33,7 @@ function Debug({ showDebug = false }) {
       onMouseMove={handleMouseMove}
     >
       {Object.entries(options).map(([text, action]) => (
-        <DebugItem text={text} action={action} />
+        <DebugItem key={text} text={text} action={action} />
       ))}
     </div>
   );

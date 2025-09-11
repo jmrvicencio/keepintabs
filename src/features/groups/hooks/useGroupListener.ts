@@ -1,32 +1,56 @@
 import { useState, useEffect } from 'react';
-import { doc, collection, DocumentSnapshot, onSnapshot, DocumentReference } from 'firebase/firestore';
+import { doc, collection, DocumentSnapshot, onSnapshot, DocumentReference, Unsubscribe } from 'firebase/firestore';
 import { type Group, Member } from '../types';
 import { db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../../app/routes';
 
 const useGroupListener = (groupId: string = '') => {
+  const navigate = useNavigate();
   const [group, setGroup] = useState<DocumentSnapshot<Group> | null>(null);
   const [userData, setUserData] = useState<Member | null>(null);
 
+  let unsubscribeToSnapshot: Unsubscribe;
   useEffect(() => {
-    const groupDoc = doc(db, 'groups', groupId) as DocumentReference<Group>;
-    const unsubscribeToSnapshot = onSnapshot(groupDoc, (groupSnap) => {
-      setGroup(groupSnap);
+    const getDocs = async () => {
+      const groupDoc = doc(db, 'groups', groupId) as DocumentReference<Group>;
 
-      const groupData = groupSnap.data() as Group;
-      const memberEntries = Object.entries(groupData.members);
+      try {
+        unsubscribeToSnapshot = onSnapshot(
+          groupDoc,
+          (groupSnap) => {
+            setGroup(groupSnap);
 
-      for (const [memberUid, val] of memberEntries) {
-        const memberData = val as Member;
-        if (memberData.linkedUid == auth.currentUser?.uid) {
-          memberData.groupUid = memberUid;
-          setUserData(memberData);
-          break;
-        }
+            const groupData = groupSnap.data() as Group;
+            const memberEntries = Object.entries(groupData.members);
+
+            for (const [memberUid, val] of memberEntries) {
+              const memberData = val as Member;
+              if (memberData.linkedUid == auth.currentUser?.uid) {
+                memberData.groupUid = memberUid;
+                setUserData(memberData);
+                break;
+              }
+            }
+          },
+          (error) => {
+            unsubscribeToSnapshot();
+            console.error(error);
+            navigate(ROUTES.APP);
+          },
+        );
+
+        return unsubscribeToSnapshot;
+      } catch (err) {
+        const error = err as Error;
+        toast.error(error.message);
+        throw err;
       }
-    });
+    };
 
-    return unsubscribeToSnapshot;
+    getDocs();
   }, []);
 
   return { group, userData };

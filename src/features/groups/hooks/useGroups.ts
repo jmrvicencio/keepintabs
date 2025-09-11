@@ -114,7 +114,6 @@ export const groupsLoader = () => {
         const unsubInitial = onSnapshot(
           q,
           (snaps) => {
-            console.log('snaps!', snaps.docs);
             data.groups = snaps.docs;
             data.loading = false;
             unsubInitial();
