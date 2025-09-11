@@ -1,9 +1,9 @@
 import { memo, useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { doc, updateDoc, setDoc, serverTimestamp, deleteField, DocumentSnapshot } from 'firebase/firestore';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { data, useLoaderData, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import { useGroups } from '../../../features/groups/hooks/useGroups';
+import { GroupData, useGroups } from '../../../features/groups/hooks/useGroups';
 import { useDebug } from '../../../hooks/useDebug';
 
 import { ROUTES } from '../../routes';
@@ -17,10 +17,8 @@ import { useQuery } from '@tanstack/react-query';
 const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
 
-  const { loading, reload: reloadGroups } = useGroups();
-  const { groups: loaderGroups, loading: loaderLoading, reload: loaderReload } = useLoaderData();
-  const [groups, setGroups2] = useState<DocumentSnapshot<Group>[]>(loaderGroups);
-  const { options, addOption, removeOption } = useDebug();
+  const { groups, loading, reload } = useGroups();
+  const { addOption, removeOption } = useDebug();
 
   useEffect(() => {
     const newOption = {
@@ -31,19 +29,11 @@ const Dashboard = memo(function Dashboard() {
     };
 
     addOption(newOption.text, newOption.action);
-    addOption('reload groups', () => {
-      loaderReload(setGroups2);
-    });
 
     return () => {
       removeOption(newOption.text);
-      removeOption('reload groups');
     };
   }, []);
-
-  // console.log('hookData:', loaderGroups);
-  // console.log('hookLoading:', loaderLoading);
-  // console.log('loaderData:', loaderReload);
 
   const PlusIcon = memo(({ className = 'w-4' }: { className?: string }) => <Plus className={className} />);
 
@@ -89,7 +79,7 @@ const Dashboard = memo(function Dashboard() {
       inviteKey: deleteField(),
     });
 
-    loaderReload(setGroups2);
+    reload();
   };
 
   return (

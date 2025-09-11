@@ -33,7 +33,6 @@ const router = createHashRouter([
     children: [
       {
         index: true,
-        loader: groupsLoader,
         lazy: async () => {
           let Dashboard = await import('./routes/App/Dashboard');
           return { Component: Dashboard.default };

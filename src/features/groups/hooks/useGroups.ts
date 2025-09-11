@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   getDocsFromCache,
   getDocs,
@@ -20,49 +20,82 @@ import { db } from '../../../lib/firebase/firestore';
 import { dataFetchedAtom as storeDataFetchedAtom } from '../stores/dataFetched';
 import { Group } from '../types';
 
-interface GroupData {
+export interface GroupData {
   groups?: DocumentSnapshot<Group>[];
   loading: boolean;
   reload: () => void;
+  setState?: (state: any) => void;
+  addSetter: any;
+  unsubscribe?: () => void;
 }
 
 export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
-  const [groups, setGroups] = useState<DocumentSnapshot<Group>[]>();
+  const [groups, setGroups] = useState<DocumentSnapshot<Group>[]>([]);
   const [loading, setLoading] = useState(true);
   const [refetch, setRefetch] = useState(false);
   const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
 
   useEffect(() => {
-    async function fetchGroups() {
-      setLoading(true);
-      try {
-        const q = query(
-          collection(db, 'groups') as CollectionReference<Group>,
-          where('memberUids', 'array-contains', auth.currentUser!.uid),
-          orderBy('createdAt'),
-        );
-        let groupsSnap: QuerySnapshot<Group>;
-
-        if (dataFetched) {
-          groupsSnap = await getDocsFromCache(q);
-        } else {
-          groupsSnap = await getDocs(q);
-          setDataFetched(true);
-        }
-
-        setLoading(false);
-        setGroups(groupsSnap.docs);
-      } catch (err) {
-        const error = err as Error;
-        toast.error(error.message);
-        throw err;
+    const onFocus = () => {
+      console.log(Date.now() - dataFetched.fetchedAt);
+      const isStale = Date.now() - dataFetched.fetchedAt > dataFetched.staleTime;
+      console.log(isStale);
+      if (isStale) {
+        fetchGroups();
       }
-    }
+    };
 
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      console.log('remove listener');
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [dataFetched]);
+
+  useEffect(() => {
     fetchGroups();
   }, [refetch]);
 
-  const reload = useCallback(() => {
+  async function fetchGroups() {
+    try {
+      const q = query(
+        collection(db, 'groups') as CollectionReference<Group>,
+        where('memberUids', 'array-contains', auth.currentUser!.uid),
+        orderBy('createdAt'),
+      );
+      let groupsSnap: QuerySnapshot<Group>;
+
+      const isStale = Date.now() - dataFetched.fetchedAt > dataFetched.staleTime;
+      if (dataFetched.fetched && !isStale) {
+        groupsSnap = await getDocsFromCache(q);
+      } else {
+        groupsSnap = await getDocs(q);
+        setDataFetched({
+          ...dataFetched,
+          fetched: true,
+          fetchedAt: Date.now(),
+        });
+        console.log('setting data fetched!');
+      }
+
+      setLoading(() => false);
+      setGroups(groupsSnap.docs);
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message);
+      throw err;
+    }
+  }
+
+  const reload = useCallback((fromServer = false) => {
+    if (fromServer) {
+      setDataFetched((prev) => ({
+        ...prev,
+        fetched: false,
+      }));
+    }
+
     setRefetch((prev) => !prev);
   }, []);
 
@@ -83,41 +116,30 @@ export const groupsLoader = () => {
         groups: undefined,
         loading: true,
         reload: () => {},
+        addSetter: (setter: any) => {
+          data.setState = setter;
+        },
       };
-
-      const reload = (setState = (state: DocumentSnapshot<Group>[]) => {}) => {
-        let initialCheck = true;
-        data.loading = true;
-        const unsub = onSnapshot(q, (snap) => {
-          data.groups = snap.docs;
-          data.loading = false;
-          setState(data.groups);
-
-          if (initialCheck) {
-            initialCheck = false;
-            setTimeout(
-              () => {
-                console.log('manually ubsubbing');
-                unsub();
-              },
-              2 * 60 * 100, // 2 minutes
-            );
-          } else {
-            unsub();
-          }
-        });
-      };
-
-      data.reload = reload;
 
       return new Promise<GroupData>((resolve, reject) => {
-        const unsubInitial = onSnapshot(
+        let initializing = true;
+        const unsub = onSnapshot(
           q,
           (snaps) => {
             data.groups = snaps.docs;
             data.loading = false;
-            unsubInitial();
-            resolve(data);
+
+            console.log('Groups Page: Data has changed');
+
+            if (data.setState) {
+              data.setState(data.groups);
+            }
+
+            if (initializing) {
+              data.unsubscribe = unsub;
+              resolve(data);
+              initializing = false;
+            }
           },
           reject,
         );
