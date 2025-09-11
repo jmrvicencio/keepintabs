@@ -44,6 +44,10 @@ const router = createHashRouter([
         Component: Outlet,
         children: [
           {
+            index: true,
+            element: <Navigate to={ROUTES.APP} replace />,
+          },
+          {
             path: ':group',
             lazy: async () => {
               let Group = await import('./routes/App/Group');
