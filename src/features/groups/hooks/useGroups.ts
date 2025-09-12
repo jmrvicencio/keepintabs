@@ -37,9 +37,7 @@ export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
 
   useEffect(() => {
     const onFocus = () => {
-      console.log(Date.now() - dataFetched.fetchedAt);
       const isStale = Date.now() - dataFetched.fetchedAt > dataFetched.staleTime;
-      console.log(isStale);
       if (isStale) {
         fetchGroups();
       }
