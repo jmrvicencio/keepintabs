@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { ROUTES } from '../../routes';
 
-const AddGroup = () => {
+const NewGroup = () => {
   return (
     <main className="flex w-full flex-col border-1 border-red-500">
       <div className="w-full">
@@ -16,4 +16,4 @@ const AddGroup = () => {
   );
 };
 
-export default AddGroup;
+export default NewGroup;

@@ -17,7 +17,7 @@ export const getGroupRoute = (groupId: string) => {
 
 const router = createHashRouter([
   {
-    path: '/',
+    index: true,
     Component: Home,
   },
   {
@@ -56,7 +56,7 @@ const router = createHashRouter([
           {
             path: 'new',
             lazy: async () => {
-              let AddGroup = await import('./routes/App/AddGroup');
+              let AddGroup = await import('./routes/App/NewGroup');
               return { Component: AddGroup.default };
             },
           },

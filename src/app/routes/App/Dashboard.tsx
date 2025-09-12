@@ -5,6 +5,7 @@ import { data, useLoaderData, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { GroupData, useGroups } from '../../../features/groups/hooks/useGroups';
 import { useDebug } from '../../../hooks/useDebug';
+import { useDashboardDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
 
 import { ROUTES } from '../../routes';
 import { db } from '../../../lib/firebase/firestore';
@@ -19,6 +20,8 @@ const Dashboard = memo(function Dashboard() {
 
   const { groups, loading, reload } = useGroups();
   const { addOption, removeOption } = useDebug();
+
+  useDashboardDebugOptions(reload);
 
   useEffect(() => {
     const newOption = {
