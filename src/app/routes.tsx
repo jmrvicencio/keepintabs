@@ -1,7 +1,6 @@
 import { createHashRouter, Outlet, Navigate } from 'react-router-dom';
 import Home from './routes/Home';
 import Test from './routes/Test';
-import { groupsLoader } from '../features/groups/hooks/useGroups';
 
 export const ROUTES = {
   APP: '/app',
