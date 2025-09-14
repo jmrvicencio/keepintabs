@@ -11,11 +11,11 @@ import { type Group } from '../../../features/groups/types';
 import { Menu, Plus, ChevronLeft } from 'lucide-react';
 import PopupOverlay from '../../../components/popup/PopupOverlay';
 import { ROUTES } from '../../routes';
-import { useDashboardDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
+import { useGroupDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
-  useDashboardDebugOptions();
+  useGroupDebugOptions();
   const PlusMemo = memo(() => <Plus />);
 
   const { group: groupParam } = useParams();

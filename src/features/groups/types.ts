@@ -13,4 +13,5 @@ export interface Member {
   groupUid?: string;
   linkedUid: string;
   displayName: string;
+  email?: string;
 }

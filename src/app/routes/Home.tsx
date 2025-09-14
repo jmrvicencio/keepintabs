@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import {
@@ -29,7 +29,7 @@ function Home() {
     return unsubscribe;
   }, [auth]);
 
-  const handleGoogleClicked = async () => {
+  const handleGoogleClicked = async (e: MouseEvent) => {
     try {
       const result = await signInWithPopup(auth, provider);
 
@@ -76,11 +76,11 @@ function Home() {
         <p className="font-outfit text-lg">Keepin' Tabs</p>
       </div>
       {!user ? (
-        <Button handleClick={handleGoogleClicked}>Sign in with Google</Button>
+        <Button onClick={handleGoogleClicked}>Sign in with Google</Button>
       ) : (
         <>
           <p>{user.displayName}</p>
-          <Button handleClick={handleSignOut}>Sign Out</Button>
+          <Button onClick={handleSignOut}>Sign Out</Button>
         </>
       )}
     </div>
