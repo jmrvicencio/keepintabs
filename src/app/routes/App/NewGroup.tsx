@@ -1,22 +1,26 @@
 import { ChangeEvent, FormEvent, useState, KeyboardEvent, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { ChevronLeft, X, UserRound } from 'lucide-react';
 import { ROUTES } from '../../routes';
-import Button from '../../../components/buttons/Button';
 import SmallButton from '../../../components/buttons/SmallButton';
-
-interface Member {
-  name: string;
-  email?: string;
-}
+import { Member } from '../../../features/groups/types';
+import { auth } from '../../../lib/firebase/auth';
+import useAddGroup from '../../../features/groups/hooks/useAddGroup';
 
 const NewGroup = () => {
+  const navigate = useNavigate();
   const [groupName, setGroupName] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
+  const addGroup = useAddGroup(auth.currentUser!);
+
+  const handleDoneClicked = async () => {
+    await addGroup(groupName, members);
+    navigate(ROUTES.APP);
+  };
 
   const handleGroupNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setGroupName(e.target.value);
@@ -38,7 +42,7 @@ const NewGroup = () => {
   };
 
   const handleAddMember = () => {
-    const newMember: Member = { name: inviteName };
+    const newMember: Member = { displayName: inviteName };
     if (inviteEmail != '') newMember.email = inviteEmail;
 
     setMembers((prev) => [...prev, newMember]);
@@ -48,7 +52,7 @@ const NewGroup = () => {
 
   const handleRemoveMember = (nameToRemove: string) => {
     const nextMembers = members.filter((member) => {
-      return member.name != nameToRemove;
+      return member.displayName != nameToRemove;
     });
 
     setMembers(nextMembers);
@@ -70,7 +74,7 @@ const NewGroup = () => {
               Cancel
             </p>
           </Link>
-          <div className="absolute right-0 cursor-pointer">
+          <div className="absolute right-0 cursor-pointer" onClick={handleDoneClicked}>
             <p className="text-accent-200 flex flex-row">Done</p>
           </div>
 
@@ -142,7 +146,7 @@ const NewGroup = () => {
                   id={i}
                   member={member}
                   onClick={() => {
-                    handleRemoveMember(member.name);
+                    handleRemoveMember(member.displayName);
                   }}
                   setMembers={setMembers}
                   findMembers={findMembers}
@@ -205,7 +209,7 @@ const AddedUser = ({
       const nextMember = { ...nextMembers[id] };
       nextMembers[id] = nextMember;
 
-      if (editName) nextMember.name = input;
+      if (editName) nextMember.displayName = input;
       else nextMember.email = input;
 
       return nextMembers;
@@ -244,10 +248,10 @@ const AddedUser = ({
             onClick={() => {
               setEditName(true);
               setEditEmail(false);
-              setInput(member.name);
+              setInput(member.displayName);
             }}
           >
-            {member.name}
+            {member.displayName}
           </p>
         )}
         {editEmail ? (

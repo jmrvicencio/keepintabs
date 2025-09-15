@@ -11,7 +11,7 @@ type lent = Record<string, number>;
 export type userGroupUid = string;
 export interface Member {
   groupUid?: string;
-  linkedUid: string;
+  linkedUid?: string;
   displayName: string;
   email?: string;
 }

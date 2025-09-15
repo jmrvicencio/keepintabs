@@ -1,44 +1,58 @@
-import { auth } from '../../../lib/firebase/auth';
-import { doc, updateDoc, deleteField, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, deleteField, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
 import { db } from '../../../lib/firebase/firestore';
+import { User } from 'firebase/auth';
+import { Member } from '../types';
 
-const useAddGroup = (uid: string) => {
-  const addNewGroup = async (groupName: string) => {
-    const groupId = uuid();
-    const userId = uid;
-    const inviteKey = uuid();
-    const groups = doc(db, `groups/${groupId}`);
-    const groupMembers = doc(db, `groupMembers/${uid}_${groupId}`);
-    const groupSettings = doc(db, `groupSettings/${groupId}`);
+const useAddGroup = (user: User) => {
+  const addNewGroup = async (groupName: string, members: Member[]) => {
+    try {
+      const groupId = uuid();
+      const userId = user.uid;
+      const inviteKey = uuid();
+      const groupsRef = doc(db, `groups/${groupId}`);
+      const groupMembersRef = doc(db, `groupMembers/${userId}_${groupId}`);
+      const groupSettingsRef = doc(db, `groupSettings/${groupId}`);
 
-    setDoc(groupSettings, {
-      inviteKey,
-    });
-    setDoc(groups, {
-      createdAt: serverTimestamp(),
-      inviteKey,
-      name: groupName,
-      memberUids: [userId],
-      members: {
-        [userId]: {
-          displayName: 'Kyle',
-          linkedUid: userId,
+      const nextMembers: Record<string, Member> = {};
+      for (let member of members) {
+        const memberUid = uuid();
+        nextMembers[memberUid] = member;
+      }
+
+      setDoc(groupSettingsRef, {
+        inviteKey,
+      });
+      setDoc(groupsRef, {
+        createdAt: serverTimestamp(),
+        inviteKey,
+        name: groupName,
+        memberUids: [userId],
+        members: {
+          ...nextMembers,
+          [userId]: {
+            displayName: 'Kyle',
+            linkedUid: userId,
+          },
         },
-      },
-    });
-    updateDoc(groups, {
-      inviteKey: deleteField(),
-    });
-    await setDoc(groupMembers, {
-      userId,
-      groupId,
-      inviteKey,
-    });
-    updateDoc(groupMembers, {
-      inviteKey: deleteField(),
-    });
+      });
+      updateDoc(groupsRef, {
+        inviteKey: deleteField(),
+      });
+      await setDoc(groupMembersRef, {
+        userId,
+        groupId,
+        inviteKey,
+      });
+      await updateDoc(groupMembersRef, {
+        inviteKey: deleteField(),
+      });
+
+      return;
+    } catch (err) {
+      throw err;
+    }
   };
 
   return addNewGroup;
