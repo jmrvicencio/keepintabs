@@ -31,6 +31,8 @@
 
   --color-negative-300: #ffc05b;
   --color-negative-500: #f3533e;
+
+  --color-error: #f3533e;
 }
 
 @layer base {

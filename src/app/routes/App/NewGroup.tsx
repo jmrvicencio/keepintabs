@@ -7,23 +7,44 @@ import SmallButton from '../../../components/buttons/SmallButton';
 import { Member } from '../../../features/groups/types';
 import { auth } from '../../../lib/firebase/auth';
 import useAddGroup from '../../../features/groups/hooks/useAddGroup';
+import Loading from '../../../components/Loading';
 
 const NewGroup = () => {
   const navigate = useNavigate();
   const [groupName, setGroupName] = useState('');
+  const [nameError, setNameError] = useState(false);
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const addEmailRef = useRef<HTMLInputElement>(null);
   const addGroup = useAddGroup(auth.currentUser!);
 
   const handleDoneClicked = async () => {
+    if (groupName == '') {
+      setNameError(true);
+      return;
+    }
+    if (submitting) {
+      return;
+    }
+    setSubmitting(true);
     await addGroup(groupName, members);
     navigate(ROUTES.APP);
   };
 
+  const handleGroupNameSubmitted = (e: FormEvent) => {
+    e.preventDefault();
+    handleDoneClicked();
+  };
+
   const handleGroupNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setGroupName(e.target.value);
+    const nextName = e.target.value;
+    setGroupName(nextName);
+
+    if (nextName === '') setNameError(true);
+    else setNameError(false);
   };
 
   const handleInviteNameChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +53,7 @@ const NewGroup = () => {
 
   const handleInviteEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInviteEmail(e.target.value);
+    addEmailRef.current?.setCustomValidity('');
   };
 
   const handleUserSubmit = (e: FormEvent) => {
@@ -43,7 +65,15 @@ const NewGroup = () => {
 
   const handleAddMember = () => {
     const newMember: Member = { displayName: inviteName };
-    if (inviteEmail != '') newMember.email = inviteEmail;
+    if (inviteEmail != '') {
+      if (findMembers(inviteEmail).length > 0) {
+        addEmailRef.current?.setCustomValidity('This email is already being used by another member');
+        addEmailRef.current?.reportValidity();
+        addEmailRef.current?.focus();
+        return;
+      }
+      newMember.email = inviteEmail;
+    }
 
     setMembers((prev) => [...prev, newMember]);
     setInviteEmail('');
@@ -58,13 +88,15 @@ const NewGroup = () => {
     setMembers(nextMembers);
   };
 
-  const findMembers = (email: string, id: number) => {
+  const findMembers = (email: string, id: number = -1) => {
     return members.filter((member, i) => {
-      return member.email === email && id != i;
+      return member.email != '' && member.email?.toLowerCase() === email.toLowerCase() && id != i;
     });
   };
 
-  return (
+  return submitting ? (
+    <Loading />
+  ) : (
     <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
       <main className="flex w-full flex-col">
         <div className="relative mb-4 w-full">
@@ -80,11 +112,7 @@ const NewGroup = () => {
 
           <h1 className="font-medium">Create Group</h1>
         </div>
-        <form
-          onSubmit={() => {
-            console.log('submitting name form');
-          }}
-        >
+        <form onSubmit={handleGroupNameSubmitted}>
           <div className="relative mx-2">
             <div className="text-cream/70 flex items-baseline justify-between py-2">
               <label htmlFor="name">Group Name</label>
@@ -94,8 +122,8 @@ const NewGroup = () => {
               id="name"
               type="text"
               autoComplete="off"
-              className="peer border-charcoal-300 bg-charcoal-300/20 focus:outline-accent-400/60 w-full rounded-md border-1 px-2 py-1 focus:outline-2"
-              placeholder="New Group"
+              className={`${nameError && 'error'} peer [.error]:border-error border-charcoal-300 bg-charcoal-300/20 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border-1 px-2 py-1 focus:outline-2`}
+              placeholder={nameError ? 'Group name is required' : 'Group Name'}
               maxLength={32}
               value={groupName}
               onChange={handleGroupNameChange}
@@ -124,6 +152,7 @@ const NewGroup = () => {
               />
               <input
                 id="email"
+                ref={addEmailRef}
                 type="email"
                 className="border-charcoal-300 bg-charcoal-300/20 focus:outline-accent-400/60 w-0 grow-3 rounded-md border-1 px-2 py-1 not-focus:invalid:border-red-500 focus:outline-2"
                 placeholder="Email (optional)"

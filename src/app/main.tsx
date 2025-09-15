@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
 import router from './routes';
-import Loading from './routes/Loading';
+import Loading from '../components/Loading';
 import './index.css';
 
 const queryClient = new QueryClient();
