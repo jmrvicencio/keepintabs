@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`New Transaction Page > allows users to input transaction amount 1`] = `
+<div>
+  <div>
+    New Transaction Page
+  </div>
+</div>
+`;
