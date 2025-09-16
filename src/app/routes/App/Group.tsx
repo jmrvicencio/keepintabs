@@ -35,7 +35,8 @@ const Group = memo(function Group() {
 
   // Event Listeners
   const handleAddClicked = useCallback(async () => {
-    navigate('new');
+    console.log('param: ', groupParam);
+    navigate(`${ROUTES.NEW_TRANSACTION}${groupParam && '?g=' + groupParam}`);
   }, []);
 
   return (

@@ -11,13 +11,16 @@ const useGroupListener = (groupId: string = '') => {
   const navigate = useNavigate();
   const [group, setGroup] = useState<DocumentSnapshot<Group> | null>(null);
   const [userData, setUserData] = useState<Member | null>(null);
+  const [unsubCalled, setUnsubCalled] = useState(false);
 
   let unsubscribeToSnapshot: Unsubscribe;
   useEffect(() => {
     const getDocs = async () => {
       const groupDoc = doc(db, 'groups', groupId) as DocumentReference<Group>;
+      if (unsubCalled) return;
 
       try {
+        console.log('subscribing to snapshot');
         unsubscribeToSnapshot = onSnapshot(
           groupDoc,
           (groupSnap) => {
@@ -41,8 +44,6 @@ const useGroupListener = (groupId: string = '') => {
             navigate(ROUTES.APP);
           },
         );
-
-        return unsubscribeToSnapshot;
       } catch (err) {
         const error = err as Error;
         toast.error(error.message);
@@ -51,6 +52,11 @@ const useGroupListener = (groupId: string = '') => {
     };
 
     getDocs();
+    return () => {
+      console.log('ubsubscribing to snapshot');
+      setUnsubCalled(true);
+      unsubscribeToSnapshot;
+    };
   }, []);
 
   return { group, userData };

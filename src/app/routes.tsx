@@ -8,6 +8,7 @@ export const ROUTES = {
   NEW_GROUP: '/app/groups/new',
   TEST: '/test',
   LANDING: '/',
+  NEW_TRANSACTION: '/app/transactions/new',
 };
 
 export const getGroupRoute = (groupId: string) => {
@@ -57,6 +58,19 @@ const router = createHashRouter([
             lazy: async () => {
               let AddGroup = await import('./routes/App/NewGroup');
               return { Component: AddGroup.default };
+            },
+          },
+        ],
+      },
+      {
+        path: 'transactions',
+        Component: Outlet,
+        children: [
+          {
+            path: 'new',
+            lazy: async () => {
+              let NewTransaction = await import('./routes/App/NewTransaction');
+              return { Component: NewTransaction.default };
             },
           },
         ],
