@@ -32,7 +32,7 @@ function App() {
   return (
     <ProtectedRoute>
       <div
-        className="bg-olive text-cream flex min-h-dvh w-full justify-end overflow-x-hidden overflow-y-auto"
+        className="bg-wheat-200 text-ink-800 flex min-h-dvh w-full justify-end overflow-x-hidden overflow-y-auto"
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >

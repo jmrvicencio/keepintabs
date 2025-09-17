@@ -2,9 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&display=swap');
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Gieonto';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url('/fonts/Gieonto.otf') format('opentype');
+}
+
 @theme {
   --font-outfit: 'Outfit', sans-serif;
   --font-noto-sans: 'Noto Sans', sans-serif;
+  --font-gieonto: 'Gieonto', sans-serif;
   --color-olive: #282722;
   --color-cream: #f0e4c3;
   --color-sand: #f8f1e0;
@@ -33,6 +42,10 @@
   --color-negative-500: #f3533e;
 
   --color-error: #f3533e;
+
+  --color-wheat-200: #faf4ea;
+
+  --color-ink-800: #272622;
 }
 
 @layer base {
