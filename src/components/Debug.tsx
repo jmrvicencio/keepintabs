@@ -28,7 +28,7 @@ function Debug({ showDebug = false }) {
   return (
     <div
       style={style}
-      className={`${!showDebug && 'hidden'} bg-accent-200/60 absolute z-1 p-4`}
+      className={`${!showDebug && 'hidden'} bg-accent-200/60 absolute z-20 p-4`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
     >
