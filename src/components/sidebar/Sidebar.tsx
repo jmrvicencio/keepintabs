@@ -23,7 +23,7 @@ function Sidebar() {
 
   return (
     <div
-      className={`${showSidebarClass} w-[0dvw] max-w-4/5 shrink-0 transition-[width] duration-300 ease-in-out [.show-sidebar]:w-72`}
+      className={`${showSidebarClass} bg-wheat-200 z-20 w-[0dvw] max-w-4/5 shrink-0 transition-[width] duration-300 ease-in-out [.show-sidebar]:w-72`}
     >
       <div className="flex w-[60dvw] flex-row items-center justify-baseline gap-2 p-4" onClick={handleSignoutClick}>
         <LogOut className="h-4 w-4" />

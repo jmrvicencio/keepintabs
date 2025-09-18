@@ -13,6 +13,7 @@ import PopupOverlay from '../../../components/popup/PopupOverlay';
 import { ROUTES } from '../../routes';
 import { useGroupDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
 import Panel from '../../../components/neubrutalist/Panel';
+import PanelButton from '../../../components/neubrutalist/PanelButton';
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const Group = memo(function Group() {
         </PopupOverlay>
       )}
       <div className="relative flex shrink-0 grow-1 flex-col pt-3">
-        <main className="flex h-full flex-col items-start items-stretch">
+        <main className="flex h-full flex-col items-stretch">
           <GroupInfo
             userBalance={userBalance}
             groupData={groupData}
@@ -66,7 +67,7 @@ const Group = memo(function Group() {
               </h2>
               <p>2 Transactions</p>
             </div>
-            <div className="flex flex-col gap-2 pb-12">
+            <div className="flex flex-col gap-2 pb-24">
               <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
                 <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
                   <p className="text-base/4">Aug</p>
@@ -83,7 +84,7 @@ const Group = memo(function Group() {
                   <p className="text-charcoal-600 font-medium">Php 2,000</p>
                   <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
                     You lent
-                    <div className="bg-positive-500 h-2 w-2 rounded-full" />
+                    <span className="bg-positive-500 h-2 w-2 rounded-full" />
                   </p>
                   <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
                     <p className="text-sm font-normal">Details</p>
@@ -106,7 +107,7 @@ const Group = memo(function Group() {
                   <p className="text-charcoal-600 font-medium">Php 2,000</p>
                   <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
                     You lent
-                    <div className="bg-positive-500 h-2 w-2 rounded-full" />
+                    <span className="bg-positive-500 h-2 w-2 rounded-full" />
                   </p>
                   <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
                     <p className="text-sm font-normal">Details</p>
@@ -129,7 +130,7 @@ const Group = memo(function Group() {
                   <p className="text-charcoal-600 font-medium">Php 2,000</p>
                   <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
                     You lent
-                    <div className="bg-positive-500 h-2 w-2 rounded-full" />
+                    <span className="bg-positive-500 h-2 w-2 rounded-full" />
                   </p>
                   <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
                     <p className="text-sm font-normal">Details</p>
@@ -167,11 +168,11 @@ const GroupInfo = ({
     <section className="border-wheat-400 mx-3 flex grow-1 flex-col items-start gap-3 border-b-1 border-dashed pb-8">
       <div className="w-full">
         <Link to={ROUTES.APP}>
-          <p className="text-ink-800 pointer-cursor mb-4 flex flex-row items-center gap-2 text-lg font-normal">
+          <div className="text-ink-800 pointer-cursor mb-4 flex flex-row items-center gap-2 text-lg font-normal">
             <Panel bgColor="bg-accent-200" dropOnClick={true}>
               <ArrowLeft className="text-ink-800" />
             </Panel>
-          </p>
+          </div>
         </Link>
         <div className="mb-3 flex w-full flex-row items-center justify-between" ref={ref}>
           <h1 className="font-gieonto text-left text-4xl font-medium">{groupData?.name}</h1>
@@ -226,12 +227,19 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
 
 const FAB = memo(({ onClick: handleClicked, children }: { onClick: () => void; children: ReactNode }) => {
   return (
-    <div
-      className="bg-accent-600 fixed bottom-6 left-1/2 z-1 m-auto flex -translate-x-1/2 cursor-pointer flex-row items-center justify-center rounded-full px-3 py-2 text-white"
-      onClick={handleClicked}
-    >
-      {children}
+    <div className="fixed bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
+      <PanelButton className="flex flex-row text-white" bgColor="bg-accent-600" dropOnClick={true}>
+        {children}
+      </PanelButton>
     </div>
+    // <div className="border-wheat-200 fixed bottom-6 left-1/2 z-5 -translate-x-1/2 rounded-full border-4">
+    //   <div
+    //     className="bg-accent-400 m-auto flex cursor-pointer flex-row items-center justify-center rounded-full border-2 border-black px-3 py-2 text-white"
+    //     onClick={handleClicked}
+    //   >
+    //     {children}
+    //   </div>
+    // </div>
   );
 });
 

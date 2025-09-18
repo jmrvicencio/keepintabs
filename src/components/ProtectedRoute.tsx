@@ -4,6 +4,7 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { useState, useEffect, type ReactNode } from 'react';
 
 import logo from '/logo-spaced-white.svg';
+import Logo from './logo/Logo';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -22,8 +23,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading)
     return (
-      <div className="bg-olive text-cream flex h-dvh w-dvw items-center justify-center">
-        <img src={logo} className="w-16 animate-pulse" />
+      <div className="bg-wheat-200 text-cream flex h-dvh w-dvw items-center justify-center bg-[url(/bg/bg_pattern.png)]">
+        <Logo className="fill-wheat-400 h-20 animate-pulse" />
+        {/* <img src={logo} className="w-16 animate-pulse" /> */}
       </div>
     );
   else
