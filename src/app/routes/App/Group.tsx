@@ -47,7 +47,10 @@ const Group = memo(function Group() {
         <PopupOverlay setShowSelf={setShowGroupMenu}>
           <div
             className="absolute h-10 w-10 border-1 border-red-500 bg-amber-800"
-            style={{ top: menuRect?.bottom, right: window.innerWidth - (menuRect?.right ?? 0) }}
+            style={{
+              top: (menuRect?.bottom ?? 0) + window.pageYOffset,
+              right: window.innerWidth - (menuRect?.right ?? 0),
+            }}
           ></div>
         </PopupOverlay>
       )}
@@ -73,11 +76,13 @@ const Group = memo(function Group() {
                   <p className="text-base/4">Aug</p>
                   <p className="text-2xl font-bold">25</p>
                 </div>
-                <div className="text-charcoal-800 grow-1 text-left">
+                <div className="text-charcoal-800 flex grow-1 flex-col gap-1 text-left">
                   <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
-                  <p className="font-light">You paid Php 2,000</p>
+                  <p className="text-sm/snug font-light">You paid Php 2,000</p>
                   <div>
-                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 text-sm/tight font-light">Gcash</p>
+                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 py-0.5 text-sm/tight font-light">
+                      Gcash
+                    </p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
@@ -96,11 +101,13 @@ const Group = memo(function Group() {
                   <p className="text-base/4">Aug</p>
                   <p className="text-2xl font-bold">25</p>
                 </div>
-                <div className="text-charcoal-800 grow-1 text-left">
+                <div className="text-charcoal-800 flex grow-1 flex-col gap-1 text-left">
                   <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
-                  <p className="font-light">You paid Php 2,000</p>
+                  <p className="text-sm/snug font-light">You paid Php 2,000</p>
                   <div>
-                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 text-sm/tight font-light">Gcash</p>
+                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 py-0.5 text-sm/tight font-light">
+                      Gcash
+                    </p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
@@ -119,11 +126,13 @@ const Group = memo(function Group() {
                   <p className="text-base/4">Aug</p>
                   <p className="text-2xl font-bold">25</p>
                 </div>
-                <div className="text-charcoal-800 grow-1 text-left">
+                <div className="text-charcoal-800 flex grow-1 flex-col gap-1 text-left">
                   <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
-                  <p className="font-light">You paid Php 2,000</p>
+                  <p className="text-sm/snug font-light">You paid Php 2,000</p>
                   <div>
-                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 text-sm/tight font-light">Gcash</p>
+                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 py-0.5 text-sm/tight font-light">
+                      Gcash
+                    </p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
@@ -165,7 +174,7 @@ const GroupInfo = ({
   const MenuMemo = memo(() => <Menu onClick={() => setShowGroupMenu(true)} className="w-8 cursor-pointer" />);
 
   return (
-    <section className="border-wheat-400 mx-3 flex grow-1 flex-col items-start gap-3 border-b-1 border-dashed pb-8">
+    <section className="border-wheat-400 mx-3 flex grow-1 flex-col items-start gap-2 border-b-1 border-dashed pb-8">
       <div className="w-full">
         <Link to={ROUTES.APP}>
           <div className="text-ink-800 pointer-cursor mb-4 flex flex-row items-center gap-2 text-lg font-normal">
@@ -174,9 +183,11 @@ const GroupInfo = ({
             </Panel>
           </div>
         </Link>
-        <div className="mb-3 flex w-full flex-row items-center justify-between" ref={ref}>
+        <div className="mb-4 flex w-full flex-row items-center justify-between" ref={ref}>
           <h1 className="font-gieonto text-left text-4xl font-medium">{groupData?.name}</h1>
-          <MenuMemo />
+          <div className="p1 bg-wheat-200 rounded-sm">
+            <MenuMemo />
+          </div>
         </div>
         <BalanceLabel total={userBalance.total} />
       </div>
@@ -189,7 +200,7 @@ const GroupInfo = ({
         </Panel>
       )}
       <p className="text-xs opacity-72">Debts are being simplified</p>
-      <div className="border-charcoal-300 cursor-pointer rounded-xl border-1 px-3 py-1">See full breakdown</div>
+      <div className="border-wheat-400 cursor-pointer rounded-xl border-1 px-3 py-1">See full breakdown</div>
     </section>
   );
 };
