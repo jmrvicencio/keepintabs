@@ -1,9 +1,9 @@
-import logo from '/logo-spaced-white.svg';
+import Logo from './logo/Logo';
 
 function Loading() {
   return (
-    <div className="bg-olive text-cream flex h-dvh w-dvw items-center justify-center">
-      <img src={logo} className="w-16 animate-pulse" />
+    <div className="text-ink-800 bg flex h-dvh w-dvw items-center justify-center">
+      <Logo className="fill-wheat-400 w-16 animate-pulse" />
     </div>
   );
 }

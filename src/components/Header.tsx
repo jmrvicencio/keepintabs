@@ -18,7 +18,7 @@ const Header = memo(function Header() {
   };
 
   return (
-    <header className="flex flex-row justify-between p-3">
+    <header className="flex flex-row justify-between px-3 py-4">
       <div className="flex cursor-pointer items-center" onClick={handleLogoClick}>
         {/* <img src={logo} className="h-9" /> */}
         <svg className="fill-accent-600 h-9" viewBox="0 0 120 141" xmlns="http://www.w3.org/2000/svg">

@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import { MouseEvent, useState, type ReactNode } from 'react';
 
 const PanelButton = ({
   children,
-  onClick: handleClick = () => {},
+  onClick: handleClick = (e: MouseEvent) => {},
   bgColor,
   padding,
   rounded,
@@ -11,7 +11,7 @@ const PanelButton = ({
   className = '',
 }: {
   children?: ReactNode;
-  onClick?: () => any;
+  onClick?: (e: MouseEvent) => any;
   bgColor?: string;
   padding?: string;
   rounded?: string;
@@ -35,6 +35,7 @@ const PanelButton = ({
   return (
     <div
       className="relative pb-1"
+      onClick={handleClick}
       onMouseDown={handleMouseDown}
       onPointerDown={handleMouseDown}
       onMouseUp={handleMouseUp}

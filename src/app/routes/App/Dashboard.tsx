@@ -1,19 +1,13 @@
-import { memo, useEffect, useState } from 'react';
-import { v4 as uuid } from 'uuid';
-import { doc, updateDoc, setDoc, serverTimestamp, deleteField, DocumentSnapshot } from 'firebase/firestore';
-import { data, useLoaderData, useNavigate } from 'react-router-dom';
+import { memo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import { GroupData, useGroups } from '../../../features/groups/hooks/useGroups';
+import { useGroups } from '../../../features/groups/hooks/useGroups';
 import { useDebug } from '../../../hooks/useDebug';
 import { useDashboardDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
 
 import { ROUTES } from '../../routes';
-import { db } from '../../../lib/firebase/firestore';
-import { auth } from '../../../lib/firebase/auth';
-import TabGroup from '../../../features/groups/components/TabGroup';
-import SmallButton from '../../../components/buttons/SmallButton';
-import { Group } from '../../../features/groups/types';
-import { useQuery } from '@tanstack/react-query';
+import GroupCard from '../../../features/groups/components/GroupCard';
+import Panel from '../../../components/neubrutalist/Panel';
 
 const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
@@ -46,18 +40,24 @@ const Dashboard = memo(function Dashboard() {
 
   return (
     <>
-      <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
-        <main className="flex flex-col items-start gap-8">
-          <section className="flex flex-col items-start gap-3">
-            <h1 className="font-noto-sans text-sand text-left text-4xl font-medium">Debts Clear!</h1>
+      <div className="relative w-dvw shrink-0 flex-col p-3">
+        <main className="flex flex-col items-start">
+          <section className="border-wheat-400 mb-8 flex w-full flex-col items-start gap-3 border-b-1 border-dashed pb-8">
+            <h1 className="font-gieonto text-left text-4xl font-medium">Debts Clear!</h1>
             <p className="text-xl font-light">No outstanding balance</p>
           </section>
           <section className="w-full">
-            <div className="mb-4 flex flex-row gap-2">
-              <p className="font-normal">Groups</p>
-              <SmallButton onClick={handleAddGroupClicked}>
+            <div className="mb-4 flex flex-row items-center gap-2">
+              <h2 className="text-xl">Groups</h2>
+              <Panel
+                onClick={handleAddGroupClicked}
+                dropOnClick={true}
+                padding="px-3 py-0.5"
+                bgColor="bg-accent-600"
+                className="text-white"
+              >
                 <PlusIcon />
-              </SmallButton>
+              </Panel>
             </div>
             <div className="flex flex-col gap-2">
               {loading ? (
@@ -68,18 +68,8 @@ const Dashboard = memo(function Dashboard() {
                 <>
                   {groups?.map((doc) => {
                     const docData = doc.data()!;
-                    return <TabGroup key={doc.id} id={doc.id} group={docData} />;
+                    return <GroupCard key={doc.id} id={doc.id} group={docData} />;
                   })}
-                  <div className="border-charcoal-700 flex w-full cursor-pointer flex-col gap-2 rounded-xl border-1 p-1">
-                    <div className="text-sand flex flex-row items-center justify-between px-2">
-                      <p className="font-medium">Non Grouped Expenses</p>
-                    </div>
-                    <div className="bg-charcoal-500 flex w-full flex-row justify-between gap-2 rounded-lg p-2">
-                      <div className="bg-accent-200 w-2 rounded-xs" />
-                      <p className="grow-1 text-left">You Owe</p>
-                      <p className="font-noto-sans text-accent-200">PHP 4,260.00</p>
-                    </div>
-                  </div>
                 </>
               )}
             </div>

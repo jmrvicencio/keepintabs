@@ -41,6 +41,7 @@ const Panel = ({
       onPointerUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onTouchMove={handleMouseUp}
+      onClick={handleClick}
     >
       <div
         className={`${pressed && 'pressed'} ${bgColor || 'bg-white'} ${padding || 'p-2'} ${className} ${rounded || 'rounded-2xl'} border-ink-800 relative z-1 border-1 transition-transform [.pressed]:translate-0.5`}

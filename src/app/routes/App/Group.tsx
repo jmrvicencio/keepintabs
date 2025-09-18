@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useRef, ReactNode, RefObject } from 'react';
+import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo } from 'react';
 import useGroupListener from '../../../features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
@@ -14,6 +14,8 @@ import { ROUTES } from '../../routes';
 import { useGroupDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
 import Panel from '../../../components/neubrutalist/Panel';
 import PanelButton from '../../../components/neubrutalist/PanelButton';
+import { MainContentRefAtom } from '../../../store/mainArea';
+import { useAtom } from 'jotai';
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
@@ -28,8 +30,9 @@ const Group = memo(function Group() {
   const [showGroupMenu, setShowGroupMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuRect = menuRef.current?.getBoundingClientRect();
+  const [mainContentRef] = useAtom(MainContentRefAtom);
 
-  const records = getSimplifiedBalance(group?.data());
+  const records = useMemo(() => getSimplifiedBalance(group?.data()), [group]);
   const userBalance = {
     total: getTotalFromSimplified(userData?.groupUid, records),
     records,
@@ -48,7 +51,7 @@ const Group = memo(function Group() {
           <div
             className="absolute h-10 w-10 border-1 border-red-500 bg-amber-800"
             style={{
-              top: (menuRect?.bottom ?? 0) + window.pageYOffset,
+              top: (menuRect?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
               right: window.innerWidth - (menuRect?.right ?? 0),
             }}
           ></div>
@@ -149,11 +152,11 @@ const Group = memo(function Group() {
             </div>
           </section>
         </main>
-        <FAB onClick={handleAddClicked}>
-          <PlusMemo />
-          Add Transaction
-        </FAB>
       </div>
+      {/* <FAB onClick={handleAddClicked}>
+        <PlusMemo />
+        Add Transaction
+      </FAB> */}
     </>
   );
 });
@@ -185,7 +188,7 @@ const GroupInfo = ({
         </Link>
         <div className="mb-4 flex w-full flex-row items-center justify-between" ref={ref}>
           <h1 className="font-gieonto text-left text-4xl font-medium">{groupData?.name}</h1>
-          <div className="p1 bg-wheat-200 rounded-sm">
+          <div className="p1 border-wheat-400 flex h-8 w-8 items-center justify-center rounded-lg border-1">
             <MenuMemo />
           </div>
         </div>
@@ -243,14 +246,6 @@ const FAB = memo(({ onClick: handleClicked, children }: { onClick: () => void; c
         {children}
       </PanelButton>
     </div>
-    // <div className="border-wheat-200 fixed bottom-6 left-1/2 z-5 -translate-x-1/2 rounded-full border-4">
-    //   <div
-    //     className="bg-accent-400 m-auto flex cursor-pointer flex-row items-center justify-center rounded-full border-2 border-black px-3 py-2 text-white"
-    //     onClick={handleClicked}
-    //   >
-    //     {children}
-    //   </div>
-    // </div>
   );
 });
 
