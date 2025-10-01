@@ -98,7 +98,7 @@ const NewGroup = () => {
   return submitting ? (
     <Loading />
   ) : (
-    <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
+    <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
       <main className="flex w-full flex-col">
         <div className="mb-4 flex w-full flex-row justify-between">
           <Link to={ROUTES.APP} className="left-0 cursor-pointer">

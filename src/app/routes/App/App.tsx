@@ -39,25 +39,24 @@ function App() {
   };
 
   const Overlay = memo(() => (
-    <div onClick={() => setShowSidebar(false)} className="fixed inset-0 z-10 h-full bg-[#2F231D]/80"></div>
+    <div onClick={() => setShowSidebar(false)} className="fixed inset-0 z-10 h-full bg-[#2F231D]/80 md:hidden"></div>
   ));
 
   return (
     <ProtectedRoute>
       <div
-        className="bg-wheat-200 text-ink-800 font-outfit relative z-0 flex h-dvh w-full justify-end overflow-x-hidden overflow-y-auto"
+        className="bg-wheat-200 text-ink-800 font-outfit relative z-0 flex h-dvh w-full justify-end overflow-x-hidden overflow-y-auto md:justify-center"
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
         <Debug showDebug={showDebug} />
-        <div className={`${showSidebar && 'sidebar'} relative h-full min-w-full`}>
+        {/* This is the main container for the website */}
+        <div className={`relative h-full w-dvw md:w-full md:max-w-190`}>
           {showSidebar && <Overlay />}
           <div
             ref={mainContentRef}
-            className={`${showSidebar && 'sidebar'} relative flex h-full w-full flex-col overflow-y-auto [.sidebar]:overflow-y-hidden`}
+            className={`${showSidebar && 'sidebar'} relative flex h-full w-full flex-col overflow-y-auto md:h-fit not-md:[.sidebar]:overflow-y-hidden`}
           >
-            <div className="absolute inset-0 z-[-1] bg-[url(/bg/bg_pattern.png)] select-none" />
-            <div className="absolute top-0 right-0 z-[-1] aspect-square h-50 bg-[url(/bg/bg_top.svg)] bg-contain bg-top-right bg-no-repeat" />
             <Header />
             <Outlet />
           </div>
@@ -68,8 +67,10 @@ function App() {
             </FAB>
           )}
         </div>
+
+        <div className="absolute inset-0 z-[-1] bg-[url(/bg/bg_pattern.png)] select-none" />
+        <div className="absolute top-0 right-0 z-[-1] aspect-square h-50 bg-[url(/bg/bg_top.svg)] bg-contain bg-top-right bg-no-repeat" />
         <Sidebar />
-        {/* <div className="fixed bottom-0 left-0 z-[-1] aspect-square h-50 bg-[url(/bg/bg_bottom.svg)] bg-contain bg-bottom-left bg-no-repeat" /> */}
       </div>
     </ProtectedRoute>
   );

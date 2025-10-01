@@ -41,7 +41,7 @@ const Dashboard = memo(function Dashboard() {
 
   return (
     <>
-      <div className="relative min-h-full w-dvw shrink-0 flex-col p-3">
+      <div className="relative w-dvw shrink-0 grow-1 flex-col p-3 md:w-full">
         <main className="flex min-h-full flex-col items-start">
           <section className="border-wheat-400 mb-8 flex w-full flex-col items-start gap-3 border-b-1 border-dashed pb-8">
             <h1 className="font-gieonto text-left text-4xl font-medium">Debts Clear!</h1>
@@ -68,7 +68,7 @@ const Dashboard = memo(function Dashboard() {
                 ))
               ) : groups.length == 0 ? (
                 // Show this graphic if groups are empty
-                <div className="text-leather-700 flex h-full grow-1 flex-col items-center justify-center pb-31">
+                <div className="text-leather-700 flex h-full grow-1 flex-col items-center justify-center pb-16">
                   <img className="w-48" src={emptyImg} />
                   <h3 className="mt-2 text-lg font-bold">No Groups Yet!</h3>
                   <p>Add one now to get started</p>
