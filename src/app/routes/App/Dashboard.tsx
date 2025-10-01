@@ -8,6 +8,7 @@ import { useDashboardDebugOptions } from '../../../features/groups/utils/debugge
 import { ROUTES } from '../../routes';
 import GroupCard from '../../../features/groups/components/GroupCard';
 import Panel from '../../../components/neubrutalist/Panel';
+import emptyImg from '/img/empty.svg';
 
 const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
@@ -40,13 +41,13 @@ const Dashboard = memo(function Dashboard() {
 
   return (
     <>
-      <div className="relative w-dvw shrink-0 flex-col p-3">
-        <main className="flex flex-col items-start">
+      <div className="relative min-h-full w-dvw shrink-0 flex-col p-3">
+        <main className="flex min-h-full flex-col items-start">
           <section className="border-wheat-400 mb-8 flex w-full flex-col items-start gap-3 border-b-1 border-dashed pb-8">
             <h1 className="font-gieonto text-left text-4xl font-medium">Debts Clear!</h1>
             <p className="text-xl font-light">No outstanding balance</p>
           </section>
-          <section className="w-full">
+          <section className="flex w-full grow-1 flex-col">
             <div className="mb-4 flex flex-row items-center gap-2">
               <h2 className="text-xl">Groups</h2>
               <Panel
@@ -59,18 +60,24 @@ const Dashboard = memo(function Dashboard() {
                 <PlusIcon />
               </Panel>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex grow flex-col gap-2">
               {loading ? (
+                // Show placeholder divs when data is loading
                 [...Array(5)].map((_, i) => (
                   <div key={i} className="bg-wheat-400 h-22 w-full animate-pulse cursor-pointer rounded-xl" />
                 ))
+              ) : groups.length == 0 ? (
+                // Show this graphic if groups are empty
+                <div className="text-leather-700 flex h-full grow-1 flex-col items-center justify-center pb-31">
+                  <img className="w-48" src={emptyImg} />
+                  <h3 className="mt-2 text-lg font-bold">No Groups Yet!</h3>
+                  <p>Add one now to get started</p>
+                </div>
               ) : (
-                <>
-                  {groups?.map((doc) => {
-                    const docData = doc.data()!;
-                    return <GroupCard key={doc.id} id={doc.id} group={docData} />;
-                  })}
-                </>
+                groups?.map((doc) => {
+                  const docData = doc.data()!;
+                  return <GroupCard key={doc.id} id={doc.id} group={docData} />;
+                })
               )}
             </div>
           </section>
