@@ -47,12 +47,13 @@
   --color-wheat-200: #faf4ea;
   --color-wheat-400: #d4beb0;
 
+  --color-ink-300: #a8a7a1;
   --color-ink-800: #272622;
 }
 
 @layer base {
   ::selection {
-    @apply bg-cream text-black;
+    @apply bg-accent-200 text-black;
   }
 }
 

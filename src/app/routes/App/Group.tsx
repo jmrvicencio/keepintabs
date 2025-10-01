@@ -6,6 +6,8 @@ import {
   getTotalFromSimplified,
   type SimplifiedBalance,
 } from '../../../features/groups/utils/balance';
+import { MainContentRefAtom } from '../../../store/mainArea';
+import { useAtom } from 'jotai';
 
 import { type Group } from '../../../features/groups/types';
 import { Menu, Plus, ArrowLeft } from 'lucide-react';
@@ -14,8 +16,7 @@ import { ROUTES } from '../../routes';
 import { useGroupDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
 import Panel from '../../../components/neubrutalist/Panel';
 import PanelButton from '../../../components/neubrutalist/PanelButton';
-import { MainContentRefAtom } from '../../../store/mainArea';
-import { useAtom } from 'jotai';
+import UserIcon from '../../../components/user_stack/UserIcon';
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
@@ -179,13 +180,21 @@ const GroupInfo = ({
   return (
     <section className="border-wheat-400 mx-3 flex grow-1 flex-col items-start gap-2 border-b-1 border-dashed pb-8">
       <div className="w-full">
-        <Link to={ROUTES.APP}>
-          <div className="text-ink-800 pointer-cursor mb-4 flex flex-row items-center gap-2 text-lg font-normal">
+        <div className="text-ink-800 pointer-cursor mb-4 flex flex-row items-center justify-between gap-2 text-lg font-normal">
+          <Link to={ROUTES.APP}>
             <Panel bgColor="bg-accent-200" dropOnClick={true}>
               <ArrowLeft className="text-ink-800" />
             </Panel>
+          </Link>
+          <div className="border-wheat-400 bg-wheat-200 flex flex-row items-center gap-2 rounded-full border-1 px-2 py-1">
+            <p className="ml-1">{Object.keys(groupData?.members ?? {}).length}</p>
+            <div className="flex flex-row">
+              <UserIcon bgColor="bg-wheat-400" border="border-wheat-200" />
+              <UserIcon bgColor="bg-wheat-400" border="border-wheat-200" />
+              <UserIcon bgColor="bg-wheat-400" border="border-wheat-200" />
+            </div>
           </div>
-        </Link>
+        </div>
         <div className="mb-4 flex w-full flex-row items-center justify-between" ref={ref}>
           <h1 className="font-gieonto text-left text-4xl font-medium">{groupData?.name}</h1>
           <div className="p1 border-wheat-400 flex h-8 w-8 items-center justify-center rounded-lg border-1">

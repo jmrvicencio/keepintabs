@@ -62,7 +62,7 @@ const Dashboard = memo(function Dashboard() {
             <div className="flex flex-col gap-2">
               {loading ? (
                 [...Array(5)].map((_, i) => (
-                  <div key={i} className="bg-charcoal-500 h-22 w-full animate-pulse cursor-pointer rounded-xl" />
+                  <div key={i} className="bg-wheat-400 h-22 w-full animate-pulse cursor-pointer rounded-xl" />
                 ))
               ) : (
                 <>

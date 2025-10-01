@@ -1,4 +1,4 @@
-import { useReducer, useState, type ReactNode } from 'react';
+import { useEffect, useReducer, useState, type ReactNode } from 'react';
 
 const Panel = ({
   children,
@@ -9,6 +9,7 @@ const Panel = ({
   wallColor,
   dropOnClick = false,
   className = '',
+  inactive = false,
 }: {
   children?: ReactNode;
   onClick?: () => any;
@@ -18,8 +19,13 @@ const Panel = ({
   className?: string;
   wallColor?: string;
   dropOnClick?: boolean;
+  inactive?: boolean;
 }) => {
   const [pressed, setPressed] = useState(false);
+
+  useEffect(() => {
+    setPressed(inactive);
+  }, [inactive]);
 
   const handleMouseDown = (e: any) => {
     if (dropOnClick) {
@@ -29,7 +35,15 @@ const Panel = ({
   };
 
   const handleMouseUp = () => {
-    setPressed(false);
+    if (!inactive) {
+      setPressed(false);
+    }
+  };
+
+  const handleClickWrapper = () => {
+    if (!inactive) {
+      handleClick();
+    }
   };
 
   return (
@@ -41,10 +55,10 @@ const Panel = ({
       onPointerUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onTouchMove={handleMouseUp}
-      onClick={handleClick}
+      onClick={handleClickWrapper}
     >
       <div
-        className={`${pressed && 'pressed'} ${bgColor || 'bg-white'} ${padding || 'p-2'} ${className} ${rounded || 'rounded-2xl'} border-ink-800 relative z-1 border-1 transition-transform [.pressed]:translate-0.5`}
+        className={`${inactive && 'inactive'} ${pressed && 'pressed'} ${bgColor || 'bg-white'} ${padding || 'p-2'} ${className} ${rounded || 'rounded-2xl'} border-ink-800 relative z-1 border-1 transition-transform [.pressed]:translate-0.5`}
       >
         {children}
       </div>
