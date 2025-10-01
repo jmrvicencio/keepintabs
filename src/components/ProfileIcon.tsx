@@ -9,8 +9,8 @@ function ProfileIcon({ handleClick }: { handleClick: () => void }) {
           <div className="h-full w-full bg-cover" style={{ backgroundImage: `url(${auth.currentUser.photoURL})` }} />
         ) : (
           // <img src={auth.currentUser.photoURL as string} className="w-full" />
-          <div className="flex h-full w-full items-center justify-center p-0.5">
-            <UserIcon className="w-full" />
+          <div className="bg-accent-200 flex h-full w-full items-center justify-center p-0.5">
+            <UserIcon className="w-full stroke-white" />
           </div>
         )}
       </div>
