@@ -61,7 +61,7 @@ function App() {
             <Outlet />
           </div>
           {showFab && (
-            <FAB>
+            <FAB className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
               <PlusMemo />
               Add Transaction
             </FAB>

@@ -48,6 +48,8 @@ const Group = memo(function Group() {
   return (
     <>
       {showGroupMenu && (
+        // TODO: popup component should be a component placed at the most parent element, so the
+        // displayed element will still align with the screen position.
         <PopupOverlay setShowSelf={setShowGroupMenu}>
           <div
             className="absolute h-10 w-10 border-1 border-red-500 bg-amber-800"

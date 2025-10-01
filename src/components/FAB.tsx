@@ -4,13 +4,15 @@ import PanelButton from './neubrutalist/PanelButton';
 const FAB = memo(
   ({
     onClick: handleClicked = (e: MouseEvent) => {},
+    className,
     children,
   }: {
     onClick?: (e: MouseEvent) => any;
+    className?: string;
     children: ReactNode;
   }) => {
     return (
-      <div className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
+      <div className={className}>
         <PanelButton
           onClick={handleClicked}
           className="flex flex-row text-white"
