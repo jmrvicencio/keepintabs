@@ -11,7 +11,7 @@ const Header = memo(function Header() {
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
 
-  const ProfileIconMemo = memo(() => <ProfileIcon handleClick={() => setShowSidebar(true)} />);
+  const ProfileIconMemo = memo(() => <ProfileIcon className="md:hidden" handleClick={() => setShowSidebar(true)} />);
 
   const handleLogoClick = () => {
     navigate(ROUTES.APP);

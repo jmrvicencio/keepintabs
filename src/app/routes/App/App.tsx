@@ -1,5 +1,5 @@
-import { KeyboardEvent, useState, memo, useEffect, useRef } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { KeyboardEvent, useState, memo, useEffect, useRef, type MouseEvent } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { atom, useAtom } from 'jotai';
 
 import { showSidebarAtom } from '../../../components/sidebar/Sidebar';
@@ -15,6 +15,7 @@ import { ROUTES } from '../../routes';
 export const dataFetchedAtom = atom(false);
 
 function App() {
+  const navigate = useNavigate();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [_, setMainContentRef] = useAtom(MainContentRefAtom);
   const [showDebug, setShowDebug] = useState(false);
@@ -36,6 +37,10 @@ function App() {
     if (e.key === '`') {
       setShowDebug(!showDebug);
     }
+  };
+
+  const handleFabClicked = (e: MouseEvent) => {
+    navigate(ROUTES.NEW_TRANSACTION);
   };
 
   const Overlay = memo(() => (
@@ -61,7 +66,7 @@ function App() {
             <Outlet />
           </div>
           {showFab && (
-            <FAB className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
+            <FAB className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2" onClick={handleFabClicked}>
               <PlusMemo />
               Add Transaction
             </FAB>

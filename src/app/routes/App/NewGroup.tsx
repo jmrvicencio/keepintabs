@@ -182,6 +182,7 @@ const NewGroup = () => {
           </form>
           <div className="mt-6 flex flex-col gap-2">
             {members.map((member, i) => (
+              // Mmebers to be added to the group
               <div className="rounded-lg border-1 bg-white p-2">
                 <AddedUser
                   key={i}

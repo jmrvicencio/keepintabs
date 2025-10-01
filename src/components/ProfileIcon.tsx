@@ -1,9 +1,9 @@
 import { auth } from '../lib/firebase/auth';
 import { User as UserIcon } from 'lucide-react';
 
-function ProfileIcon({ handleClick }: { handleClick: () => void }) {
+function ProfileIcon({ handleClick, className }: { handleClick: () => void; className: string }) {
   return (
-    <div className="relative h-7 w-7 cursor-pointer" onClick={handleClick}>
+    <div className={'relative h-7 w-7 cursor-pointer ' + className} onClick={handleClick}>
       <div className="h-full w-full overflow-clip rounded-md border-1 bg-white">
         {auth.currentUser && auth.currentUser.photoURL ? (
           <div className="h-full w-full bg-cover" style={{ backgroundImage: `url(${auth.currentUser.photoURL})` }} />
