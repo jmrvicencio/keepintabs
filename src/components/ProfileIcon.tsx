@@ -4,13 +4,13 @@ import { User as UserIcon } from 'lucide-react';
 function ProfileIcon({ handleClick }: { handleClick: () => void }) {
   return (
     <div className="relative h-7 w-7 cursor-pointer" onClick={handleClick}>
-      <div className="h-full w-full overflow-clip rounded-md border-1">
+      <div className="h-full w-full overflow-clip rounded-md border-1 bg-white">
         {auth.currentUser && auth.currentUser.photoURL ? (
           <div className="h-full w-full bg-cover" style={{ backgroundImage: `url(${auth.currentUser.photoURL})` }} />
         ) : (
           // <img src={auth.currentUser.photoURL as string} className="w-full" />
           <div className="flex h-full w-full items-center justify-center p-0.5">
-            <UserIcon className="w-full" />
+            <UserIcon className="text-ink-800/70 w-full" />
           </div>
         )}
       </div>

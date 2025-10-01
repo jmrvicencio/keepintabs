@@ -8,6 +8,7 @@ import { Member } from '../../../features/groups/types';
 import { auth } from '../../../lib/firebase/auth';
 import useAddGroup from '../../../features/groups/hooks/useAddGroup';
 import Loading from '../../../components/Loading';
+import Panel from '../../../components/neubrutalist/Panel';
 
 const NewGroup = () => {
   const navigate = useNavigate();
@@ -99,22 +100,27 @@ const NewGroup = () => {
   ) : (
     <div className="relative flex w-dvw shrink-0 flex-col gap-8 p-3">
       <main className="flex w-full flex-col">
-        <div className="relative mb-4 w-full">
-          <Link to={ROUTES.APP} className="absolute left-0 cursor-pointer">
-            <p className="text-accent-200 flex flex-row">
-              <ChevronLeft />
+        <div className="mb-4 flex w-full flex-row justify-between">
+          <Link to={ROUTES.APP} className="left-0 cursor-pointer">
+            <Panel bgColor="bg-accent-200" className="text-ink-800 flex flex-row" dropOnClick={true}>
               Cancel
-            </p>
+            </Panel>
           </Link>
-          <div className="absolute right-0 cursor-pointer" onClick={handleDoneClicked}>
-            <p className="text-accent-200 flex flex-row">Done</p>
+          <div className="right-0 cursor-pointer">
+            <Panel
+              onClick={handleDoneClicked}
+              bgColor="bg-accent-200"
+              className="text-ink-800 flex flex-row"
+              dropOnClick={true}
+            >
+              Done
+            </Panel>
           </div>
-
-          <h1 className="font-medium">Create Group</h1>
         </div>
+        <h1 className="font-gieonto mt-4 text-left text-4xl font-medium">Create Group</h1>
         <form onSubmit={handleGroupNameSubmitted}>
-          <div className="relative mx-2">
-            <div className="text-cream/70 flex items-baseline justify-between py-2">
+          <div className="relative">
+            <div className="flex items-baseline justify-between py-2">
               <label htmlFor="name">Group Name</label>
               <p className="text-xs">{groupName.length}/32</p>
             </div>
@@ -122,7 +128,7 @@ const NewGroup = () => {
               id="name"
               type="text"
               autoComplete="off"
-              className={`${nameError && 'error'} peer [.error]:border-error border-charcoal-300 bg-charcoal-300/20 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border-1 px-2 py-1 focus:outline-2`}
+              className={`${nameError && 'error'} peer [.error]:border-error border-charcoal-300 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border-1 bg-white px-2 py-1 focus:outline-2`}
               placeholder={nameError ? 'Group name is required' : 'Group Name'}
               maxLength={32}
               value={groupName}
@@ -131,9 +137,9 @@ const NewGroup = () => {
             />
           </div>
         </form>
-        <div className="relative m-4 mx-2 pt-2 text-left">
+        <div className="relative my-4 pt-2 text-left">
           <h2 className="font-bold">Add Members</h2>
-          <p className="text-cream/70 mb-2 text-sm">User will get a notification if the account exists</p>
+          <p className="mb-2 text-sm">User will get a notification if the account exists</p>
           <form
             method="submit"
             onSubmit={handleUserSubmit}
@@ -145,7 +151,7 @@ const NewGroup = () => {
               <input
                 id="name"
                 type="text"
-                className="border-charcoal-300 bg-charcoal-300/20 focus:outline-accent-400/60 w-0 grow-2 rounded-md border-1 px-2 py-1 focus:outline-2"
+                className="border-charcoal-300 focus:outline-accent-400/60 w-0 grow-2 rounded-md border-1 bg-white px-2 py-1 focus:outline-2"
                 placeholder="Name"
                 value={inviteName}
                 onChange={handleInviteNameChange}
@@ -154,7 +160,7 @@ const NewGroup = () => {
                 id="email"
                 ref={addEmailRef}
                 type="email"
-                className="border-charcoal-300 bg-charcoal-300/20 focus:outline-accent-400/60 w-0 grow-3 rounded-md border-1 px-2 py-1 not-focus:invalid:border-red-500 focus:outline-2"
+                className="border-charcoal-300 focus:outline-accent-400/60 w-0 grow-3 rounded-md border-1 bg-white px-2 py-1 not-focus:invalid:border-red-500 focus:outline-2"
                 placeholder="Email (optional)"
                 value={inviteEmail}
                 onChange={handleInviteEmailChange}
@@ -163,13 +169,20 @@ const NewGroup = () => {
             </div>
 
             <button style={{ display: 'none' }} type="submit" />
-            <SmallButton inactive={inviteName != '' ? false : true} onClick={handleAddMember}>
-              Add Member
-            </SmallButton>
+            <div className="w-fit">
+              <Panel
+                bgColor="bg-accent-200 [.inactive]:bg-ink-300"
+                padding="px-2 py-0.5"
+                inactive={inviteName == ''}
+                onClick={handleAddMember}
+              >
+                Add Member
+              </Panel>
+            </div>
           </form>
-          {members.length > 0 && (
-            <div className="border-charcoal-300 mt-6 rounded-lg border-1 p-2">
-              {members.map((member, i) => (
+          <div className="mt-6 flex flex-col gap-2">
+            {members.map((member, i) => (
+              <div className="rounded-lg border-1 bg-white p-2">
                 <AddedUser
                   key={i}
                   id={i}
@@ -180,9 +193,9 @@ const NewGroup = () => {
                   setMembers={setMembers}
                   findMembers={findMembers}
                 />
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>
@@ -257,15 +270,15 @@ const AddedUser = ({
   };
 
   return (
-    <div className="border-charcoal-300/30 flex flex-row items-center gap-3 not-first:mt-2 not-first:border-t-1 not-first:pt-4">
-      <UserRound className="text-cream/60 h-5 w-5" />
+    <div className="border-ink-800 flex flex-row items-center gap-3 not-first:mt-2 not-first:border-t-1 not-first:pt-4">
+      <UserRound className="h-5 w-5" />
       <div className="flex grow-1 flex-col">
         {editName ? (
           <form onSubmit={handleSubmit}>
             <input
               type="text"
               value={input}
-              className="focus:outline-accent-400/60 bg-charcoal-300/20 w-full rounded-md px-2 outline-0 focus:outline-2"
+              className="focus:outline-accent-400/60 w-full rounded-md bg-white px-2 outline-0 focus:outline-2"
               onBlur={handleBlur}
               onChange={handleChange}
               autoFocus
@@ -289,7 +302,7 @@ const AddedUser = ({
               ref={emailInputRef}
               type="email"
               value={input}
-              className="focus:outline-accent-400/60 bg-charcoal-300/20 w-full rounded-md px-2 outline-0 focus:outline-2"
+              className="focus:outline-accent-400/60 w-full rounded-md bg-white px-2 outline-0 focus:outline-2"
               onBlur={handleEmailBlur}
               onChange={handleChange}
               autoFocus
@@ -297,7 +310,7 @@ const AddedUser = ({
           </form>
         ) : (
           <p
-            className="text-cream/70 cursor-pointer"
+            className="text-ink-800/80 cursor-pointer"
             onClick={() => {
               setEditEmail(true);
               setEditName(false);

@@ -11,7 +11,7 @@ const GroupCard = memo(function TabGroup({ id, group }: { id: string; group: Gro
   const navigate = useNavigate();
 
   const memberCount = Object.keys(group.members).length;
-  const memberCountLabel = `${memberCount} Member${memberCount < 1 ? 's' : ''}`;
+  const memberCountLabel = `${memberCount} Member${memberCount > 1 ? 's' : ''}`;
 
   const handleGroupClicked = () => {
     navigate(getGroupRoute(id));

@@ -10,6 +10,7 @@ import Debug from '../../../components/Debug';
 import FAB from '../../../components/FAB';
 import { Plus } from 'lucide-react';
 import { MainContentRefAtom } from '../../../store/mainArea';
+import { ROUTES } from '../../routes';
 
 export const dataFetchedAtom = atom(false);
 
@@ -21,6 +22,7 @@ function App() {
 
   const location = useLocation();
   const PlusMemo = memo(() => <Plus />);
+  const showFab = location.pathname != ROUTES.NEW_GROUP;
 
   useEffect(() => {
     setMainContentRef(mainContentRef);
@@ -59,10 +61,12 @@ function App() {
             <Header />
             <Outlet />
           </div>
-          <FAB>
-            <PlusMemo />
-            Add Transaction
-          </FAB>
+          {showFab && (
+            <FAB>
+              <PlusMemo />
+              Add Transaction
+            </FAB>
+          )}
         </div>
         <Sidebar />
         {/* <div className="fixed bottom-0 left-0 z-[-1] aspect-square h-50 bg-[url(/bg/bg_bottom.svg)] bg-contain bg-bottom-left bg-no-repeat" /> */}
