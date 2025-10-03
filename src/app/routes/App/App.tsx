@@ -66,7 +66,7 @@ function App() {
             <Outlet />
           </div>
           {showFab && (
-            <FAB className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2" onClick={handleFabClicked}>
+            <FAB className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden" onClick={handleFabClicked}>
               <PlusMemo />
               Add Transaction
             </FAB>
