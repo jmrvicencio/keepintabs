@@ -56,7 +56,7 @@ function App() {
       >
         <Debug showDebug={showDebug} />
         {/* This is the main container for the website */}
-        <div className={`relative h-full w-dvw md:w-full md:max-w-190`}>
+        <div className={`relative h-full min-w-dvw md:w-full md:max-w-190 md:min-w-0`}>
           {showSidebar && <Overlay />}
           <div
             ref={mainContentRef}

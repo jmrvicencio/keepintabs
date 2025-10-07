@@ -31,6 +31,7 @@
   --color-charcoal-600: #282722;
   --color-charcoal-500: #35342e;
   --color-charcoal-300: #57564d;
+  --color-charcoal-200: #afaea5;
 
   --color-shell-300: #cac3ad;
   --color-shell-100: #efe7d2;
@@ -48,6 +49,7 @@
   --color-wheat-400: #d4beb0;
 
   --color-ink-300: #a8a7a1;
+  --color-ink-400: #84837b;
   --color-ink-800: #272622;
 }
 
