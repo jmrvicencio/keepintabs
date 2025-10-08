@@ -46,7 +46,6 @@ export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
     window.addEventListener('focus', onFocus);
 
     return () => {
-      console.log('remove listener');
       window.removeEventListener('focus', onFocus);
     };
   }, [dataFetched]);
