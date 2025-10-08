@@ -31,7 +31,7 @@ const useGroupListener = (groupId: string = '') => {
 
             for (const [memberUid, val] of memberEntries) {
               const memberData = val as Member;
-              if (memberData.linkedUid == auth.currentUser?.uid) {
+              if (memberData.linkedUid == auth.currentUser!.uid) {
                 memberData.groupUid = memberUid;
                 setUserData(memberData);
                 break;

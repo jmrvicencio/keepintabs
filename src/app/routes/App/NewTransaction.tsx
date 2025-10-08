@@ -1,14 +1,35 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 
 import Panel from '../../../components/neubrutalist/Panel';
 import PanelButton from '../../../components/neubrutalist/PanelButton';
+import { useGroups } from '../../../features/groups/hooks/useGroups';
 
 const NewTransaction = () => {
+  const { groups, loading } = useGroups();
+  const location = useLocation();
   const [total, setTotal] = useState('4,231.00');
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [groupId, setGroupId] = useState(location.state?.groupId);
+  const [groupName, setGroupName] = useState(' ');
+
+  // Retrieve the group name transaction came from
+  // If there is no groupId, get the first group from group list.j
+  useEffect(() => {
+    let currGroupId: string = groupId;
+    if (loading) return;
+
+    if (groupId == null) {
+      const firstGroup = groups[0];
+      setGroupId(firstGroup.id);
+      currGroupId = firstGroup.id;
+      console.log('group id: ', firstGroup.id);
+    }
+
+    const currGroup = groups.find((group) => group.id == currGroupId);
+    setGroupName(currGroup!.data()!.name);
+  }, [loading]);
 
   return (
     <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
@@ -80,6 +101,26 @@ const NewTransaction = () => {
                   value={total}
                   autoFocus
                 />
+              </div>
+            </div>
+            <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">
+              <div className="flex flex-row justify-between">
+                <label htmlFor="description" className="text-ink-400 text-sm font-light">
+                  Group:
+                </label>
+                <button type="button" className="border-ink-400 rounded-md border-1 px-3 py-0.5">
+                  {groupName}
+                </button>
+              </div>
+            </div>
+            <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">
+              <div className="flex flex-row items-center justify-between">
+                <label htmlFor="description" className="text-ink-400 text-sm font-light">
+                  Split Type:
+                </label>
+                <button type="button" className="border-ink-400 rounded-md border-1 px-3 py-0.5">
+                  Itemized
+                </button>
               </div>
             </div>
           </div>

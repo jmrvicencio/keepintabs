@@ -1,5 +1,5 @@
 import { KeyboardEvent, useState, memo, useEffect, useRef, type MouseEvent } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { atom, useAtom } from 'jotai';
 
 import { showSidebarAtom } from '../../../components/sidebar/Sidebar';
@@ -20,6 +20,7 @@ function App() {
   const [_, setMainContentRef] = useAtom(MainContentRefAtom);
   const [showDebug, setShowDebug] = useState(false);
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
+  const { group: groupParam } = useParams();
 
   const location = useLocation();
   const PlusMemo = memo(() => <Plus />);
@@ -40,7 +41,7 @@ function App() {
   };
 
   const handleFabClicked = (e: MouseEvent) => {
-    navigate(ROUTES.NEW_TRANSACTION);
+    navigate(ROUTES.NEW_TRANSACTION, { state: { groupId: groupParam } });
   };
 
   const Overlay = memo(() => (

@@ -56,6 +56,10 @@ export function getSimplifiedBalance(group?: Group): SimplifiedBalance {
   return simplified;
 }
 
+/**
+ * Checks through a simplified balance and returns the total that a user owes.
+ * user is defined by using their uid.
+ */
 export function getTotalFromSimplified(
   uid: UserGroupUid | null | undefined,
   balance: SimplifiedBalance | null | undefined,
