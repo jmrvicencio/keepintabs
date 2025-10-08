@@ -36,6 +36,8 @@ export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
   const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
 
   useEffect(() => {
+    // Everytime the window is focused (Alt+Tabbed) Check if the data is stale
+    // so it can be refetched if it is.
     const onFocus = () => {
       const isStale = Date.now() - dataFetched.fetchedAt > dataFetched.staleTime;
       if (isStale) {
@@ -54,16 +56,18 @@ export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
     fetchGroups();
   }, [refetch]);
 
+  // Fetches and assigns all groups a member is part of to groupSnap.
+  // Returns cached data if the last time fetched is not yet stale.
   async function fetchGroups() {
     try {
+      let groupsSnap: QuerySnapshot<Group>;
+      const isStale = Date.now() - dataFetched.fetchedAt > dataFetched.staleTime;
       const q = query(
         collection(db, 'groups') as CollectionReference<Group>,
         where('memberUids', 'array-contains', auth.currentUser!.uid),
         orderBy('createdAt'),
       );
-      let groupsSnap: QuerySnapshot<Group>;
 
-      const isStale = Date.now() - dataFetched.fetchedAt > dataFetched.staleTime;
       if (dataFetched.fetched && !isStale) {
         groupsSnap = await getDocsFromCache(q);
       } else {
