@@ -1,21 +1,28 @@
 import { memo, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
-import { atom, useAtom } from 'jotai';
+import { atom, useAtom, useSetAtom } from 'jotai';
 
 import { auth } from '../../lib/firebase/auth';
-import { dataFetchedAtom } from '../../app/routes/App/App';
+import { dataFetchedAtom, type DataFetched } from '../../features/groups/stores/dataFetched';
 import { ROUTES } from '../../app/routes';
 import { Plus } from 'lucide-react';
 import FAB from '../FAB';
 
 export const showSidebarAtom = atom(false);
+const writeDataFetchedAtom = atom(null, (_get, set, fetched: boolean) => {
+  set(dataFetchedAtom, (dataFetched: DataFetched) => {
+    const newDataFetched = { ...dataFetched };
+    newDataFetched.fetched = fetched;
+    return newDataFetched;
+  });
+});
 
 function Sidebar() {
   const navigate = useNavigate();
-  const [dataFetched, setDataFetched] = useAtom(dataFetchedAtom);
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
+  const setDataFetched = useSetAtom(writeDataFetchedAtom);
 
   const handleSignoutClick = () => {
     auth.signOut();
