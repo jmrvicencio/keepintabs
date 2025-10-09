@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useParams, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 
 import Panel from '../../../components/neubrutalist/Panel';
-import PanelButton from '../../../components/neubrutalist/PanelButton';
+import useDigitField from '../../../hooks/useDigitField';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
 
 const NewTransaction = () => {
   const { groups, loading } = useGroups();
   const location = useLocation();
-  const [total, setTotal] = useState('4,231.00');
+  const { value: total, handleChange: handleTotalChanged } = useDigitField();
   const [groupId, setGroupId] = useState(location.state?.groupId);
   const [groupName, setGroupName] = useState(' ');
 
@@ -24,7 +23,6 @@ const NewTransaction = () => {
       const firstGroup = groups[0];
       setGroupId(firstGroup.id);
       currGroupId = firstGroup.id;
-      console.log('group id: ', firstGroup.id);
     }
 
     const currGroup = groups.find((group) => group.id == currGroupId);
@@ -51,7 +49,7 @@ const NewTransaction = () => {
           <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
             <div className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
               <input
-                id="name"
+                id="total"
                 type="text"
                 autoComplete="off"
                 step="off"
@@ -59,12 +57,16 @@ const NewTransaction = () => {
                 inputMode="decimal"
                 className={`peer w-full rounded-md border-0 text-center text-4xl font-bold outline-none`}
                 maxLength={32}
+                onChange={handleTotalChanged}
                 value={total}
                 autoFocus
               />
-              <p className="text-ink-400 pr-2 text-sm font-light">
-                Total Amount <span className="font-bold">(PHP)</span>
-              </p>
+              <div className="flex flex-row">
+                <label htmlFor="total" className="text-ink-400 pr-2 text-sm font-light">
+                  Total Amount
+                </label>
+                <p className="font-bold">(PHP)</p>
+              </div>
             </div>
             <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">
               <p className="text-ink-400 mb-2 font-light">(Tap on items to edit)</p>
