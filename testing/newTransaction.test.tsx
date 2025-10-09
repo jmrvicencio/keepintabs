@@ -25,37 +25,41 @@ vi.mock('../src/features/groups/hooks/useGroups', () => ({
 }));
 
 const mockNavigate = vi.fn();
+const { mockUseLocation } = vi.hoisted(() => ({
+  mockUseLocation: vi.fn(),
+}));
 
 // Mock useLocation module
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
-    useLocation: () => ({
-      pathname: 'transactions/new',
-      search: '',
-      hash: '',
-      state: { groupId: 'abcd' },
-      key: '',
-    }),
+    useLocation: mockUseLocation,
     useNavigate: () => mockNavigate,
   };
 });
 
 import NewTransaction from '../src/app/routes/App/NewTransaction';
 
-beforeEach(() => {
-  const { container } = render(
-    <MemoryRouter initialEntries={['/transactions/new']}>
-      <Routes>
-        <Route path="/transactions/new" element={<NewTransaction />} />
-        <Route path={`${ROUTES.GROUPS}/abcd`} element={<p>we are in groups</p>} />
-      </Routes>
-    </MemoryRouter>,
-  );
-});
-
 describe('[New Transaction] [Unit] New Transaction Page', () => {
+  beforeEach(() => {
+    mockUseLocation.mockImplementation(() => ({
+      pathname: 'transactions/new',
+      search: '',
+      hash: '',
+      state: { groupId: 'abcd' },
+      key: '',
+    }));
+    const { container } = render(
+      <MemoryRouter initialEntries={['/transactions/new']}>
+        <Routes>
+          <Route path="/transactions/new" element={<NewTransaction />} />
+          <Route path={`${ROUTES.GROUPS}/abcd`} element={<p>we are in groups</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  });
+
   const user = userEvent.setup();
 
   it('Total inputs format respond and format correctly when typed into', async () => {
@@ -94,6 +98,31 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
   });
 
   it('Groups section displays the name of the current active group', async () => {
+    expect(screen.getByRole('button', { name: 'Test Group' })).toBeInTheDocument();
+  });
+});
+
+describe('[New Transaction] [Unit] New Transaction Page not passed a GroupId state', () => {
+  beforeEach(() => {
+    mockUseLocation.mockImplementation(() => ({
+      pathname: 'transactions/new',
+      search: '',
+      hash: '',
+      state: {},
+      key: '',
+    }));
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/transactions/new']}>
+        <Routes>
+          <Route path="/transactions/new" element={<NewTransaction />} />
+          <Route path={`${ROUTES.GROUPS}/abcd`} element={<p>we are in groups</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  });
+
+  it('Groups section displays the name of the first group it can find', async () => {
     expect(screen.getByRole('button', { name: 'Test Group' })).toBeInTheDocument();
   });
 });
