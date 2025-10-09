@@ -4,12 +4,14 @@ import { ROUTES } from '../../routes';
 
 import Panel from '../../../components/neubrutalist/Panel';
 import useDigitField from '../../../hooks/useDigitField';
+import useInputField from '../../../hooks/useInputField';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
 
 const NewTransaction = () => {
   const { groups, loading } = useGroups();
   const location = useLocation();
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
+  const { value: description, handleChange: handleDescriptionChanged } = useInputField();
   const [groupId, setGroupId] = useState(location.state?.groupId);
   const [groupName, setGroupName] = useState(' ');
 
@@ -33,7 +35,10 @@ const NewTransaction = () => {
     <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
       <main className="flex w-full flex-col">
         <div className="mb-4 flex w-full flex-row justify-between">
-          <Link to={ROUTES.APP} className="left-0 cursor-pointer">
+          <Link
+            to={location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP}
+            className="left-0 cursor-pointer"
+          >
             <Panel bgColor="bg-accent-200" className="text-ink-800 flex flex-row" dropOnClick={true}>
               Cancel
             </Panel>
@@ -83,7 +88,8 @@ const NewTransaction = () => {
                   inputMode="decimal"
                   className={`w-full rounded-md border-0 text-right font-bold outline-none`}
                   maxLength={32}
-                  value={total}
+                  value={description}
+                  onChange={handleDescriptionChanged}
                   autoFocus
                 />
               </div>
