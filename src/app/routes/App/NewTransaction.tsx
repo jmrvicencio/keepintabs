@@ -11,12 +11,15 @@ const NewTransaction = () => {
   const { groups, loading } = useGroups();
   const location = useLocation();
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
-  const { value: description, handleChange: handleDescriptionChanged } = useInputField();
+  const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
   const [groupId, setGroupId] = useState(location.state?.groupId);
   const [groupName, setGroupName] = useState(' ');
 
+  // Check if we should display subpage
+  const [showSplitType, setShowSplitType] = useState(false);
+
   // Retrieve the group name transaction came from
-  // If there is no groupId, get the first group from group list.j
+  // If there is no groupId, get the first group from group list.
   useEffect(() => {
     let currGroupId: string = groupId;
     if (loading) return;
@@ -49,7 +52,6 @@ const NewTransaction = () => {
             </Panel>
           </div>
         </div>
-        {/* <h1 className="font-gieonto mt-4 text-left text-4xl font-medium">New Transaction</h1> */}
         <form className="px-4 outline-none">
           <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
             <div className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
@@ -66,7 +68,7 @@ const NewTransaction = () => {
                 value={total}
                 autoFocus
               />
-              <div className="flex flex-row">
+              <div className="flex flex-row justify-center">
                 <label htmlFor="total" className="text-ink-400 pr-2 text-sm font-light">
                   Total Amount
                 </label>
@@ -85,10 +87,11 @@ const NewTransaction = () => {
                   autoComplete="off"
                   step="off"
                   min="0"
-                  inputMode="decimal"
-                  className={`w-full rounded-md border-0 text-right font-bold outline-none`}
+                  inputMode="text"
+                  className={`placeholder-ink-400 w-full rounded-md border-0 text-right font-bold outline-none`}
                   maxLength={32}
                   value={description}
+                  placeholder="Add a description"
                   onChange={handleDescriptionChanged}
                   autoFocus
                 />

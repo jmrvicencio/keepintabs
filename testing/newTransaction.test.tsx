@@ -43,6 +43,8 @@ import NewTransaction from '../src/app/routes/App/NewTransaction';
 
 describe('[New Transaction] [Unit] New Transaction Page', () => {
   beforeEach(() => {
+    // Define the groupId in state to be a groupId so that it can be referenced
+    // as the previous group before switching to this page.
     mockUseLocation.mockImplementation(() => ({
       pathname: 'transactions/new',
       search: '',
@@ -104,6 +106,8 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
 
 describe('[New Transaction] [Unit] New Transaction Page not passed a GroupId state', () => {
   beforeEach(() => {
+    // Not defining a groupId in the state to simluate clicking
+    //  new transaction from outside of a group.
     mockUseLocation.mockImplementation(() => ({
       pathname: 'transactions/new',
       search: '',
@@ -116,13 +120,19 @@ describe('[New Transaction] [Unit] New Transaction Page not passed a GroupId sta
       <MemoryRouter initialEntries={['/transactions/new']}>
         <Routes>
           <Route path="/transactions/new" element={<NewTransaction />} />
-          <Route path={`${ROUTES.GROUPS}/abcd`} element={<p>we are in groups</p>} />
+          <Route path={`${ROUTES.APP}`} element={<p>We are in app</p>} />
         </Routes>
       </MemoryRouter>,
     );
   });
 
-  it('Groups section displays the name of the first group it can find', async () => {
+  it('Groups section displays the name of the first group it can find, and pressing back should return to app', async () => {
     expect(screen.getByRole('button', { name: 'Test Group' })).toBeInTheDocument();
+
+    const cancelButton = screen.getByRole('link', { name: 'Cancel' });
+    expect(cancelButton).toBeInTheDocument();
+
+    await userEvent.click(cancelButton);
+    expect(screen.getByText('We are in app')).toBeInTheDocument();
   });
 });
