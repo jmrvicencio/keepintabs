@@ -5,6 +5,12 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { Group } from '../src/features/groups/types';
 import { ROUTES } from '../src/app/routes';
 
+const mockNavigate = vi.fn();
+const { mockUseLocation } = vi.hoisted(() => ({
+  mockUseLocation: vi.fn(),
+}));
+const mockAddTransaction = vi.fn();
+
 // Mock the module before it gets imported
 vi.mock('../src/features/groups/hooks/useGroups', () => ({
   useGroups: vi.fn(() => ({
@@ -24,9 +30,8 @@ vi.mock('../src/features/groups/hooks/useGroups', () => ({
   })),
 }));
 
-const mockNavigate = vi.fn();
-const { mockUseLocation } = vi.hoisted(() => ({
-  mockUseLocation: vi.fn(),
+vi.mock('../src/features/groups/hooks/useAddTransaction', () => ({
+  useAddTransaction: mockAddTransaction,
 }));
 
 // Mock useLocation module
@@ -101,6 +106,14 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
 
   it('Groups section displays the name of the current active group', async () => {
     expect(screen.getByRole('button', { name: 'Test Group' })).toBeInTheDocument();
+  });
+
+  it('Transactions are submitted properly', async () => {
+    const doneButton = screen.getByTestId('done-button');
+    expect(doneButton).toBeInTheDocument();
+
+    await user.click(doneButton);
+    expect(mockAddTransaction).toHaveBeenCalled();
   });
 });
 
