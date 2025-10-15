@@ -68,7 +68,7 @@ const Dashboard = memo(function Dashboard() {
                 ))
               ) : groups.length == 0 ? (
                 // Show this graphic if groups are empty
-                <div className="text-leather-700 mt-20 flex h-full grow-1 flex-col items-center justify-center pb-16">
+                <div className="text-leather-700 flex h-full grow-1 flex-col items-center justify-center pb-16 md:mt-20">
                   <img className="w-48" src={emptyImg} />
                   <h3 className="mt-2 text-lg font-bold">No Groups Yet!</h3>
                   <p>Add one now to get started</p>
