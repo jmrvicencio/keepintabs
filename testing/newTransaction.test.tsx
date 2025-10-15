@@ -6,10 +6,16 @@ import { Group } from '../src/features/groups/types';
 import { ROUTES } from '../src/app/routes';
 
 const mockNavigate = vi.fn();
-const { mockUseLocation } = vi.hoisted(() => ({
-  mockUseLocation: vi.fn(),
-}));
-const mockAddTransaction = vi.fn();
+const { mockUseLocation, mockAddTransaction, mockUseAddTransaction } = vi.hoisted(() => {
+  const mockAddTransaction = vi.fn();
+  const mockUseAddTransaction = vi.fn((groupId: string) => mockAddTransaction);
+
+  return {
+    mockUseLocation: vi.fn(),
+    mockAddTransaction,
+    mockUseAddTransaction,
+  };
+});
 
 // Mock the module before it gets imported
 vi.mock('../src/features/groups/hooks/useGroups', () => ({
@@ -31,7 +37,7 @@ vi.mock('../src/features/groups/hooks/useGroups', () => ({
 }));
 
 vi.mock('../src/features/groups/hooks/useAddTransaction', () => ({
-  useAddTransaction: mockAddTransaction,
+  default: mockUseAddTransaction,
 }));
 
 // Mock useLocation module
@@ -109,10 +115,11 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
   });
 
   it('Transactions are submitted properly', async () => {
-    const doneButton = screen.getByTestId('done-button');
+    const doneButton = screen.getByRole('button', { name: 'Done' });
     expect(doneButton).toBeInTheDocument();
 
     await user.click(doneButton);
+    expect(mockUseAddTransaction).toHaveBeenCalledWith('abcd');
     expect(mockAddTransaction).toHaveBeenCalled();
   });
 });

@@ -1,53 +1,79 @@
-import { useState, useEffect, ChangeEvent } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo, ChangeEvent } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 
 import Panel from '../../../components/neubrutalist/Panel';
 import useDigitField from '../../../hooks/useDigitField';
 import useInputField from '../../../hooks/useInputField';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
+import { currentGroup } from '../../../store/currentGroup';
+import useAddTransaction from '../../../features/groups/hooks/useAddTransaction';
 
 const NewTransaction = () => {
+  // Call Hooks
   const { groups, loading } = useGroups();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Local States
+  const [groupId, setGroupId] = useState(location.state?.groupId);
+  const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
+
+  // Form Values
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
-  const [groupId, setGroupId] = useState(location.state?.groupId);
-  const [groupName, setGroupName] = useState(' ');
+
+  // Late Hooks
+  const addTransaction = useAddTransaction(groupId);
 
   // Check if we should display subpage
   const [showSplitType, setShowSplitType] = useState(false);
 
-  // Retrieve the group name transaction came from
-  // If there is no groupId, get the first group from group list.
-  useEffect(() => {
+  const groupName: string = useMemo(() => {
     let currGroupId: string = groupId;
-    if (loading) return;
+    if (!groupId || loading) return ' ';
 
-    if (groupId == null) {
+    if (!groupId) {
       const firstGroup = groups[0];
-      setGroupId(firstGroup.id);
       currGroupId = firstGroup.id;
     }
 
     const currGroup = groups.find((group) => group.id == currGroupId);
-    setGroupName(currGroup!.data()!.name);
+    return currGroup!.data()!.name;
+  }, [groupId, loading]);
+
+  // Update the groupIds after groups are done loading
+  useEffect(() => {
+    if (loading) return;
+
+    if (!groupId) {
+      const firstGroup = groups[0];
+      setGroupId(firstGroup.id);
+    }
   }, [loading]);
+
+  // Local Metods
+  const handleDoneClicked = () => {
+    addTransaction();
+    navigate(returnRoute);
+  };
 
   return (
     <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
       <main className="flex w-full flex-col">
         <div className="mb-4 flex w-full flex-row justify-between">
-          <Link
-            to={location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP}
-            className="left-0 cursor-pointer"
-          >
+          <Link to={returnRoute} className="left-0 cursor-pointer">
             <Panel bgColor="bg-accent-200" className="text-ink-800 flex flex-row" dropOnClick={true}>
               Cancel
             </Panel>
           </Link>
           <div className="right-0 cursor-pointer">
-            <Panel bgColor="bg-accent-200" className="text-ink-800 flex flex-row" dropOnClick={true}>
+            <Panel
+              bgColor="bg-accent-200"
+              className="text-ink-800 flex flex-row"
+              dropOnClick={true}
+              onClick={handleDoneClicked}
+            >
               Done
             </Panel>
           </div>
@@ -93,7 +119,6 @@ const NewTransaction = () => {
                   value={description}
                   placeholder="Add a description"
                   onChange={handleDescriptionChanged}
-                  autoFocus
                 />
               </div>
               <div className="flex flex-row">
@@ -110,7 +135,6 @@ const NewTransaction = () => {
                   className={`w-1 grow-1 rounded-md border-0 text-right font-bold outline-none`}
                   maxLength={32}
                   value={total}
-                  autoFocus
                 />
               </div>
             </div>
