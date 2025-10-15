@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { ChevronLeft, X, UserRound } from 'lucide-react';
 import { ROUTES } from '../../routes';
-import SmallButton from '../../../components/buttons/SmallButton';
 import { Member } from '../../../features/groups/types';
 import { auth } from '../../../lib/firebase/auth';
 import useAddGroup from '../../../features/groups/hooks/useAddGroup';

@@ -7,6 +7,7 @@ import ProtectedRoute from '../../../components/ProtectedRoute';
 import Header from '../../../components/Header';
 import Sidebar from '../../../components/sidebar/Sidebar';
 import Debug from '../../../components/Debug';
+import PopupMenu from '../../../features/popup-menu/components/PopupMenu';
 import FAB from '../../../components/FAB';
 import { Plus } from 'lucide-react';
 import { MainContentRefAtom } from '../../../store/mainArea';
@@ -25,6 +26,8 @@ function App() {
   const location = useLocation();
   const PlusMemo = memo(() => <Plus />);
   const showFab = location.pathname != ROUTES.NEW_GROUP;
+
+  console.log('pathname:', location.pathname);
 
   useEffect(() => {
     setMainContentRef(mainContentRef);
@@ -55,6 +58,7 @@ function App() {
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
+        <PopupMenu />
         <Debug showDebug={showDebug} />
         {/* This is the main container for the website */}
         <div className={`relative h-full min-w-dvw md:w-full md:max-w-190 md:min-w-0`}>
@@ -67,7 +71,10 @@ function App() {
             <Outlet />
           </div>
           {showFab && (
-            <FAB className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden" onClick={handleFabClicked}>
+            <FAB
+              className={`${location.pathname == ROUTES.NEW_TRANSACTION ? 'hidden' : ''} absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden`}
+              onClick={handleFabClicked}
+            >
               <PlusMemo />
               Add Transaction
             </FAB>

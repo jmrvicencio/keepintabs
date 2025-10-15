@@ -10,8 +10,6 @@ const useAddTransaction = (groupId: string) => {
     const transactionCollection = collection(groupRef, collections.transactions);
     const transactionRef = doc(transactionCollection, id);
 
-    console.log('adding document');
-
     setDoc(transactionRef, {
       test: 'test data inputted',
     });

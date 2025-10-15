@@ -5,9 +5,11 @@ const NewTransactionProvider = () => {
   const newStore = createStore();
 
   return (
-    <Provider store={newStore}>
+    <>
+      {/* // <Provider store={newStore}> */}
       <Outlet />
-    </Provider>
+      {/* </Provider> */}
+    </>
   );
 };
 

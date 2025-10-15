@@ -18,6 +18,7 @@ const { mockUseLocation, mockAddTransaction, mockUseAddTransaction } = vi.hoiste
 });
 
 // Mock the module before it gets imported
+// Creates a fake group data
 vi.mock('../src/features/groups/hooks/useGroups', () => ({
   useGroups: vi.fn(() => ({
     groups: [
@@ -27,12 +28,25 @@ vi.mock('../src/features/groups/hooks/useGroups', () => ({
           balance: {},
           name: 'Test Group',
           memberUids: [],
-          members: {},
+          members: {
+            a: {
+              displayName: 'Kyle',
+            },
+            b: {
+              displayName: 'Marlon',
+            },
+            c: {
+              displayName: 'Julian',
+            },
+            d: {
+              displayName: 'Jayni',
+            },
+          },
         }),
       },
     ],
     loading: false,
-    reload: vi.fn(),
+    reload: () => {},
   })),
 }));
 
@@ -75,6 +89,15 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
 
   const user = userEvent.setup();
 
+  it('Tapping Cancel returns the user to the previous group route', async () => {
+    const backButton = screen.getByRole('link', { name: 'Cancel' });
+    expect(backButton).toBeInTheDocument();
+
+    await user.click(backButton);
+    const groupsGreeting = screen.getByText('we are in groups');
+    expect(groupsGreeting).toBeInTheDocument();
+  });
+
   it('Total inputs format respond and format correctly when typed into', async () => {
     const totalInput = screen.getByLabelText('Total Amount', { selector: 'input' });
     expect(totalInput).toBeInTheDocument();
@@ -101,13 +124,14 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
     expect(descInput).toHaveValue('Burgers Out');
   });
 
-  it('Tapping Cancel returns the user to the previous group route', async () => {
-    const backButton = screen.getByRole('link', { name: 'Cancel' });
-    expect(backButton).toBeInTheDocument();
+  it('Paid By can be updated when pressed', async () => {
+    const paidByButton = screen.getByLabelText('Paid By:');
+    expect(paidByButton).toBeInTheDocument();
 
-    await user.click(backButton);
-    const groupsGreeting = screen.getByText('we are in groups');
-    expect(groupsGreeting).toBeInTheDocument();
+    await user.click(paidByButton);
+    const julianButton = screen.getByRole('button', { name: 'Julian' });
+
+    await user.click(julianButton);
   });
 
   it('Groups section displays the name of the current active group', async () => {

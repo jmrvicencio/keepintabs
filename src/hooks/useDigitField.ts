@@ -7,7 +7,7 @@ const useDigitField = () => {
     let currentVal: string = e.target.value;
 
     // field cant be empty so we need to put a placeholder of 0.00
-    if (currentVal.length < 0) currentVal = '0.00';
+    if (currentVal.length <= 0) currentVal = '0.00';
     const isOnlyDigits = /^(\d|\,|\.)+$/.test(currentVal);
     if (!isOnlyDigits) return;
 
