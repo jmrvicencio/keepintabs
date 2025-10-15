@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState, type ReactNode } from 'react';
+import { KeyboardEvent, useEffect, useReducer, useState, type ReactNode } from 'react';
 
 const Panel = ({
   children,
@@ -46,8 +46,17 @@ const Panel = ({
     }
   };
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key == 'Enter' || e.key == ' ') {
+      if (handleClick != null) {
+        handleClick();
+      }
+    }
+  };
+
   return (
     <div
+      {...(handleClick != null ? { role: 'button', tabIndex: 0, onKeyDown: handleKeyDown } : {})}
       className="relative pr-1 pb-1"
       onMouseDown={handleMouseDown}
       onPointerDown={handleMouseDown}
