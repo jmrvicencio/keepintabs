@@ -15,7 +15,7 @@ service cloud.firestore {
       allow read: if request.auth != null
         && request.auth.uid in resource.data.memberUids;
       allow create: if request.auth != null
-        && get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey == request.resource.data.inviteKey;
+        && isInGroupMembers(groupId);
       allow update: if request.auth.uid in resource.data.memberUids
         || request.resource.data.inviteKey == get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey;
     }
@@ -45,9 +45,5 @@ service cloud.firestore {
     function isInGroupMembers(groupId){
       return exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId));
     }
-
-    // function isInGroup(groupId){
-    //   return get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAll([userId]) == request.auth.uid;
-    // }
   }
 }

@@ -1,7 +1,7 @@
 import { doc, updateDoc, deleteField, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
-import { db } from '../../../lib/firebase/firestore';
+import { db, getFirestoreURL } from '../../../lib/firebase/firestore';
 import { User } from 'firebase/auth';
 import { Member } from '../types';
 
@@ -10,6 +10,7 @@ const useAddGroup = (user: User) => {
     try {
       const groupId = uuid();
       const userId = user.uid;
+
       const inviteKey = uuid();
       const groupsRef = doc(db, `groups/${groupId}`);
       const groupMembersRef = doc(db, `groupMembers/${userId}_${groupId}`);
@@ -21,12 +22,18 @@ const useAddGroup = (user: User) => {
         nextMembers[memberUid] = member;
       }
 
-      setDoc(groupSettingsRef, {
+      await setDoc(groupSettingsRef, {
         inviteKey,
       });
+
+      await setDoc(groupMembersRef, {
+        userId,
+        groupId,
+        inviteKey,
+      });
+
       setDoc(groupsRef, {
         createdAt: serverTimestamp(),
-        inviteKey,
         name: groupName,
         memberUids: [userId],
         members: {
@@ -37,14 +44,7 @@ const useAddGroup = (user: User) => {
           },
         },
       });
-      updateDoc(groupsRef, {
-        inviteKey: deleteField(),
-      });
-      await setDoc(groupMembersRef, {
-        userId,
-        groupId,
-        inviteKey,
-      });
+
       await updateDoc(groupMembersRef, {
         inviteKey: deleteField(),
       });
