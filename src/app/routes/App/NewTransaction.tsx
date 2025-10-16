@@ -2,18 +2,17 @@ import { useState, useEffect, useMemo, ChangeEvent, KeyboardEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { type DocumentSnapshot } from 'firebase/firestore';
+import { auth } from '../../../lib/firebase/auth';
 
 import { usePopupMenu } from '../../../features/popup-menu/hooks/usePopupMenu';
-import Panel from '../../../components/neubrutalist/Panel';
+import { useGroups } from '../../../features/groups/hooks/useGroups';
+import { Group } from '../../../features/groups/types';
+import { getMemberPhotoUrl } from '../../../features/groups/utils/memberUtil';
 import useDigitField from '../../../hooks/useDigitField';
 import useInputField from '../../../hooks/useInputField';
-import { useGroups } from '../../../features/groups/hooks/useGroups';
-import { currentGroup } from '../../../store/currentGroup';
+import Panel from '../../../components/neubrutalist/Panel';
 import useAddTransaction from '../../../features/groups/hooks/useAddTransaction';
-import { Group } from '../../../features/groups/types';
-import { type Member } from '../../../features/groups/types';
-import { getMemberPhotoUrl } from '../../../features/groups/utils/memberUtil';
-import { auth } from '../../../lib/firebase/auth';
+import { User as UserIcon } from 'lucide-react';
 
 const NewTransaction = () => {
   // Call Hooks
@@ -108,10 +107,6 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
       );
       setPaidById(member && member[0] ? member[0] : Object.keys(currGroup!.data()!.members)[0]);
     }
-    // if (paidById == auth.currentUser!.uid) {
-    //   const member = Object.values(currGroup!.data()!.members).find((val) => val.linkedUid == auth.currentUser!.uid);
-    //   setPaidById(member!.groupUid!);
-    // }
   }, [currGroup]);
 
   // Update the popup when the currGroup has finished loading
@@ -124,15 +119,18 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
   // Local Methods
   const handlePaidByClicked = async () => {
     const members = currGroup?.data() ? (currGroup.data()?.members ? currGroup.data()!.members : {}) : {};
-    let memberPhotoUrlPromise: (string | undefined)[] = [];
+    let memberPhotoUrls: (string | undefined)[] = [];
 
     if (currGroup) {
-      memberPhotoUrlPromise = await Promise.all(
-        Object.values(members).map((val) => getMemberPhotoUrl(currGroup.data()!, val.linkedUid)),
+      memberPhotoUrls = await Promise.all(
+        Object.entries(members).map(([groupUid, val]) => {
+          return getMemberPhotoUrl(currGroup.data()!, groupUid, val.linkedUid);
+        }),
       );
     }
 
     const handleMemberClicked = (memberId: string) => () => {
+      setPaidById(memberId);
       setShowPopup(false);
       setShowPaidby(false);
     };
@@ -155,9 +153,11 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
             className="relative flex h-8 cursor-pointer flex-row items-center"
           >
             <div
-              className="absolute left-0 h-8 w-8 rounded-lg border-1 bg-cover"
-              style={{ backgroundImage: `url('${memberPhotoUrlPromise[i]}')` }}
-            />
+              className="absolute left-0 flex h-8 w-8 items-center justify-center rounded-lg border-1 bg-cover"
+              style={{ backgroundImage: `url('${memberPhotoUrls[i]}')` }}
+            >
+              {!memberPhotoUrls[i] && <UserIcon className="text-ink-400" />}
+            </div>
             <p className="grow">{member.displayName}</p>
           </div>
         ))}
