@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { db, getFirestoreURL } from '../../../lib/firebase/firestore';
 import { User } from 'firebase/auth';
 import { Member } from '../types';
+import { auth } from '../../../lib/firebase/auth';
 
 const useAddGroup = (user: User) => {
   const addNewGroup = async (groupName: string, members: Member[]) => {
@@ -37,11 +38,11 @@ const useAddGroup = (user: User) => {
         name: groupName,
         memberUids: [userId],
         members: {
-          ...nextMembers,
           [userId]: {
-            displayName: 'Kyle',
+            displayName: auth.currentUser?.displayName,
             linkedUid: userId,
           },
+          ...nextMembers,
         },
       });
 
