@@ -1,9 +1,9 @@
 import { useAtom } from 'jotai';
-import { showPopupAtom, popupAtom } from '../stores/PopupAtom';
+import { showPopupAtom, popupAtom, type Popup } from '../stores/PopupAtom';
 
 export const usePopupMenu = () => {
   const [showPopup, setShowPopup] = useAtom(showPopupAtom);
-  const [popup, setPopup] = useAtom(popupAtom);
+  const [popup, setPopup] = useAtom<Popup>(popupAtom);
 
   return {
     showPopup,

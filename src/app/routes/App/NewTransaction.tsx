@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo, ChangeEvent } from 'react';
+import { useState, useEffect, useMemo, ChangeEvent, KeyboardEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { type DocumentSnapshot } from 'firebase/firestore';
-import { useAtom } from 'jotai';
 
 import { usePopupMenu } from '../../../features/popup-menu/hooks/usePopupMenu';
 import Panel from '../../../components/neubrutalist/Panel';
@@ -12,7 +11,8 @@ import { useGroups } from '../../../features/groups/hooks/useGroups';
 import { currentGroup } from '../../../store/currentGroup';
 import useAddTransaction from '../../../features/groups/hooks/useAddTransaction';
 import { Group } from '../../../features/groups/types';
-import { showPopupAtom } from '../../../features/popup-menu/stores/PopupAtom';
+import { type Member } from '../../../features/groups/types';
+import { getMemberPhotoUrl } from '../../../features/groups/utils/memberUtil';
 
 const NewTransaction = () => {
   // Call Hooks
@@ -82,15 +82,77 @@ const NewTransaction = () => {
 
 const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> }) => {
   // Hooks
-  const { showPopup, setShowPopup } = usePopupMenu();
-  // const [showPopup, setShowPopup] = useAtom(showPopupAtom);
+  const { setShowPopup, setPopup } = usePopupMenu();
 
+  // Local States
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
   const { value: paidBy, handleChange: handlePaidByChanged } = useInputField('Kyle');
   const [showPaidBy, setShowPaidby] = useState(false);
 
+  // Computed Values
   const groupName: string = currGroup && currGroup.data() ? currGroup.data()!.name : ' ';
+
+  // Update the popup when the currGroup has finished loading
+  useEffect(() => {
+    if (!currGroup || !showPaidBy) return;
+
+    handlePaidByClicked();
+  }, [currGroup]);
+
+  // Local Methods
+  const handlePaidByClicked = async () => {
+    const members = currGroup?.data() ? (currGroup.data()?.members ? currGroup.data()!.members : {}) : {};
+    let memberPhotoUrlPromise: (string | undefined)[] = [];
+
+    if (currGroup) {
+      memberPhotoUrlPromise = await Promise.all(
+        Object.values(members).map((val) => getMemberPhotoUrl(currGroup.data()!, val.linkedUid)),
+      );
+    }
+
+    const handleMemberClicked = (memberId: string) => () => {
+      console.log('member pressed: ', memberId);
+      setShowPopup(false);
+    };
+
+    const handlePayerKeyDown = (memberId: string) => (e: KeyboardEvent) => {
+      if (e.key == 'Enter' || e.key == ' ') {
+        console.log('enter pressed');
+        handleMemberClicked(memberId)();
+      }
+    };
+
+    const memberList = (
+      <div className="flex flex-col gap-2">
+        {Object.entries(members).map(([memberId, member], i) => (
+          <div
+            key={memberId}
+            role="button"
+            tabIndex={0}
+            onKeyDown={handlePayerKeyDown(memberId)}
+            onClick={handleMemberClicked(memberId)}
+            className="relative flex h-8 cursor-pointer flex-row items-center"
+          >
+            <div
+              className="absolute left-0 h-8 w-8 rounded-lg border-1 bg-cover"
+              style={{ backgroundImage: `url('${memberPhotoUrlPromise[i]}')` }}
+            />
+            <p className="grow">{member.displayName}</p>
+          </div>
+        ))}
+      </div>
+    );
+
+    setPopup((prev) => ({
+      title: 'Paid By',
+      body: memberList,
+      closeCallback: () => setShowPaidby(false),
+    }));
+
+    setShowPaidby(true);
+    setShowPopup(true);
+  };
 
   return (
     <form className="px-4 outline-none">
@@ -145,18 +207,8 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
               type="button"
               className={`w-1 grow-1 cursor-pointer rounded-md border-0 text-right font-bold outline-none`}
               value={paidBy}
-              onClick={() => {
-                console.log('clicked');
-                setShowPopup(true);
-              }}
+              onClick={handlePaidByClicked}
             />
-            {showPaidBy && (
-              <div>
-                {Object.values(currGroup!.data()!.members).map((val) => {
-                  return <input type="button" value={val.displayName} />;
-                })}
-              </div>
-            )}
           </div>
         </div>
         <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">

@@ -14,4 +14,5 @@ export interface Member {
   linkedUid?: string;
   displayName: string;
   email?: string;
+  photoUrl?: string;
 }

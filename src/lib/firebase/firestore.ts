@@ -9,6 +9,7 @@ import app from './app';
 export const collections = {
   groups: 'groups',
   transactions: 'transactions',
+  users: 'users',
 };
 
 export const db = initializeFirestore(app, {
