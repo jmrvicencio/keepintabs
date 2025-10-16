@@ -13,6 +13,7 @@ import useAddTransaction from '../../../features/groups/hooks/useAddTransaction'
 import { Group } from '../../../features/groups/types';
 import { type Member } from '../../../features/groups/types';
 import { getMemberPhotoUrl } from '../../../features/groups/utils/memberUtil';
+import { auth } from '../../../lib/firebase/auth';
 
 const NewTransaction = () => {
   // Call Hooks
@@ -87,11 +88,31 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
   // Local States
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
-  const { value: paidBy, handleChange: handlePaidByChanged } = useInputField('Kyle');
+  const [paidById, setPaidById] = useState(auth.currentUser!.uid);
   const [showPaidBy, setShowPaidby] = useState(false);
 
   // Computed Values
+  const paidByName =
+    currGroup && paidById in currGroup.data()?.members!
+      ? currGroup.data()?.members[paidById].displayName
+      : auth.currentUser!.displayName;
   const groupName: string = currGroup && currGroup.data() ? currGroup.data()!.name : ' ';
+
+  // Update PaidById to the groupId of user so the uids match.
+  // (groupUID might be different from users uid)
+  useEffect(() => {
+    if (!currGroup) return;
+    if (paidById == auth.currentUser!.uid) {
+      const member = Object.entries(currGroup!.data()!.members).find(
+        ([key, val]) => val.linkedUid == auth.currentUser!.uid,
+      );
+      setPaidById(member && member[0] ? member[0] : Object.keys(currGroup!.data()!.members)[0]);
+    }
+    // if (paidById == auth.currentUser!.uid) {
+    //   const member = Object.values(currGroup!.data()!.members).find((val) => val.linkedUid == auth.currentUser!.uid);
+    //   setPaidById(member!.groupUid!);
+    // }
+  }, [currGroup]);
 
   // Update the popup when the currGroup has finished loading
   useEffect(() => {
@@ -112,13 +133,12 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
     }
 
     const handleMemberClicked = (memberId: string) => () => {
-      console.log('member pressed: ', memberId);
       setShowPopup(false);
+      setShowPaidby(false);
     };
 
     const handlePayerKeyDown = (memberId: string) => (e: KeyboardEvent) => {
       if (e.key == 'Enter' || e.key == ' ') {
-        console.log('enter pressed');
         handleMemberClicked(memberId)();
       }
     };
@@ -206,7 +226,7 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
               id="paid_by"
               type="button"
               className={`w-1 grow-1 cursor-pointer rounded-md border-0 text-right font-bold outline-none`}
-              value={paidBy}
+              value={paidByName ?? ''}
               onClick={handlePaidByClicked}
             />
           </div>
