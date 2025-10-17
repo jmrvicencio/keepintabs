@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { type DocumentSnapshot } from 'firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
+import { format } from 'date-fns';
 
 import { usePopupMenu } from '../../../features/popup-menu/hooks/usePopupMenu';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
@@ -87,7 +88,9 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
   // Local States
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
+  const [date, setDate] = useState(Date.now());
   const [paidById, setPaidById] = useState(auth.currentUser!.uid);
+  const [paidByPhotoUrl, setPaidByPhotoUrl] = useState<string | undefined>(undefined);
   const [showPaidBy, setShowPaidby] = useState(false);
 
   // Computed Values
@@ -95,7 +98,9 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
     currGroup && paidById in currGroup.data()?.members!
       ? currGroup.data()?.members[paidById].displayName
       : auth.currentUser!.displayName;
+  console.log(paidByPhotoUrl);
   const groupName: string = currGroup && currGroup.data() ? currGroup.data()!.name : ' ';
+  const dateString = format(date, 'dd/MM/yy (K:mm bbb)');
 
   // Update PaidById to the groupId of user so the uids match.
   // (groupUID might be different from users uid)
@@ -107,6 +112,14 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
       );
       setPaidById(member && member[0] ? member[0] : Object.keys(currGroup!.data()!.members)[0]);
     }
+  }, [currGroup]);
+
+  useEffect(() => {
+    const updatePaidByPhotoUrl = async () => {
+      setPaidByPhotoUrl(currGroup ? await getMemberPhotoUrl(currGroup!.data()!, paidById) : undefined);
+    };
+
+    updatePaidByPhotoUrl();
   }, [currGroup]);
 
   // Update the popup when the currGroup has finished loading
@@ -124,7 +137,7 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
     if (currGroup) {
       memberPhotoUrls = await Promise.all(
         Object.entries(members).map(([groupUid, val]) => {
-          return getMemberPhotoUrl(currGroup.data()!, groupUid, val.linkedUid);
+          return getMemberPhotoUrl(currGroup.data()!, groupUid);
         }),
       );
     }
@@ -198,7 +211,7 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
             <p className="font-bold">(PHP)</p>
           </div>
         </div>
-        <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">
+        <div className="border-ink-400 relative flex flex-col gap-2 border-b-1 border-dashed py-6 text-base">
           <p className="text-ink-400 mb-2 font-light">(Tap on items to edit)</p>
           <div className="flex flex-row">
             <label htmlFor="description" className="text-ink-400 text-sm font-light">
@@ -222,12 +235,33 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
             <label htmlFor="paid_by" className="text-ink-400 text-sm font-light">
               Paid By:
             </label>
+            <div className="flex grow-1 flex-row items-center justify-end gap-2">
+              <div
+                className="flex h-6 w-6 items-center justify-center overflow-clip rounded-full border-1 bg-cover"
+                style={{
+                  backgroundImage: `url('${paidByPhotoUrl}')`,
+                }}
+              >
+                {paidByPhotoUrl == undefined && <UserIcon className="text-ink-400 h-5 w-5" />}
+              </div>
+              <input
+                id="paid_by"
+                type="button"
+                className={`w-fit cursor-pointer rounded-md border-0 text-right font-bold outline-none`}
+                value={paidByName ?? ''}
+                onClick={handlePaidByClicked}
+              />
+            </div>
+          </div>
+          <div className="flex flex-row">
+            <label htmlFor="date" className="text-ink-400 text-sm font-light">
+              Date:
+            </label>
             <input
-              id="paid_by"
+              id="date"
               type="button"
               className={`w-1 grow-1 cursor-pointer rounded-md border-0 text-right font-bold outline-none`}
-              value={paidByName ?? ''}
-              onClick={handlePaidByClicked}
+              value={dateString}
             />
           </div>
         </div>

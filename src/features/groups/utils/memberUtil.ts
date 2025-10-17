@@ -1,12 +1,13 @@
 import { Group } from '../types';
 import { getUser } from '../../users/utils/getUsers';
 
-// Checks if a user record exists for the member and returns the photoUrl of that user
-export const getMemberPhotoUrl = async (
-  group: Group,
-  groupUid: string,
-  linkedUid: string | undefined,
-): Promise<string | undefined> => {
+/**
+ * Checks if a user record exists for the member and returns the photoUrl of that user
+ *
+ * @param group - the group to check
+ * @param groupUid - uid of the user in the group.
+ */
+export const getMemberPhotoUrl = async (group: Group, groupUid: string): Promise<string | undefined> => {
   if (!(groupUid in group.members)) return undefined;
 
   const member = group.members[groupUid];
