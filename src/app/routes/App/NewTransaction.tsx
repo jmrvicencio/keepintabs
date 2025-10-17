@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { type DocumentSnapshot } from 'firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 import { usePopupMenu } from '../../../features/popup-menu/hooks/usePopupMenu';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
@@ -14,6 +14,8 @@ import useInputField from '../../../hooks/useInputField';
 import Panel from '../../../components/neubrutalist/Panel';
 import useAddTransaction from '../../../features/groups/hooks/useAddTransaction';
 import { User as UserIcon } from 'lucide-react';
+import DatePicker from '../../../features/date-picker/DatePicker';
+import { buttonHandleKeypress } from '../../../util/buttonHandleKeypress';
 
 const NewTransaction = () => {
   // Call Hooks
@@ -83,12 +85,13 @@ const NewTransaction = () => {
 
 const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> }) => {
   // Hooks
-  const { setShowPopup, setPopup } = usePopupMenu();
+  const { setShowPopup, setPopup, resetPopup } = usePopupMenu();
 
   // Local States
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
   const [date, setDate] = useState(Date.now());
+  const [dateSelected, setDateSelected] = useState<Date | undefined>();
   const [paidById, setPaidById] = useState(auth.currentUser!.uid);
   const [paidByPhotoUrl, setPaidByPhotoUrl] = useState<string | undefined>(undefined);
   const [showPaidBy, setShowPaidby] = useState(false);
@@ -98,9 +101,9 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
     currGroup && paidById in currGroup.data()?.members!
       ? currGroup.data()?.members[paidById].displayName
       : auth.currentUser!.displayName;
-  console.log(paidByPhotoUrl);
   const groupName: string = currGroup && currGroup.data() ? currGroup.data()!.name : ' ';
-  const dateString = format(date, 'dd/MM/yy (K:mm bbb)');
+  const dateString = format(date, 'dd/MM/yy');
+  const timeString = format(date, 'K:mm aaa');
 
   // Update PaidById to the groupId of user so the uids match.
   // (groupUID might be different from users uid)
@@ -187,6 +190,42 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
     setShowPopup(true);
   };
 
+  const handleDateClicked = async () => {
+    const handleDoneCLicked = () => {
+      console.log('done!');
+      resetPopup();
+    };
+
+    // Popup Elements
+    const DatePickerElement = () => <DatePicker initialDate={new Date(date)} setDateSelected={setDateSelected} />;
+    const PopupElement = () => (
+      <>
+        <DatePickerElement />
+        <div className="mt-4 flex w-full flex-row justify-end gap-2">
+          <input
+            type="button"
+            value="Cancel"
+            onClick={resetPopup}
+            className="border-ink-400 rounded-xl border-1 px-2 py-1"
+          />
+          <input
+            type="button"
+            value="Done"
+            onClick={handleDoneCLicked}
+            className="bg-accent-200 rounded-xl border-1 px-2 py-1"
+          />
+        </div>
+      </>
+    );
+
+    setPopup((prev) => ({
+      title: 'Date',
+      body: <PopupElement />,
+    }));
+
+    setShowPopup(true);
+  };
+
   return (
     <form className="px-4 outline-none">
       <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
@@ -257,12 +296,16 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
             <label htmlFor="date" className="text-ink-400 text-sm font-light">
               Date:
             </label>
-            <input
+            <div
               id="date"
-              type="button"
+              role="button"
+              tabIndex={0}
+              onKeyDown={buttonHandleKeypress(handleDateClicked)}
               className={`w-1 grow-1 cursor-pointer rounded-md border-0 text-right font-bold outline-none`}
-              value={dateString}
-            />
+              onClick={handleDateClicked}
+            >
+              {dateString} <span className="text-ink-400 font-normal">{`(${timeString})`}</span>
+            </div>
           </div>
         </div>
         <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">

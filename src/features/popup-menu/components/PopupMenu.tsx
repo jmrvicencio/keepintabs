@@ -26,7 +26,7 @@ const PopupMenu = () => {
 
   return showPopup ? (
     <div
-      className="absolute z-40 flex h-dvh w-dvw items-center justify-center bg-black/70"
+      className="absolute z-40 flex h-dvh w-dvw items-center justify-center bg-black/70 px-2"
       id="testing"
       onClick={handleClose}
     >
