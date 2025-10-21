@@ -24,6 +24,7 @@ const NewTransaction = () => {
   const navigate = useNavigate();
   // Local States
   const [groupId, setGroupId] = useState(location.state?.groupId);
+  const [showSplitPage, setShowSplitPage] = useState(false);
   const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
   // Late Hooks
   const addTransaction = useAddTransaction(groupId);
@@ -61,11 +62,17 @@ const NewTransaction = () => {
     <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
       <main className="flex w-full flex-col">
         <div className="mb-4 flex w-full flex-row justify-between">
-          <Link to={returnRoute} className="left-0 cursor-pointer">
-            <Panel bgColor="bg-accent-200" className="text-ink-800 flex flex-row" dropOnClick={true}>
-              Cancel
-            </Panel>
-          </Link>
+          <Panel
+            bgColor="bg-accent-200"
+            className="text-ink-800 flex flex-row"
+            dropOnClick={true}
+            onClick={() => {
+              if (!showSplitPage) navigate(returnRoute);
+              else setShowSplitPage(false);
+            }}
+          >
+            {!showSplitPage ? 'Cancel' : 'Back'}
+          </Panel>
           <div className="right-0 cursor-pointer">
             <Panel
               bgColor="bg-accent-200"
@@ -77,13 +84,23 @@ const NewTransaction = () => {
             </Panel>
           </div>
         </div>
-        <TransactionForm currGroup={currGroup} />
+        <TransactionForm showSplitPage={showSplitPage} setShowSplitPage={setShowSplitPage} currGroup={currGroup} />
       </main>
     </div>
   );
 };
 
-const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> }) => {
+type splitType = 'balanced' | 'itemized';
+
+const TransactionForm = ({
+  currGroup,
+  showSplitPage,
+  setShowSplitPage,
+}: {
+  currGroup?: DocumentSnapshot<Group>;
+  showSplitPage: boolean;
+  setShowSplitPage: (val: boolean) => any;
+}) => {
   // Hooks
   const { setShowPopup, setPopup, resetPopup } = usePopupMenu();
 
@@ -95,7 +112,6 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
   const [paidByPhotoUrl, setPaidByPhotoUrl] = useState<string | undefined>(undefined);
 
   // Local States
-  const [showSplitPage, setShowSplitPage] = useState(false);
   const [showPaidBy, setShowPaidby] = useState(false);
 
   // Computed Values
@@ -203,14 +219,12 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
     };
 
     // Popup Elements
-    // const DatePickerElement = () => <DatePicker initialDate={new Date(date)} dateSelected={dateSelected} setDateSelected={setDateSelected} />;
     const PopupElement = () => (
       <>
         <DatePicker
           initialDate={new Date(date)}
           setDateSelected={(date: Date | undefined) => {
             _selectedDate = date;
-            // setDateSelected(date);
           }}
         />
         <div className="mt-4 flex w-full flex-row justify-end gap-2">
@@ -335,7 +349,11 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
             <label htmlFor="description" className="text-ink-400 text-sm font-light">
               Split Type:
             </label>
-            <button type="button" className="border-ink-400 rounded-md border-1 px-3 py-0.5">
+            <button
+              type="button"
+              className="border-ink-400 rounded-md border-1 px-3 py-0.5"
+              onClick={() => setShowSplitPage(true)}
+            >
               Itemized
             </button>
           </div>
@@ -343,7 +361,7 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
       </div>
     </form>
   ) : (
-    <div>This is a test</div>
+    <div onClick={() => setShowSplitPage(false)}>This is a test</div>
   );
 };
 
