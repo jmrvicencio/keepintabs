@@ -1,4 +1,4 @@
-import { useId, useState, type ChangeEventHandler } from 'react';
+import { useEffect, useId, useState, type ChangeEventHandler } from 'react';
 import { format, isValid, parse, setHours, setMinutes } from 'date-fns';
 
 import { DayPicker } from 'react-day-picker';
@@ -15,12 +15,16 @@ const DatePicker = ({
   const [selected, setSelected] = useState<Date | undefined>(initialDate);
   const [month, setMonth] = useState(new Date());
 
-  const [inputValue, setInputValue] = useState('');
-  const [timeValue, setTimeValue] = useState<string>('00:00');
+  const [inputValue, setInputValue] = useState(format(initialDate ?? new Date(), 'MM/dd/yy'));
+  const [timeValue, setTimeValue] = useState<string>(format(initialDate ?? new Date(), 'hh:mm'));
 
-  if (setDateSelected) {
-    setDateSelected(selected);
-  }
+  const updateSelected = (val: Date | undefined) => {
+    setSelected(val);
+
+    if (setDateSelected) {
+      setDateSelected(val);
+    }
+  };
 
   const handleTimeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const time = e.target.value;
@@ -35,19 +39,19 @@ const DatePicker = ({
       [hours, minutes] = [0, 0];
     }
     const newSelectedDate = setHours(setMinutes(selected, minutes), hours);
-    setSelected(newSelectedDate);
+    updateSelected(newSelectedDate);
     setTimeValue(time);
   };
 
   const handleDaySelect = (date: Date | undefined) => {
     if (!timeValue || !date) {
-      setSelected(date);
+      updateSelected(date);
       return;
     }
     const [hours, minutes] = timeValue.split(':').map((str) => parseInt(str, 10));
     const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes);
     const newInputValue = format(newDate, 'MM/dd/yyyy');
-    setSelected(newDate);
+    updateSelected(newDate);
     setMonth(newDate);
     setInputValue(newInputValue);
   };
@@ -58,10 +62,10 @@ const DatePicker = ({
     const parsedDate = parse(e.target.value, 'MM/dd/yyyy', new Date());
 
     if (isValid(parsedDate)) {
-      setSelected(parsedDate);
+      updateSelected(parsedDate);
       setMonth(parsedDate);
     } else {
-      setSelected(undefined);
+      updateSelected(undefined);
     }
   };
 

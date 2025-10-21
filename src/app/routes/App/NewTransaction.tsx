@@ -87,13 +87,15 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
   // Hooks
   const { setShowPopup, setPopup, resetPopup } = usePopupMenu();
 
-  // Local States
+  // Form States
   const { value: total, handleChange: handleTotalChanged } = useDigitField();
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
   const [date, setDate] = useState(Date.now());
-  const [dateSelected, setDateSelected] = useState<Date | undefined>();
   const [paidById, setPaidById] = useState(auth.currentUser!.uid);
   const [paidByPhotoUrl, setPaidByPhotoUrl] = useState<string | undefined>(undefined);
+
+  // Local States
+  const [showSplitPage, setShowSplitPage] = useState(false);
   const [showPaidBy, setShowPaidby] = useState(false);
 
   // Computed Values
@@ -191,16 +193,26 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
   };
 
   const handleDateClicked = async () => {
+    let _selectedDate: Date | undefined = new Date(date);
     const handleDoneCLicked = () => {
-      console.log('done!');
+      console.log(_selectedDate);
+      if (_selectedDate) {
+        setDate(_selectedDate.getTime());
+      }
       resetPopup();
     };
 
     // Popup Elements
-    const DatePickerElement = () => <DatePicker initialDate={new Date(date)} setDateSelected={setDateSelected} />;
+    // const DatePickerElement = () => <DatePicker initialDate={new Date(date)} dateSelected={dateSelected} setDateSelected={setDateSelected} />;
     const PopupElement = () => (
       <>
-        <DatePickerElement />
+        <DatePicker
+          initialDate={new Date(date)}
+          setDateSelected={(date: Date | undefined) => {
+            _selectedDate = date;
+            // setDateSelected(date);
+          }}
+        />
         <div className="mt-4 flex w-full flex-row justify-end gap-2">
           <input
             type="button"
@@ -226,7 +238,7 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
     setShowPopup(true);
   };
 
-  return (
+  return !showSplitPage ? (
     <form className="px-4 outline-none">
       <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
         <div className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
@@ -252,7 +264,7 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
         </div>
         <div className="border-ink-400 relative flex flex-col gap-2 border-b-1 border-dashed py-6 text-base">
           <p className="text-ink-400 mb-2 font-light">(Tap on items to edit)</p>
-          <div className="flex flex-row">
+          <div className="flex flex-row items-center">
             <label htmlFor="description" className="text-ink-400 text-sm font-light">
               Description:
             </label>
@@ -263,14 +275,14 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
               step="off"
               min="0"
               inputMode="text"
-              className={`placeholder-ink-400 w-full rounded-md border-0 text-right font-bold outline-none`}
+              className={`${description == '' && 'empty'} placeholder-ink-400 w-full rounded-md border-0 text-right font-medium outline-none [.empty]:font-normal`}
               maxLength={32}
               value={description}
               placeholder="Add a description"
               onChange={handleDescriptionChanged}
             />
           </div>
-          <div className="flex flex-row">
+          <div className="flex flex-row items-center">
             <label htmlFor="paid_by" className="text-ink-400 text-sm font-light">
               Paid By:
             </label>
@@ -286,13 +298,13 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
               <input
                 id="paid_by"
                 type="button"
-                className={`w-fit cursor-pointer rounded-md border-0 text-right font-bold outline-none`}
+                className={`w-fit cursor-pointer rounded-md border-0 text-right font-medium outline-none`}
                 value={paidByName ?? ''}
                 onClick={handlePaidByClicked}
               />
             </div>
           </div>
-          <div className="flex flex-row">
+          <div className="flex flex-row items-center">
             <label htmlFor="date" className="text-ink-400 text-sm font-light">
               Date:
             </label>
@@ -301,10 +313,10 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
               role="button"
               tabIndex={0}
               onKeyDown={buttonHandleKeypress(handleDateClicked)}
-              className={`w-1 grow-1 cursor-pointer rounded-md border-0 text-right font-bold outline-none`}
+              className={`flex w-1 grow-1 cursor-pointer flex-col rounded-md border-0 text-right font-medium outline-none`}
               onClick={handleDateClicked}
             >
-              {dateString} <span className="text-ink-400 font-normal">{`(${timeString})`}</span>
+              {dateString} <span className="text-ink-400 text-sm font-normal">{`(${timeString})`}</span>
             </div>
           </div>
         </div>
@@ -330,6 +342,8 @@ const TransactionForm = ({ currGroup }: { currGroup?: DocumentSnapshot<Group> })
         </div>
       </div>
     </form>
+  ) : (
+    <div>This is a test</div>
   );
 };
 
