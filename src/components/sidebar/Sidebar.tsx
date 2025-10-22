@@ -1,5 +1,5 @@
 import { memo, type MouseEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { atom, useAtom, useSetAtom } from 'jotai';
 
@@ -23,6 +23,7 @@ function Sidebar() {
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
   const setDataFetched = useSetAtom(writeDataFetchedAtom);
+  const { group: groupParam } = useParams();
 
   const handleSignoutClick = () => {
     auth.signOut();
@@ -32,7 +33,7 @@ function Sidebar() {
   };
 
   const handleFabClicked = (e: MouseEvent) => {
-    navigate(ROUTES.NEW_TRANSACTION);
+    navigate(ROUTES.NEW_TRANSACTION, { state: { groupId: groupParam } });
   };
 
   const Overlay = memo(() => (
