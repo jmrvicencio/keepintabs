@@ -151,17 +151,11 @@ const TransactionForm = ({
   }, [currGroup]);
 
   // Local Methods
-  const handlePaidByClicked = async () => {
+  const handlePaidByClicked = () => {
     const members = currGroup?.data() ? (currGroup.data()?.members ? currGroup.data()!.members : {}) : {};
     let memberPhotoUrls: (string | undefined)[] = [];
 
-    if (currGroup) {
-      memberPhotoUrls = await Promise.all(
-        Object.entries(members).map(([groupUid, val]) => {
-          return getMemberPhotoUrl(currGroup.data()!, groupUid);
-        }),
-      );
-    }
+    if (currGroup) memberPhotoUrls = Object.keys(members).map((key) => undefined);
 
     const handleMemberClicked = (memberId: string) => () => {
       setPaidById(memberId);

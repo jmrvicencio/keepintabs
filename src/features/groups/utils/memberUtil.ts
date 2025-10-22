@@ -8,6 +8,7 @@ import { getUser } from '../../users/utils/getUsers';
  * @param groupUid - uid of the user in the group.
  */
 export const getMemberPhotoUrl = async (group: Group, groupUid: string): Promise<string | undefined> => {
+  // return undefined;
   if (!(groupUid in group.members)) return undefined;
 
   const member = group.members[groupUid];

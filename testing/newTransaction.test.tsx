@@ -1,9 +1,11 @@
 import { describe, it, beforeEach, test, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { Group } from '../src/features/groups/types';
+
 import { ROUTES } from '../src/app/routes';
+import { Group } from '../src/features/groups/types';
+import PopupMenu from '../src/features/popup-menu/components/PopupMenu';
 
 const mockNavigate = vi.fn();
 const { mockUseLocation, mockAddTransaction, mockUseAddTransaction } = vi.hoisted(() => {
@@ -50,6 +52,18 @@ vi.mock('../src/features/groups/hooks/useGroups', () => ({
   })),
 }));
 
+vi.mock('../src/lib/firebase/auth', () => ({
+  auth: {
+    currentUser: {
+      uid: '1234',
+    },
+  },
+}));
+
+vi.mock('../src/features/groups/utils/memberUtil', () => ({
+  getMemberPhotoUrl: () => undefined,
+}));
+
 vi.mock('../src/features/groups/hooks/useAddTransaction', () => ({
   default: mockUseAddTransaction,
 }));
@@ -80,7 +94,15 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
     const { container } = render(
       <MemoryRouter initialEntries={['/transactions/new']}>
         <Routes>
-          <Route path="/transactions/new" element={<NewTransaction />} />
+          <Route
+            path="/transactions/new"
+            element={
+              <>
+                <PopupMenu />
+                <NewTransaction />
+              </>
+            }
+          />
           <Route path={`${ROUTES.GROUPS}/abcd`} element={<p>we are in groups</p>} />
         </Routes>
       </MemoryRouter>,
@@ -129,9 +151,11 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
     expect(paidByButton).toBeInTheDocument();
 
     await user.click(paidByButton);
-    const julianButton = screen.getByRole('button', { name: 'Julian' });
+
+    const julianButton = await screen.findByRole('button', { name: 'Julian' });
 
     await user.click(julianButton);
+    expect(screen.getByLabelText('Paid By:')).toHaveValue('Julian');
   });
 
   it('Groups section displays the name of the current active group', async () => {

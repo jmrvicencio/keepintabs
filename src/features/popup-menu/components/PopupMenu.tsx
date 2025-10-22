@@ -13,7 +13,7 @@ const PopupMenu = () => {
 
   useEffect(() => {
     setShowPopup(false);
-  }, [location]);
+  }, [location.pathname]);
 
   const handlePopupClicked = (e: MouseEvent) => {
     e.stopPropagation();
@@ -26,6 +26,7 @@ const PopupMenu = () => {
 
   return showPopup ? (
     <div
+      data-testid="popup-menu"
       className="absolute z-40 flex h-dvh w-dvw items-center justify-center bg-black/70 px-2"
       id="testing"
       onClick={handleClose}
@@ -44,7 +45,7 @@ const PopupMenu = () => {
       </div>
     </div>
   ) : (
-    <></>
+    <div>Popup is inactive</div>
   );
 };
 

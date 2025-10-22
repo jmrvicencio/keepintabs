@@ -12,9 +12,13 @@ export const usePopupMenu = () => {
     });
   }
 
+  function _setShowPopup(state: boolean) {
+    setShowPopup(state);
+  }
+
   return {
     showPopup,
-    setShowPopup,
+    setShowPopup: _setShowPopup,
     popup,
     setPopup,
     resetPopup,
