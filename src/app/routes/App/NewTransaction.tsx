@@ -24,6 +24,7 @@ const NewTransaction = () => {
   const navigate = useNavigate();
   // Local States
   const [groupId, setGroupId] = useState(location.state?.groupId);
+  const [test, setTest] = useState('');
   const [showSplitPage, setShowSplitPage] = useState(false);
   const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
   // Late Hooks
@@ -53,6 +54,16 @@ const NewTransaction = () => {
   }, [loading]);
 
   // Local Metods
+  const handleCancelClicked = () => {
+    if (!showSplitPage) {
+      console.log('returning to route: ', returnRoute);
+      setTest('return route called: ' + returnRoute);
+      navigate(returnRoute);
+    } else {
+      setShowSplitPage(false);
+    }
+  };
+
   const handleDoneClicked = () => {
     addTransaction();
     navigate(returnRoute);
@@ -66,10 +77,7 @@ const NewTransaction = () => {
             bgColor="bg-accent-200"
             className="text-ink-800 flex flex-row"
             dropOnClick={true}
-            onClick={() => {
-              if (!showSplitPage) navigate(returnRoute);
-              else setShowSplitPage(false);
-            }}
+            onClick={handleCancelClicked}
           >
             {!showSplitPage ? 'Cancel' : 'Back'}
           </Panel>
@@ -151,11 +159,17 @@ const TransactionForm = ({
   }, [currGroup]);
 
   // Local Methods
-  const handlePaidByClicked = () => {
+  const handlePaidByClicked = async () => {
     const members = currGroup?.data() ? (currGroup.data()?.members ? currGroup.data()!.members : {}) : {};
     let memberPhotoUrls: (string | undefined)[] = [];
 
-    if (currGroup) memberPhotoUrls = Object.keys(members).map((key) => undefined);
+    if (currGroup) {
+      memberPhotoUrls = await Promise.all(
+        Object.entries(members).map(([groupUid, val]) => {
+          return getMemberPhotoUrl(currGroup.data()!, groupUid);
+        }),
+      );
+    }
 
     const handleMemberClicked = (memberId: string) => () => {
       setPaidById(memberId);

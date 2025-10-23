@@ -112,12 +112,11 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
   const user = userEvent.setup();
 
   it('Tapping Cancel returns the user to the previous group route', async () => {
-    const backButton = screen.getByRole('link', { name: 'Cancel' });
-    expect(backButton).toBeInTheDocument();
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    expect(cancelButton).toBeInTheDocument();
 
-    await user.click(backButton);
-    const groupsGreeting = screen.getByText('we are in groups');
-    expect(groupsGreeting).toBeInTheDocument();
+    await user.click(cancelButton);
+    expect(mockNavigate).toBeCalledWith(`${ROUTES.GROUPS}/abcd`);
   });
 
   it('Total inputs format respond and format correctly when typed into', async () => {
@@ -197,10 +196,10 @@ describe('[New Transaction] [Unit] New Transaction Page not passed a GroupId sta
   it('Groups section displays the name of the first group it can find, and pressing back should return to app', async () => {
     expect(screen.getByRole('button', { name: 'Test Group' })).toBeInTheDocument();
 
-    const cancelButton = screen.getByRole('link', { name: 'Cancel' });
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     expect(cancelButton).toBeInTheDocument();
 
     await userEvent.click(cancelButton);
-    expect(screen.getByText('We are in app')).toBeInTheDocument();
+    expect(mockNavigate).toBeCalledWith(ROUTES.APP);
   });
 });
