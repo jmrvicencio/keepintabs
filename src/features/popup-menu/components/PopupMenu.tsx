@@ -45,7 +45,7 @@ const PopupMenu = () => {
       </div>
     </div>
   ) : (
-    <div>Popup is inactive</div>
+    <></>
   );
 };
 

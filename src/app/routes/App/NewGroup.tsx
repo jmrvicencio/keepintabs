@@ -80,9 +80,9 @@ const NewGroup = () => {
     setInviteName('');
   };
 
-  const handleRemoveMember = (nameToRemove: string) => {
-    const nextMembers = members.filter((member) => {
-      return member.displayName != nameToRemove;
+  const handleRemoveMember = (i: number) => {
+    const nextMembers = members.filter((member, _i) => {
+      return _i != i;
     });
 
     setMembers(nextMembers);
@@ -188,7 +188,7 @@ const NewGroup = () => {
                   id={i}
                   member={member}
                   onClick={() => {
-                    handleRemoveMember(member.displayName);
+                    handleRemoveMember(i);
                   }}
                   setMembers={setMembers}
                   findMembers={findMembers}
@@ -310,7 +310,7 @@ const AddedUser = ({
           </form>
         ) : (
           <p
-            className="text-ink-800/80 cursor-pointer"
+            className={`${!member.email && 'empty'} text-ink-800/80 [.empty]:text-ink-400 cursor-pointer`}
             onClick={() => {
               setEditEmail(true);
               setEditName(false);
