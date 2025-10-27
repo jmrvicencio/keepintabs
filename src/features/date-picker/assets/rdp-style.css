@@ -1,0 +1,5 @@
+.rdp-weeks:has(tr:nth-child(5):last-child)::after {
+  height: 100px;
+  width: 200px;
+  border: 1px solid red;
+}

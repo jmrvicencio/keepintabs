@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, ChangeEvent, KeyboardEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
-import { type DocumentSnapshot } from 'firebase/firestore';
+import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import { format, parse } from 'date-fns';
 
@@ -16,6 +16,14 @@ import useAddTransaction from '../../../features/groups/hooks/useAddTransaction'
 import { User as UserIcon } from 'lucide-react';
 import DatePicker from '../../../features/date-picker/DatePicker';
 import { buttonHandleKeypress } from '../../../util/buttonHandleKeypress';
+import { currentGroup } from '../../../store/currentGroup';
+
+type SplitType = 'balanced' | 'itemized';
+interface ItemizedEntry {
+  description: string;
+  amount: number;
+  payingMembers: Set<string>; // set of groupUserIds
+}
 
 const NewTransaction = () => {
   // Call Hooks
@@ -75,7 +83,7 @@ const NewTransaction = () => {
         <div className="mb-4 flex w-full flex-row justify-between">
           <Panel
             bgColor="bg-accent-200"
-            className="text-ink-800 flex flex-row"
+            className="text-ink-800 flex cursor-pointer flex-row"
             dropOnClick={true}
             onClick={handleCancelClicked}
           >
@@ -98,8 +106,6 @@ const NewTransaction = () => {
   );
 };
 
-type splitType = 'balanced' | 'itemized';
-
 const TransactionForm = ({
   currGroup,
   showSplitPage,
@@ -113,11 +119,12 @@ const TransactionForm = ({
   const { setShowPopup, setPopup, resetPopup } = usePopupMenu();
 
   // Form States
-  const { value: total, handleChange: handleTotalChanged } = useDigitField();
+  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
   const [date, setDate] = useState(Date.now());
   const [paidById, setPaidById] = useState(auth.currentUser!.uid);
-  const [paidByPhotoUrl, setPaidByPhotoUrl] = useState<string | undefined>(undefined);
+  const [splitType, setSplitType] = useState<SplitType>('itemized');
+  const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
 
   // Local States
   const [showPaidBy, setShowPaidby] = useState(false);
@@ -127,9 +134,12 @@ const TransactionForm = ({
     currGroup && paidById in currGroup.data()?.members!
       ? currGroup.data()?.members[paidById].displayName
       : auth.currentUser!.displayName;
+  const paidByPhotoUrl = paidById in memberPhotoUrls ? memberPhotoUrls[paidById] : undefined;
   const groupName: string = currGroup && currGroup.data() ? currGroup.data()!.name : ' ';
   const dateString = format(date, 'dd/MM/yy');
   const timeString = format(date, 'K:mm aaa');
+
+  console.log('photoUrls: ', memberPhotoUrls);
 
   // Update PaidById to the groupId of user so the uids match.
   // (groupUID might be different from users uid)
@@ -143,33 +153,45 @@ const TransactionForm = ({
     }
   }, [currGroup]);
 
+  // Get all member photoUrls every time currGroup has updated
   useEffect(() => {
-    const updatePaidByPhotoUrl = async () => {
-      setPaidByPhotoUrl(currGroup ? await getMemberPhotoUrl(currGroup!.data()!, paidById) : undefined);
+    if (!currGroup) return;
+
+    const fetchMemberPhotoUrls = async () => {
+      const group = currGroup.data()!;
+      const groupMembers = group.members;
+      const photoUrlsArray = await Promise.all(
+        Object.keys(groupMembers).map(async (key) => {
+          const photoUrl = await getMemberPhotoUrl(group, key);
+          return { key, photoUrl };
+        }),
+      );
+
+      // convert the array of Records into an actual Record Object
+      const photoUrlsObject = photoUrlsArray.reduce((acc: Record<string, string | undefined>, { key, photoUrl }) => {
+        acc[key] = photoUrl;
+        return acc;
+      }, {});
+
+      setMemberPhotoUrls(photoUrlsObject);
     };
 
-    updatePaidByPhotoUrl();
+    fetchMemberPhotoUrls();
   }, [currGroup]);
 
-  // Update the popup when the currGroup has finished loading
+  // Update the popup when the currGroup or memberPhotoUrls has finished loading
   useEffect(() => {
     if (!currGroup || !showPaidBy) return;
 
     handlePaidByClicked();
-  }, [currGroup]);
+  }, [currGroup, memberPhotoUrls]);
 
   // Local Methods
-  const handlePaidByClicked = async () => {
-    const members = currGroup?.data() ? (currGroup.data()?.members ? currGroup.data()!.members : {}) : {};
-    let memberPhotoUrls: (string | undefined)[] = [];
+  // ------------------------
 
-    if (currGroup) {
-      memberPhotoUrls = await Promise.all(
-        Object.entries(members).map(([groupUid, val]) => {
-          return getMemberPhotoUrl(currGroup.data()!, groupUid);
-        }),
-      );
-    }
+  // Call Paid By Popup
+  const handlePaidByClicked = () => {
+    const members = currGroup?.data() ? (currGroup.data()?.members ? currGroup.data()!.members : {}) : {};
 
     const handleMemberClicked = (memberId: string) => () => {
       setPaidById(memberId);
@@ -185,7 +207,7 @@ const TransactionForm = ({
 
     const memberList = (
       <div className="flex flex-col gap-2">
-        {Object.entries(members).map(([memberId, member], i) => (
+        {Object.entries(members).map(([memberId, member]) => (
           <div
             key={memberId}
             role="button"
@@ -196,9 +218,9 @@ const TransactionForm = ({
           >
             <div
               className="absolute left-0 flex h-8 w-8 items-center justify-center rounded-lg border-1 bg-cover"
-              style={{ backgroundImage: `url('${memberPhotoUrls[i]}')` }}
+              style={{ backgroundImage: `url('${memberPhotoUrls[memberId]}')` }}
             >
-              {!memberPhotoUrls[i] && <UserIcon className="text-ink-400" />}
+              {!memberPhotoUrls[memberId] && <UserIcon className="text-ink-400" />}
             </div>
             <p className="grow">{member.displayName}</p>
           </div>
@@ -216,6 +238,7 @@ const TransactionForm = ({
     setShowPopup(true);
   };
 
+  // Call DatePicker Popup
   const handleDateClicked = async () => {
     let _selectedDate: Date | undefined = new Date(date);
     const handleDoneCLicked = () => {
@@ -226,7 +249,7 @@ const TransactionForm = ({
       resetPopup();
     };
 
-    // Popup Elements
+    // DatePicker Popup JSX
     const PopupElement = () => (
       <>
         <DatePicker
@@ -362,14 +385,87 @@ const TransactionForm = ({
               className="border-ink-400 rounded-md border-1 px-3 py-0.5"
               onClick={() => setShowSplitPage(true)}
             >
-              Itemized
+              {splitType.charAt(0).toUpperCase() + splitType.slice(1)}
             </button>
           </div>
         </div>
       </div>
     </form>
   ) : (
-    <div onClick={() => setShowSplitPage(false)}>This is a test</div>
+    <SplitPage
+      splitType={[splitType, setSplitType]}
+      total={[total, setTotal]}
+      currGroup={currGroup}
+      memberPhotoUrls={memberPhotoUrls}
+    />
+  );
+};
+
+const SplitPage = ({
+  splitType,
+  total,
+  currGroup,
+  memberPhotoUrls,
+}: {
+  splitType: [SplitType, (val: SplitType) => any];
+  total: [string, (val: string) => any];
+  currGroup?: DocumentSnapshot<Group, DocumentData>;
+  memberPhotoUrls: Record<string, string | undefined>;
+}) => {
+  const [splitTypeVal, setSplitType] = splitType;
+  const [totalVal, setTotal] = total;
+  const { value: splitTotal, handleChange: handleSplitTotalChanged } = useDigitField(totalVal);
+  // const [itemizedEntries, setItemizedEntires] = useState<ItemizedEntry[]>([]);
+  const [splitData, setSplitData] = useState<ItemizedEntry[] | Record<string, boolean>>([]);
+
+  const splitTotalNum = Number(splitTotal);
+  const groupData = currGroup?.data();
+
+  console.log(groupData);
+
+  return (
+    <div className="px-4 outline-none">
+      <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
+        <div className="border-ink-400 gap:2 relative flex flex-col border-b-1 border-dashed py-6">
+          <h2 className="font-gieonto text-4xl">Split Type</h2>
+          <div className="flex flex-row justify-center gap-2 py-4">
+            <input
+              type="button"
+              value="Balanced"
+              className={`${splitTypeVal == 'balanced' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
+              onClick={() => setSplitType('balanced')}
+            />
+            <input
+              type="button"
+              value="Itemized"
+              className={`${splitTypeVal == 'itemized' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
+              onClick={() => setSplitType('itemized')}
+            />
+          </div>
+        </div>
+        <div className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
+          <input
+            id="total"
+            type="text"
+            autoComplete="off"
+            step="off"
+            min="0"
+            inputMode="decimal"
+            className={`peer w-full rounded-md border-0 text-center text-4xl font-bold outline-none`}
+            maxLength={32}
+            onChange={handleSplitTotalChanged}
+            value={splitTotal}
+            autoFocus
+          />
+          <div className="flex flex-row justify-center">
+            <label htmlFor="total" className="text-ink-400 pr-2 text-sm font-light">
+              Total Amount
+            </label>
+            <p className="font-bold">(PHP)</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
