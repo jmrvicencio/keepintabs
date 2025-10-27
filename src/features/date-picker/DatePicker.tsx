@@ -101,7 +101,8 @@ const DatePicker = ({
         classNames={{
           root: 'relative w-full',
           months: 'w-full',
-          month_grid: 'mt-4 w-full table-fixed',
+          month_grid:
+            'mt-4 w-full table-fixed has-[tr:last-child:nth-child(5)]:mb-10 has-[tr:last-child:nth-child(4)]:mb-20',
           week: 'h-10',
           day: 'aspect-square relative',
           day_button: 'w-full text-center h-full cursor-pointer',
