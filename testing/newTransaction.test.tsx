@@ -80,7 +80,7 @@ vi.mock('react-router-dom', async () => {
 
 import NewTransaction from '../src/app/routes/App/NewTransaction';
 
-describe('[New Transaction] [Unit] New Transaction Page', () => {
+describe('[Unit] [New Transaction] New Transaction Page', () => {
   beforeEach(() => {
     // Define the groupId in state to be a groupId so that it can be referenced
     // as the previous group before switching to this page.
@@ -161,6 +161,28 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
     expect(screen.getByRole('button', { name: 'Test Group' })).toBeInTheDocument();
   });
 
+  it('Can create itemized split type transactions', async () => {
+    const splitTypeButton = screen.getByLabelText('Group:');
+    await user.click(splitTypeButton);
+
+    const itemizedButton = screen.getByRole('button', { name: 'Itemized' });
+    await user.click(itemizedButton);
+
+    const addItemButton = screen.getByRole('button', { name: 'Add Item' });
+    await user.click(addItemButton);
+
+    const itemDescInputs = screen.getAllByTestId('item-desc');
+    const lastItemDesc = itemDescInputs[itemDescInputs.length - 1];
+    expect(lastItemDesc).toHaveFocus();
+    await user.type(lastItemDesc, 'Jollibee Chicken');
+    expect(lastItemDesc).toHaveValue('Jollibee Chicken');
+
+    const itempriceInputs = screen.getAllByTestId('item-price');
+    const lastItemprice = itempriceInputs[itempriceInputs.length - 1];
+    await user.type(lastItemprice, '100');
+    expect(lastItemprice).toHaveValue('1.00');
+  });
+
   it('Transactions are submitted properly', async () => {
     const doneButton = screen.getByRole('button', { name: 'Done' });
     expect(doneButton).toBeInTheDocument();
@@ -171,7 +193,7 @@ describe('[New Transaction] [Unit] New Transaction Page', () => {
   });
 });
 
-describe('[New Transaction] [Unit] New Transaction Page not passed a GroupId state', () => {
+describe('[Unit] [New Transaction] New Transaction Page not passed a GroupId state', () => {
   beforeEach(() => {
     // Not defining a groupId in the state to simluate clicking
     //  new transaction from outside of a group.
