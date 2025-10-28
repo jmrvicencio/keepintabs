@@ -140,8 +140,6 @@ const TransactionForm = ({
   const dateString = format(date, 'dd/MM/yy');
   const timeString = format(date, 'K:mm aaa');
 
-  console.log('photoUrls: ', memberPhotoUrls);
-
   // Update PaidById to the groupId of user so the uids match.
   // (groupUID might be different from users uid)
   useEffect(() => {
@@ -243,7 +241,6 @@ const TransactionForm = ({
   const handleDateClicked = async () => {
     let _selectedDate: Date | undefined = new Date(date);
     const handleDoneCLicked = () => {
-      console.log(_selectedDate);
       if (_selectedDate) {
         setDate(_selectedDate.getTime());
       }
@@ -425,8 +422,6 @@ const SplitPage = ({
 
   const splitTotalNum = Number(splitTotal);
   const groupData = currGroup?.data();
-
-  console.log(groupData);
 
   const handleAddItem = () => {
     const newItemizedData = [...itemizedData];
