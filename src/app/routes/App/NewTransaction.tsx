@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo, ChangeEvent, KeyboardEvent } from 'react';
+import { useState, useEffect, useMemo, useRef, type ChangeEvent, KeyboardEvent, useLayoutEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import { format, parse } from 'date-fns';
+import { formatValue as formatToDigit } from '../../../hooks/useDigitField';
 
 import { usePopupMenu } from '../../../features/popup-menu/hooks/usePopupMenu';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
@@ -20,9 +21,9 @@ import { currentGroup } from '../../../store/currentGroup';
 
 type SplitType = 'balanced' | 'itemized';
 interface ItemizedEntry {
-  description: string;
-  amount: number;
-  payingMembers: Set<string>; // set of groupUserIds
+  description?: string;
+  amount?: string;
+  payingMembers?: Set<string>; // set of groupUserIds
 }
 
 const NewTransaction = () => {
@@ -96,7 +97,7 @@ const NewTransaction = () => {
               dropOnClick={true}
               onClick={handleDoneClicked}
             >
-              Done
+              {!showSplitPage ? 'Done' : 'Continue'}
             </Panel>
           </div>
         </div>
@@ -412,16 +413,59 @@ const SplitPage = ({
   currGroup?: DocumentSnapshot<Group, DocumentData>;
   memberPhotoUrls: Record<string, string | undefined>;
 }) => {
+  const itemDescRef = useRef<(HTMLTextAreaElement | null)[]>([]);
+  const itemPriceRef = useRef<(HTMLInputElement | null)[]>([]);
+
   const [splitTypeVal, setSplitType] = splitType;
   const [totalVal, setTotal] = total;
   const { value: splitTotal, handleChange: handleSplitTotalChanged } = useDigitField(totalVal);
   // const [itemizedEntries, setItemizedEntires] = useState<ItemizedEntry[]>([]);
-  const [splitData, setSplitData] = useState<ItemizedEntry[] | Record<string, boolean>>([]);
+  const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>([]);
+  const [toggleFocus, setToggleFocus] = useState<boolean>(false);
 
   const splitTotalNum = Number(splitTotal);
   const groupData = currGroup?.data();
 
   console.log(groupData);
+
+  const handleAddItem = () => {
+    const newItemizedData = [...itemizedData];
+    newItemizedData.push({});
+    setItemizedData(newItemizedData);
+    setToggleFocus(!toggleFocus);
+
+    itemDescRef.current[newItemizedData.length - 1]?.focus();
+  };
+
+  useLayoutEffect(() => {
+    itemDescRef.current[itemizedData.length - 1]?.focus();
+  }, [toggleFocus]);
+
+  const handleItemDescChanged = (i: number) => {
+    return (e: ChangeEvent<HTMLTextAreaElement>) => {
+      let newVal = e.currentTarget.value;
+      const newSplitData = [...itemizedData];
+
+      newSplitData[i].description = newVal;
+      setItemizedData(newSplitData);
+    };
+  };
+
+  const handleItemPriceChanged = (i: number) => {
+    return (e: ChangeEvent<HTMLInputElement>) => {
+      let newVal = e.currentTarget.value;
+      const newSplitData = [...(itemizedData as ItemizedEntry[])];
+
+      if (newVal.length <= 1) newVal = '0.0' + newVal;
+      const isOnlyDigits = /^(\d|\,|\.)+$/.test(newVal);
+      if (!isOnlyDigits) return;
+
+      newVal = formatToDigit(newVal);
+
+      newSplitData[i].amount = newVal;
+      setItemizedData(newSplitData);
+    };
+  };
 
   return (
     <div className="px-4 outline-none">
@@ -464,6 +508,55 @@ const SplitPage = ({
             <p className="font-bold">(PHP)</p>
           </div>
         </div>
+        {splitTypeVal == 'itemized' ? (
+          <>
+            {itemizedData.map((itemizedItem, i) => (
+              <div key={i} className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
+                <div className="flex flex-row items-center gap-2">
+                  <textarea
+                    id="item-desc"
+                    ref={(elem) => {
+                      itemDescRef.current[i] = elem;
+                    }}
+                    data-testid="item-desc"
+                    placeholder="Description"
+                    onChange={handleItemDescChanged(i)}
+                    value={itemizedItem.description}
+                    className="field-sizing-content shrink-1 grow-1 px-1"
+                  />
+                  <p>Php</p>
+                  <input
+                    id="item-price"
+                    type="text"
+                    ref={(elem) => {
+                      itemPriceRef.current[i] = elem;
+                    }}
+                    data-testid="item-price"
+                    placeholder="0.00"
+                    onChange={handleItemPriceChanged(i)}
+                    value={itemizedItem.amount}
+                    className="font-courier-prime field-sizing-content max-w-1/2 px-1"
+                  />
+                </div>
+              </div>
+            ))}
+            <div className="border-ink-400 relative flex flex-col pt-6">
+              <div className="m-auto w-fit">
+                <Panel
+                  bgColor="bg-accent-200"
+                  padding="px-3 py-2"
+                  className="w-fit cursor-pointer"
+                  dropOnClick={true}
+                  onClick={handleAddItem}
+                >
+                  Add Item
+                </Panel>
+              </div>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );

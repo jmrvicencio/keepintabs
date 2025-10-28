@@ -1,5 +1,16 @@
 import { ChangeEvent, useState } from 'react';
 
+export const formatValue = (val: string): string => {
+  val = val.replaceAll(',', '').replaceAll('.', '');
+  const formatted = new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(val) * 0.01);
+
+  return formatted;
+};
+
 const useDigitField = (initialVal: string = '0.00') => {
   const [value, setValue] = useState<string>(initialVal);
 
@@ -24,17 +35,6 @@ const useDigitField = (initialVal: string = '0.00') => {
 
     const formattedVal = formatValue(val);
     setValue(formattedVal);
-  };
-
-  const formatValue = (val: string): string => {
-    val = val.replaceAll(',', '').replaceAll('.', '');
-    const formatted = new Intl.NumberFormat('en-US', {
-      style: 'decimal',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(Number(val) * 0.01);
-
-    return formatted;
   };
 
   return {
