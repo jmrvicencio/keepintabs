@@ -170,16 +170,18 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
     const addItemButton = screen.getByRole('button', { name: 'Add Item' });
     await user.click(addItemButton);
 
-    const itemDescInputs = screen.getAllByTestId('item-desc');
-    const lastItemDesc = itemDescInputs[itemDescInputs.length - 1];
+    let itemDescInputs = screen.getAllByTestId('item-desc');
+    const lastItemDesc = itemDescInputs[0];
     expect(lastItemDesc).toHaveFocus();
     await user.type(lastItemDesc, 'Jollibee Chicken');
     expect(lastItemDesc).toHaveValue('Jollibee Chicken');
 
-    const itemPriceInputs = screen.getAllByTestId('item-price');
-    const lastItemprice = itemPriceInputs[itemPriceInputs.length - 1];
+    let itemPriceInputs = screen.getAllByTestId('item-price');
+    const lastItemprice = itemPriceInputs[0];
     await user.type(lastItemprice, '100');
     expect(lastItemprice).toHaveValue('1.00');
+
+    expect(screen.getByText('Julian')).toBeInTheDocument();
   });
 
   it('Split type transactions show a "remainder" and inputted amount should not go below total of itemized items', async () => {

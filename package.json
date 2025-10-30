@@ -13,7 +13,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.12",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/vite": "^4.1.16",
     "@tanstack/react-query": "^5.85.6",
     "date-fns": "^4.1.0",
     "firebase": "^12.1.0",
@@ -43,7 +44,7 @@
     "jsdom": "^27.0.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
-    "tailwindcss": "^4.1.12",
+    "tailwindcss": "^4.1.16",
     "vite": "^7.1.2",
     "vitest": "^3.2.4"
   }

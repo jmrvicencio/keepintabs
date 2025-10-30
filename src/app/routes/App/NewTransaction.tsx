@@ -166,7 +166,7 @@ const TransactionForm = ({
         }),
       );
 
-      // convert the array of Records into an actual Record Object
+      // convert the array of entries into an actual Record Object
       const photoUrlsObject = photoUrlsArray.reduce((acc: Record<string, string | undefined>, { key, photoUrl }) => {
         acc[key] = photoUrl;
         return acc;
