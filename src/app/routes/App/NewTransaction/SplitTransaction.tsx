@@ -1,4 +1,4 @@
-import { useState, useRef, useReducer, type ChangeEvent, useLayoutEffect, useEffect } from 'react';
+import { useState, useRef, useReducer, type ChangeEvent, useLayoutEffect, useEffect, MouseEvent } from 'react';
 import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { formatValue as formatToDigit } from '../../../../hooks/useDigitField';
 
@@ -147,6 +147,20 @@ const SplitTransactionPage = ({
     };
   };
 
+  const handleMemberClicked = (i: number, memberGroupId: string) => {
+    return (e: MouseEvent<HTMLInputElement>) => {
+      const isChecked = e.currentTarget.checked;
+      const nextItemizedData = [...itemizedData];
+
+      nextItemizedData[i] = { ...nextItemizedData[i], payingMembers: new Set([...nextItemizedData[i].payingMembers]) };
+
+      if (isChecked) nextItemizedData[i].payingMembers.add(memberGroupId);
+      else nextItemizedData[i].payingMembers.delete(memberGroupId);
+
+      setItemizedData(nextItemizedData);
+    };
+  };
+
   return (
     <div className="px-4 outline-none">
       <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
@@ -222,38 +236,48 @@ const SplitTransactionPage = ({
                 </div>
                 <div className="flex flex-col gap-2">
                   {groupData &&
-                    Object.entries(groupData.members).map(([key, member]) => (
-                      <div key={key} className="flex flex-row items-center justify-baseline gap-2">
-                        <input
-                          id={`split-${i}-${key}`}
-                          type="checkbox"
-                          value=""
-                          className="h-4 w-4 rounded-sm accent-black checked:bg-black"
-                        />
-                        <label
-                          htmlFor={`split-${i}-${key}`}
-                          className="text-ink-400 flex w-full flex-row gap-2 font-light"
-                        >
-                          <div
-                            {...(memberPhotoUrls[key] && {
-                              style: {
-                                backgroundImage: `url('${memberPhotoUrls[key]}')`,
-                              },
-                            })}
-                            className={`${!memberPhotoUrls[key] && 'border'} border-ink-400 flex h-6 w-6 items-center justify-center rounded-full bg-cover`}
+                    Object.entries(groupData.members).map(([memberGroupId, member]) => {
+                      const membersSplitting = itemizedItem.payingMembers.size;
+                      const itemizedItemAmount = Number(itemizedItem.amount.replaceAll(',', '').replaceAll('.', ''));
+                      const itemizedSplit = Math.floor(itemizedItemAmount / membersSplitting);
+
+                      return (
+                        <div key={memberGroupId} className="flex flex-row items-center justify-baseline gap-2">
+                          <input
+                            // {...(itemizedItem.payingMembers.has(memberGroupId) && { checked: true })}
+                            checked={itemizedItem.payingMembers.has(memberGroupId)}
+                            onClick={handleMemberClicked(i, memberGroupId)}
+                            id={`split-${i}-${memberGroupId}`}
+                            type="checkbox"
+                            className="h-4 w-4 rounded-sm accent-black checked:bg-black"
+                          />
+                          <label
+                            htmlFor={`split-${i}-${memberGroupId}`}
+                            className="text-ink-400 flex w-full flex-row gap-2 font-light"
                           >
-                            {!memberPhotoUrls[key] && <UserIcon className="text-ink-400" />}
-                          </div>
-                          <p className="grow text-left">{member.displayName}</p>
-                          <p className="text-sm">
-                            Php{' '}
-                            <span className="font-courier-prime">
-                              {itemizedData[i].payingMembers.has(key) ? 'Included' : '0.00'}
-                            </span>
-                          </p>
-                        </label>
-                      </div>
-                    ))}
+                            <div
+                              {...(memberPhotoUrls[memberGroupId] && {
+                                style: {
+                                  backgroundImage: `url('${memberPhotoUrls[memberGroupId]}')`,
+                                },
+                              })}
+                              className={`${!memberPhotoUrls[memberGroupId] && 'border'} border-ink-400 flex h-6 w-6 items-center justify-center rounded-full bg-cover`}
+                            >
+                              {!memberPhotoUrls[memberGroupId] && <UserIcon className="text-ink-400" />}
+                            </div>
+                            <p className="grow text-left">{member.displayName}</p>
+                            <p className="text-sm">
+                              Php{' '}
+                              <span className="font-courier-prime">
+                                {itemizedItem.payingMembers.has(memberGroupId)
+                                  ? formatToDigit(`${itemizedSplit}`)
+                                  : '0.00'}
+                              </span>
+                            </p>
+                          </label>
+                        </div>
+                      );
+                    })}
                 </div>
                 <div className="">
                   <input
