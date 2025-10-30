@@ -162,12 +162,11 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
   });
 
   it('Can create itemized split type transactions', async () => {
-    const splitTypeButton = screen.getByLabelText('Group:');
+    // Open Split type Page
+    const splitTypeButton = screen.getByLabelText('Split Type:');
     await user.click(splitTypeButton);
 
-    const itemizedButton = screen.getByRole('button', { name: 'Itemized' });
-    await user.click(itemizedButton);
-
+    // Split Type Page Tests
     const addItemButton = screen.getByRole('button', { name: 'Add Item' });
     await user.click(addItemButton);
 
@@ -177,10 +176,64 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
     await user.type(lastItemDesc, 'Jollibee Chicken');
     expect(lastItemDesc).toHaveValue('Jollibee Chicken');
 
-    const itempriceInputs = screen.getAllByTestId('item-price');
-    const lastItemprice = itempriceInputs[itempriceInputs.length - 1];
+    const itemPriceInputs = screen.getAllByTestId('item-price');
+    const lastItemprice = itemPriceInputs[itemPriceInputs.length - 1];
     await user.type(lastItemprice, '100');
     expect(lastItemprice).toHaveValue('1.00');
+  });
+
+  it('Split type transactions show a "remainder" and inputted amount should not go below total of itemized items', async () => {
+    // Open Split type Page
+    await user.click(screen.getByLabelText('Split Type:'));
+
+    // Split Type Page Tests
+    // Add in a few items with prices
+    const addItemButton = screen.getByRole('button', { name: 'Add Item' });
+    await user.click(addItemButton);
+    await user.click(addItemButton);
+
+    let itemPriceInputs = screen.getAllByTestId('item-price');
+    expect(itemPriceInputs.length).toBe(2);
+
+    await user.type(itemPriceInputs[0], '200');
+    await user.type(itemPriceInputs[1], '400');
+
+    // Check that total value has been automatically updated
+    const totalAmountField = screen.getByLabelText('Total Amount');
+    expect(totalAmountField).toBeInTheDocument();
+    expect(totalAmountField).toHaveValue('6.00');
+
+    // Backspace on total field should not bring the total lower than the computed total of all items
+    await user.type(totalAmountField, '{backspace}{backspace}');
+    expect(totalAmountField).toHaveValue('6.00');
+    await user.clear(totalAmountField);
+    expect(totalAmountField).toHaveValue('6.00');
+
+    // User can still set a higher total than the computed totals
+    // This should create a remainder field that adds the remaining to the bill
+    await user.type(totalAmountField, '000');
+    expect(totalAmountField).toHaveValue('6,000.00');
+
+    const remainderField = screen.getByLabelText('Remainder');
+    expect(remainderField).toHaveValue('5,994.00');
+
+    // If Item Total is lower than SplitTotal, remainder should increase.
+    // Split Total will not change when there is Remainder Remaining.
+    await user.click(screen.getAllByRole('button', { name: 'Remove Item' })[1]);
+    expect(remainderField).toHaveValue('5,998.00');
+
+    await user.click(addItemButton);
+    itemPriceInputs = screen.getAllByTestId('item-price');
+    expect(itemPriceInputs.length).toBe(2);
+    await user.clear(itemPriceInputs[1]);
+    await user.type(itemPriceInputs[1], '700000');
+    expect(itemPriceInputs[1]).toHaveValue('7,000.00');
+
+    // If there is no remainder, Split Total will always equal the Item Total
+    expect(totalAmountField).toHaveValue('7,002.00');
+    expect(remainderField).not.toBeInTheDocument();
+    await user.click(screen.getAllByRole('button', { name: 'Remove Item' })[1]);
+    expect(totalAmountField).toHaveValue('2.00');
   });
 
   it('Transactions are submitted properly', async () => {

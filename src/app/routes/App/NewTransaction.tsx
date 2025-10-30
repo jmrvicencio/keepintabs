@@ -1,10 +1,14 @@
-import { useState, useEffect, useMemo, useRef, type ChangeEvent, KeyboardEvent, useLayoutEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo, useReducer, type KeyboardEvent } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
-import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { type DocumentSnapshot } from 'firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
-import { format, parse } from 'date-fns';
-import { formatValue as formatToDigit } from '../../../hooks/useDigitField';
+import { format } from 'date-fns';
+
+import SplitTransactionPage from './NewTransaction/SplitTransaction';
+import Panel from '../../../components/neubrutalist/Panel';
+import { User as UserIcon } from 'lucide-react';
+import DatePicker from '../../../features/date-picker/DatePicker';
 
 import { usePopupMenu } from '../../../features/popup-menu/hooks/usePopupMenu';
 import { useGroups } from '../../../features/groups/hooks/useGroups';
@@ -12,18 +16,14 @@ import { Group } from '../../../features/groups/types';
 import { getMemberPhotoUrl } from '../../../features/groups/utils/memberUtil';
 import useDigitField from '../../../hooks/useDigitField';
 import useInputField from '../../../hooks/useInputField';
-import Panel from '../../../components/neubrutalist/Panel';
 import useAddTransaction from '../../../features/groups/hooks/useAddTransaction';
-import { User as UserIcon } from 'lucide-react';
-import DatePicker from '../../../features/date-picker/DatePicker';
 import { buttonHandleKeypress } from '../../../util/buttonHandleKeypress';
-import { currentGroup } from '../../../store/currentGroup';
 
-type SplitType = 'balanced' | 'itemized';
-interface ItemizedEntry {
-  description?: string;
-  amount?: string;
-  payingMembers?: Set<string>; // set of groupUserIds
+export type SplitType = 'balanced' | 'itemized';
+export interface ItemizedEntry {
+  description: string;
+  amount: string;
+  payingMembers: Set<string>; // set of groupUserIds
 }
 
 const NewTransaction = () => {
@@ -375,10 +375,12 @@ const TransactionForm = ({
         </div>
         <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">
           <div className="flex flex-row items-center justify-between">
-            <label htmlFor="description" className="text-ink-400 text-sm font-light">
+            <label htmlFor="split-type" className="text-ink-400 text-sm font-light">
               Split Type:
             </label>
             <button
+              name="split-type"
+              id="split-type"
               type="button"
               className="border-ink-400 rounded-md border-1 px-3 py-0.5"
               onClick={() => setShowSplitPage(true)}
@@ -390,170 +392,12 @@ const TransactionForm = ({
       </div>
     </form>
   ) : (
-    <SplitPage
+    <SplitTransactionPage
       splitType={[splitType, setSplitType]}
       total={[total, setTotal]}
       currGroup={currGroup}
       memberPhotoUrls={memberPhotoUrls}
     />
-  );
-};
-
-const SplitPage = ({
-  splitType,
-  total,
-  currGroup,
-  memberPhotoUrls,
-}: {
-  splitType: [SplitType, (val: SplitType) => any];
-  total: [string, (val: string) => any];
-  currGroup?: DocumentSnapshot<Group, DocumentData>;
-  memberPhotoUrls: Record<string, string | undefined>;
-}) => {
-  const itemDescRef = useRef<(HTMLTextAreaElement | null)[]>([]);
-  const itemPriceRef = useRef<(HTMLInputElement | null)[]>([]);
-
-  const [splitTypeVal, setSplitType] = splitType;
-  const [totalVal, setTotal] = total;
-  const { value: splitTotal, handleChange: handleSplitTotalChanged } = useDigitField(totalVal);
-  // const [itemizedEntries, setItemizedEntires] = useState<ItemizedEntry[]>([]);
-  const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>([]);
-  const [toggleFocus, setToggleFocus] = useState<boolean>(false);
-
-  const splitTotalNum = Number(splitTotal);
-  const groupData = currGroup?.data();
-
-  const handleAddItem = () => {
-    const newItemizedData = [...itemizedData];
-    newItemizedData.push({});
-    setItemizedData(newItemizedData);
-    setToggleFocus(!toggleFocus);
-
-    itemDescRef.current[newItemizedData.length - 1]?.focus();
-  };
-
-  useLayoutEffect(() => {
-    itemDescRef.current[itemizedData.length - 1]?.focus();
-  }, [toggleFocus]);
-
-  const handleItemDescChanged = (i: number) => {
-    return (e: ChangeEvent<HTMLTextAreaElement>) => {
-      let newVal = e.currentTarget.value;
-      const newSplitData = [...itemizedData];
-
-      newSplitData[i].description = newVal;
-      setItemizedData(newSplitData);
-    };
-  };
-
-  const handleItemPriceChanged = (i: number) => {
-    return (e: ChangeEvent<HTMLInputElement>) => {
-      let newVal = e.currentTarget.value;
-      const newSplitData = [...(itemizedData as ItemizedEntry[])];
-
-      if (newVal.length <= 1) newVal = '0.0' + newVal;
-      const isOnlyDigits = /^(\d|\,|\.)+$/.test(newVal);
-      if (!isOnlyDigits) return;
-
-      newVal = formatToDigit(newVal);
-
-      newSplitData[i].amount = newVal;
-      setItemizedData(newSplitData);
-    };
-  };
-
-  return (
-    <div className="px-4 outline-none">
-      <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
-        <div className="border-ink-400 gap:2 relative flex flex-col border-b-1 border-dashed py-6">
-          <h2 className="font-gieonto text-4xl">Split Type</h2>
-          <div className="flex flex-row justify-center gap-2 py-4">
-            <input
-              type="button"
-              value="Balanced"
-              className={`${splitTypeVal == 'balanced' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
-              onClick={() => setSplitType('balanced')}
-            />
-            <input
-              type="button"
-              value="Itemized"
-              className={`${splitTypeVal == 'itemized' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
-              onClick={() => setSplitType('itemized')}
-            />
-          </div>
-        </div>
-        <div className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
-          <input
-            id="total"
-            type="text"
-            autoComplete="off"
-            step="off"
-            min="0"
-            inputMode="decimal"
-            className={`peer w-full rounded-md border-0 text-center text-4xl font-bold outline-none`}
-            maxLength={32}
-            onChange={handleSplitTotalChanged}
-            value={splitTotal}
-            autoFocus
-          />
-          <div className="flex flex-row justify-center">
-            <label htmlFor="total" className="text-ink-400 pr-2 text-sm font-light">
-              Total Amount
-            </label>
-            <p className="font-bold">(PHP)</p>
-          </div>
-        </div>
-        {splitTypeVal == 'itemized' ? (
-          <>
-            {itemizedData.map((itemizedItem, i) => (
-              <div key={i} className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
-                <div className="flex flex-row items-center gap-2">
-                  <textarea
-                    id="item-desc"
-                    ref={(elem) => {
-                      itemDescRef.current[i] = elem;
-                    }}
-                    data-testid="item-desc"
-                    placeholder="Description"
-                    onChange={handleItemDescChanged(i)}
-                    value={itemizedItem.description}
-                    className="field-sizing-content shrink-1 grow-1 px-1"
-                  />
-                  <p>Php</p>
-                  <input
-                    id="item-price"
-                    type="text"
-                    ref={(elem) => {
-                      itemPriceRef.current[i] = elem;
-                    }}
-                    data-testid="item-price"
-                    placeholder="0.00"
-                    onChange={handleItemPriceChanged(i)}
-                    value={itemizedItem.amount}
-                    className="font-courier-prime field-sizing-content max-w-1/2 px-1"
-                  />
-                </div>
-              </div>
-            ))}
-            <div className="border-ink-400 relative flex flex-col pt-6">
-              <div className="m-auto w-fit">
-                <Panel
-                  bgColor="bg-accent-200"
-                  padding="px-3 py-2"
-                  className="w-fit cursor-pointer"
-                  dropOnClick={true}
-                  onClick={handleAddItem}
-                >
-                  Add Item
-                </Panel>
-              </div>
-            </div>
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
-    </div>
   );
 };
 
