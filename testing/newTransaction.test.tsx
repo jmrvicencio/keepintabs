@@ -64,7 +64,7 @@ vi.mock('../src/features/groups/utils/memberUtil', () => ({
   getMemberPhotoUrl: () => undefined,
 }));
 
-vi.mock('../src/features/groups/hooks/useAddTransaction', () => ({
+vi.mock('@/features/groups/hooks/useAddTransaction', () => ({
   default: mockUseAddTransaction,
 }));
 
@@ -184,7 +184,7 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
     expect(screen.getByText('Julian')).toBeInTheDocument();
   });
 
-  it('Split type transactions show a "remainder" and inputted amount should not go below total of itemized items', async () => {
+  it('Itemized Split type transactions show a "remainder" and inputted amount should not go below total of itemized items', async () => {
     // Open Split type Page
     await user.click(screen.getByLabelText('Split Type:'));
 
@@ -237,6 +237,25 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
     await user.click(screen.getAllByRole('button', { name: 'Remove Item' })[1]);
     expect(totalAmountField).toHaveValue('2.00');
   });
+
+  it('Split total should reflect the shown total when entering split type page', async () => {
+    const totalField = screen.getByLabelText('Total Amount');
+    await user.type(totalField, '1000');
+    expect(totalField).toHaveValue('10.00');
+
+    // Open Split type Page
+    await user.click(screen.getByLabelText('Split Type:'));
+
+    const splitTypeTotal = screen.getByLabelText('Total Amount');
+    expect(splitTypeTotal).toHaveValue('10.00');
+
+    await setTimeout(() => {}, 5000);
+    expect(splitTypeTotal).toHaveValue('10.00');
+  });
+
+  // it('Switching between Balanced and Itemized Split types should remember the items in itemized type ' +
+  //   'and update the total appropriately. Itemized total takes precedent over balanced split type.'
+  // )
 
   it('Transactions are submitted properly', async () => {
     const doneButton = screen.getByRole('button', { name: 'Done' });

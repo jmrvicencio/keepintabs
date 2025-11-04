@@ -2,22 +2,22 @@ import { useState, useEffect, useMemo, useReducer, type KeyboardEvent } from 're
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { type DocumentSnapshot } from 'firebase/firestore';
-import { auth } from '../../../lib/firebase/auth';
+import { auth } from '@/lib/firebase/auth';
 import { format } from 'date-fns';
 
-import SplitTransactionPage from './NewTransaction/SplitTransaction';
-import Panel from '../../../components/neubrutalist/Panel';
+import SplitTransactionPage from '@/features/new-transaction/components/SplitTransaction';
+import Panel from '@/components/neubrutalist/Panel';
 import { User as UserIcon } from 'lucide-react';
-import DatePicker from '../../../features/date-picker/DatePicker';
+import DatePicker from '@/features/date-picker/DatePicker';
 
-import { usePopupMenu } from '../../../features/popup-menu/hooks/usePopupMenu';
-import { useGroups } from '../../../features/groups/hooks/useGroups';
-import { Group } from '../../../features/groups/types';
-import { getMemberPhotoUrl } from '../../../features/groups/utils/memberUtil';
-import useDigitField from '../../../hooks/useDigitField';
-import useInputField from '../../../hooks/useInputField';
-import useAddTransaction from '../../../features/groups/hooks/useAddTransaction';
-import { buttonHandleKeypress } from '../../../util/buttonHandleKeypress';
+import { usePopupMenu } from '@/features/popup-menu/hooks/usePopupMenu';
+import { useGroups } from '@/features/groups/hooks/useGroups';
+import { Group } from '@/features/groups/types';
+import { getMemberPhotoUrl } from '@/features/groups/utils/memberUtil';
+import useDigitField from '@/hooks/useDigitField';
+import useInputField from '@/hooks/useInputField';
+import useAddTransaction from '@/features/groups/hooks/useAddTransaction';
+import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
 
 export type SplitType = 'balanced' | 'itemized';
 export interface ItemizedEntry {
@@ -31,11 +31,12 @@ const NewTransaction = () => {
   const { groups, loading } = useGroups();
   const location = useLocation();
   const navigate = useNavigate();
+
   // Local States
   const [groupId, setGroupId] = useState(location.state?.groupId);
-  const [test, setTest] = useState('');
   const [showSplitPage, setShowSplitPage] = useState(false);
   const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
+
   // Late Hooks
   const addTransaction = useAddTransaction(groupId);
 
@@ -66,7 +67,6 @@ const NewTransaction = () => {
   const handleCancelClicked = () => {
     if (!showSplitPage) {
       console.log('returning to route: ', returnRoute);
-      setTest('return route called: ' + returnRoute);
       navigate(returnRoute);
     } else {
       setShowSplitPage(false);
@@ -116,8 +116,15 @@ const TransactionForm = ({
   showSplitPage: boolean;
   setShowSplitPage: (val: boolean) => any;
 }) => {
+  // ------------------------------
   // Hooks
+  // ------------------------------
+
   const { setShowPopup, setPopup, resetPopup } = usePopupMenu();
+
+  // ------------------------------
+  // States
+  // ------------------------------
 
   // Form States
   const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
@@ -130,7 +137,10 @@ const TransactionForm = ({
   // Local States
   const [showPaidBy, setShowPaidby] = useState(false);
 
+  // ------------------------------
   // Computed Values
+  // ------------------------------
+
   const paidByName =
     currGroup && paidById in currGroup.data()?.members!
       ? currGroup.data()?.members[paidById].displayName
