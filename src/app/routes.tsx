@@ -69,8 +69,8 @@ const router = createHashRouter([
           {
             path: 'new',
             lazy: async () => {
-              let NewTransactionProvider = await import('./routes/App/NewTransactionProvider');
-              return { Component: NewTransactionProvider.default };
+              let NewTransaction = await import('./routes/App/NewTransaction');
+              return { Component: NewTransaction.default };
             },
             children: [
               {

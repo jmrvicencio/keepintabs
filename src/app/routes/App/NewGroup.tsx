@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { ChevronLeft, X, UserRound } from 'lucide-react';
 import { ROUTES } from '../../routes';
-import { Member } from '../../../features/groups/types';
+import { Member } from '@/features/groups/types';
 import { auth } from '../../../lib/firebase/auth';
-import useAddGroup from '../../../features/groups/hooks/useAddGroup';
+import useAddGroup from '@/features/groups/hooks/useAddGroup';
 import Loading from '../../../components/Loading';
 import Panel from '../../../components/neubrutalist/Panel';
 

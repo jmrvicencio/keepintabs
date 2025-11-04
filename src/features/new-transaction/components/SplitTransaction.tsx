@@ -1,21 +1,30 @@
-import { useState, useRef, useReducer, type ChangeEvent, useLayoutEffect, useEffect, MouseEvent } from 'react';
+import { useState, useRef, useReducer, useMemo, useLayoutEffect, useEffect, type ChangeEvent, MouseEvent } from 'react';
 import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { formatValue as formatToDigit } from '../../../../hooks/useDigitField';
+import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
-import { Group } from '../../../../features/groups/types';
+import { Group } from '@/features/groups/types';
 import { User as UserIcon } from 'lucide-react';
-import useDigitField from '../../../../hooks/useDigitField';
-import Panel from '../../../../components/neubrutalist/Panel';
-import { type SplitType, ItemizedEntry } from '../NewTransaction';
+import useDigitField from '@/hooks/useDigitField';
+import Panel from '@/components/neubrutalist/Panel';
+import { type SplitType, ItemizedEntry } from '@/app/routes/App/NewTransaction';
+
+// ------------------------------
+// Type Declarations
+// ------------------------------
 
 interface SplitTotalActions {
   nextTotal?: string;
   type: 'handle_change' | 'set_total';
 }
 
+/**
+ *
+ * @param {SplitType} splitType - The string name for the type of split to use
+ * @param {string} total - The state used for the string representation of the total.
+ */
 const SplitTransactionPage = ({
-  splitType,
-  total,
+  splitType: splitTypeState,
+  total: totalState,
   currGroup,
   memberPhotoUrls,
 }: {
@@ -24,37 +33,52 @@ const SplitTransactionPage = ({
   currGroup?: DocumentSnapshot<Group, DocumentData>;
   memberPhotoUrls: Record<string, string | undefined>;
 }) => {
+  // ------------------------------
+  // Local References
+  // ------------------------------
+
+  const isFirstRender = useRef(true);
   const itemDescRef = useRef<(HTMLTextAreaElement | null)[]>([]);
   const itemPriceRef = useRef<(HTMLInputElement | null)[]>([]);
   const remainderRef = useRef<HTMLInputElement>(null);
 
-  const [splitTypeVal, setSplitType] = splitType;
-  const [totalVal, setTotal] = total;
+  // ------------------------------
+  // Local States
+  // ------------------------------
+
+  const [total, setTotal] = totalState; // The total prop that will get passsed back to the parent component
+  const [localTotal, setLocalTotal] = useState(totalState[0]); // Local total to use for the split
+  const [splitType, setSplitType] = splitTypeState;
   const [remainder, setRemainder] = useState(0);
-  const [splitTotal, setSplitTotal] = useState('0.00');
   const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>([]);
   const [toggleFocus, setToggleFocus] = useState<boolean>(false);
 
-  const itemizedTotal = itemizedData.reduce(
-    (acc, item) => Math.floor(acc + Number(item.amount.replaceAll(',', '').replaceAll('.', ''))),
-    0,
-  );
-  const itemizedTotalWithRemainder = itemizedTotal + remainder;
-  const splitTotalNum = Number(splitTotal);
+  // ------------------------------
+  // Computed Variables
+  // ------------------------------
+
+  const itemizedPrices = itemizedData.map((item) => item.amount).join('|');
+  const itemizedTotal = useMemo(() => {
+    return itemizedData.reduce(
+      (acc, item) => Math.floor(acc + Number(item.amount.replaceAll(',', '').replaceAll('.', ''))),
+      0,
+    );
+  }, [itemizedPrices]);
+  const splitTotalNum = Number(localTotal);
   const groupData = currGroup?.data();
-
-  //
-
-  console.log('item totals: ', itemizedTotal);
-  console.log('member photo urls', memberPhotoUrls);
 
   // ------------------------------
   // Effects
   // ------------------------------
 
   useEffect(() => {
+    if (isFirstRender.current == true) {
+      isFirstRender.current = false;
+      return;
+    }
+
     console.log('updating split total');
-    const totalNumber = Number(splitTotal.replaceAll(',', '').replaceAll('.', ''));
+    const totalNumber = Number(localTotal.replaceAll(',', '').replaceAll('.', ''));
     const nextRemainder = remainder == 0 ? 0 : itemizedTotal < totalNumber ? totalNumber - itemizedTotal : 0;
     const nextTotal = itemizedTotal + nextRemainder;
 
@@ -64,7 +88,7 @@ const SplitTransactionPage = ({
     const isOnlyDigits = /^(\d|\,|\.)+$/.test(nextTotalString);
     if (!isOnlyDigits) return;
 
-    setSplitTotal(formatToDigit(nextTotalString));
+    setLocalTotal(formatToDigit(nextTotalString));
     setRemainder(nextRemainder);
   }, [itemizedTotal]);
 
@@ -76,7 +100,7 @@ const SplitTransactionPage = ({
   // Event Handlers
   // ------------------------------
 
-  const handleSplitTotalChanged = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleLocalTotalChanged = (e: ChangeEvent<HTMLInputElement>) => {
     let nextVal: string = e.currentTarget.value ?? '';
 
     // field cant be empty so we need to put a placeholder of 0.00
@@ -88,9 +112,9 @@ const SplitTransactionPage = ({
     let nextValNumber = Number(formattedVal.replaceAll(',', '').replaceAll('.', ''));
 
     if (nextValNumber >= itemizedTotal) {
-      setSplitTotal(formattedVal);
+      setLocalTotal(formattedVal);
     } else {
-      setSplitTotal(formatToDigit(`${itemizedTotal}`));
+      setLocalTotal(formatToDigit(`${itemizedTotal}`));
     }
     const nextRemainder = Math.floor(nextValNumber - itemizedTotal);
     setRemainder(nextRemainder);
@@ -170,13 +194,13 @@ const SplitTransactionPage = ({
             <input
               type="button"
               value="Balanced"
-              className={`${splitTypeVal == 'balanced' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
+              className={`${splitType == 'balanced' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
               onClick={() => setSplitType('balanced')}
             />
             <input
               type="button"
               value="Itemized"
-              className={`${splitTypeVal == 'itemized' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
+              className={`${splitType == 'itemized' && 'selected'} border-ink-400 cursor-pointer rounded-md border-1 px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
               onClick={() => setSplitType('itemized')}
             />
           </div>
@@ -191,8 +215,8 @@ const SplitTransactionPage = ({
             inputMode="decimal"
             className={`peer w-full rounded-md border-0 text-center text-4xl font-bold outline-none`}
             maxLength={32}
-            onChange={handleSplitTotalChanged}
-            value={splitTotal}
+            onChange={handleLocalTotalChanged}
+            value={localTotal}
             autoFocus
           />
           <div className="flex flex-row justify-center">
@@ -202,7 +226,7 @@ const SplitTransactionPage = ({
             <p className="font-bold">(PHP)</p>
           </div>
         </div>
-        {splitTypeVal == 'itemized' ? (
+        {splitType == 'itemized' ? (
           <>
             {itemizedData.map((itemizedItem, i) => (
               <div key={i} className="border-ink-400 relative flex flex-col gap-2 border-b-1 border-dashed py-6">
