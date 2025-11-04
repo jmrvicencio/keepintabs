@@ -253,9 +253,51 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
     expect(splitTypeTotal).toHaveValue('10.00');
   });
 
-  // it('Switching between Balanced and Itemized Split types should remember the items in itemized type ' +
-  //   'and update the total appropriately. Itemized total takes precedent over balanced split type.'
-  // )
+  it(
+    'Switching between Balanced and Itemized Split types should remember the items in itemized type ' +
+      'and update the total appropriately. Itemized total takes precedent over balanced split type.',
+    async () => {
+      // Open split type page
+      await user.click(screen.getByLabelText('Split Type:'));
+      const balancedButton = screen.getByRole('button', { name: 'Balanced' });
+      const itemizedButton = screen.getByRole('button', { name: 'Itemized' });
+      const totalInput = screen.getByLabelText('Total Amount');
+
+      // Make sure we are in itemized split type and add an item
+      await user.click(itemizedButton);
+      await user.click(screen.getByRole('button', { name: 'Add Item' }));
+
+      // set item price to 2,000.00
+      await user.type(screen.getByTestId('item-price'), '200000');
+      expect(totalInput).toHaveValue('2,000.00');
+
+      // Update total to get a remainder
+      await user.type(totalInput, '5');
+      expect(totalInput).toHaveValue('20,000.05');
+      expect(screen.getByLabelText('Remainder')).toHaveValue('18,000.05');
+
+      // Switch to balanced button and update value
+      await user.click(balancedButton);
+      expect(totalInput).toHaveValue('20,000.05');
+      await user.clear(totalInput);
+      await user.type(totalInput, '30000');
+      expect(totalInput).toHaveValue('300.00');
+
+      // Returning to itemized split type, total should update to be atleast sum of itemized totals
+      await user.click(itemizedButton);
+      expect(totalInput).toHaveValue('2,000.00');
+
+      // Switch to balanced type
+      await user.click(balancedButton);
+      await user.type(totalInput, '00');
+      expect(totalInput).toHaveValue('200,000.00');
+
+      // Switch to Itemized type
+      // Since total is larger than itemized total, totalInput should not be changed.
+      await user.click(itemizedButton);
+      expect(totalInput).toHaveValue('200,000.00');
+    },
+  );
 
   it('Transactions are submitted properly', async () => {
     const doneButton = screen.getByRole('button', { name: 'Done' });
