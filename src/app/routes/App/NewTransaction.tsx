@@ -216,7 +216,7 @@ const TransactionForm = ({
             className="relative flex h-8 cursor-pointer flex-row items-center"
           >
             <div
-              className="absolute left-0 flex h-8 w-8 items-center justify-center rounded-lg border-1 bg-cover"
+              className="absolute left-0 flex h-8 w-8 items-center justify-center rounded-lg border bg-cover"
               style={{ backgroundImage: `url('${memberPhotoUrls[memberId]}')` }}
             >
               {!memberPhotoUrls[memberId] && <UserIcon className="text-ink-400" />}
@@ -261,13 +261,13 @@ const TransactionForm = ({
             type="button"
             value="Cancel"
             onClick={resetPopup}
-            className="border-ink-400 rounded-xl border-1 px-2 py-1"
+            className="border-ink-400 rounded-xl border px-2 py-1"
           />
           <input
             type="button"
             value="Done"
             onClick={handleDoneCLicked}
-            className="bg-accent-200 rounded-xl border-1 px-2 py-1"
+            className="bg-accent-200 rounded-xl border px-2 py-1"
           />
         </div>
       </>
@@ -283,8 +283,8 @@ const TransactionForm = ({
 
   return !showSplitPage ? (
     <form className="px-4 outline-none">
-      <div className="m-auto max-w-120 border-1 border-black bg-white p-6">
-        <div className="border-ink-400 relative flex flex-col border-b-1 border-dashed py-6">
+      <div className="m-auto max-w-120 border border-black bg-white p-6">
+        <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
           <input
             id="total"
             type="text"
@@ -305,7 +305,7 @@ const TransactionForm = ({
             <p className="font-bold">(PHP)</p>
           </div>
         </div>
-        <div className="border-ink-400 relative flex flex-col gap-2 border-b-1 border-dashed py-6 text-base">
+        <div className="border-ink-400 relative flex flex-col gap-2 border-b border-dashed py-6 text-base">
           <p className="text-ink-400 mb-2 font-light">(Tap on items to edit)</p>
           <div className="flex flex-row items-center">
             <label htmlFor="description" className="text-ink-400 text-sm font-light">
@@ -329,9 +329,9 @@ const TransactionForm = ({
             <label htmlFor="paid_by" className="text-ink-400 text-sm font-light">
               Paid By:
             </label>
-            <div className="flex grow-1 flex-row items-center justify-end gap-2">
+            <div className="flex grow flex-row items-center justify-end gap-2">
               <div
-                className="flex h-6 w-6 items-center justify-center overflow-clip rounded-full border-1 bg-cover"
+                className="flex h-6 w-6 items-center justify-center overflow-clip rounded-full border bg-cover"
                 style={{
                   backgroundImage: `url('${paidByPhotoUrl}')`,
                 }}
@@ -356,24 +356,24 @@ const TransactionForm = ({
               role="button"
               tabIndex={0}
               onKeyDown={buttonHandleKeypress(handleDateClicked)}
-              className={`flex w-1 grow-1 cursor-pointer flex-col rounded-md border-0 text-right font-medium outline-none`}
+              className={`flex w-1 grow cursor-pointer flex-col rounded-md border-0 text-right font-medium outline-none`}
               onClick={handleDateClicked}
             >
               {dateString} <span className="text-ink-400 text-sm font-normal">{`(${timeString})`}</span>
             </div>
           </div>
         </div>
-        <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">
+        <div className="border-ink-400 relative flex flex-col gap-1 border-b border-dashed py-6 text-base">
           <div className="flex flex-row justify-between">
             <label htmlFor="description" className="text-ink-400 text-sm font-light">
               Group:
             </label>
-            <button type="button" className="border-ink-400 rounded-md border-1 px-3 py-0.5">
+            <button type="button" className="border-ink-400 rounded-md border px-3 py-0.5">
               {groupName}
             </button>
           </div>
         </div>
-        <div className="border-ink-400 relative flex flex-col gap-1 border-b-1 border-dashed py-6 text-base">
+        <div className="border-ink-400 relative flex flex-col gap-1 border-b border-dashed py-6 text-base">
           <div className="flex flex-row items-center justify-between">
             <label htmlFor="split-type" className="text-ink-400 text-sm font-light">
               Split Type:
@@ -382,7 +382,7 @@ const TransactionForm = ({
               name="split-type"
               id="split-type"
               type="button"
-              className="border-ink-400 rounded-md border-1 px-3 py-0.5"
+              className="border-ink-400 rounded-md border px-3 py-0.5"
               onClick={() => setShowSplitPage(true)}
             >
               {splitType.charAt(0).toUpperCase() + splitType.slice(1)}
