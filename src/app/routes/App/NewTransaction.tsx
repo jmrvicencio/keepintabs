@@ -20,11 +20,6 @@ import useAddTransaction from '@/features/groups/hooks/useAddTransaction';
 import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
 
 export type SplitType = 'balanced' | 'itemized';
-export interface ItemizedEntry {
-  description: string;
-  amount: string;
-  payingMembers: Set<string>; // set of groupUserIds
-}
 
 const NewTransaction = () => {
   // Call Hooks
@@ -131,7 +126,7 @@ const TransactionForm = ({
   const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
   const [date, setDate] = useState(Date.now());
   const [paidById, setPaidById] = useState(auth.currentUser!.uid);
-  const [splitType, setSplitType] = useState<SplitType>('itemized');
+  const [splitType, setSplitType] = useState<SplitType>('balanced');
   const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
 
   // Local States

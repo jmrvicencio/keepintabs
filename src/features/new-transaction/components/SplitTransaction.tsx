@@ -3,13 +3,87 @@ import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 import { formattedStrToNum } from '@/util/helpers';
 
+import { UserIcon } from 'lucide-react';
 import { Group } from '@/features/groups/types';
-import { type SplitType, ItemizedEntry } from '@/app/routes/App/NewTransaction';
+import { type SplitType } from '@/app/routes/App/NewTransaction';
 
 import ItemizedSplit from './ItemizedSplit';
 
-const BalancedSplit = () => {
-  return <></>;
+export interface ItemizedEntry {
+  description: string;
+  amount: string;
+  payingMembers: Set<string>; // set of groupUserIds
+}
+
+const BalancedSplit = ({
+  balancedData: [balancedData, setBalancedData],
+  localTotal,
+  groupData,
+  memberPhotoUrls,
+}: {
+  balancedData: [Set<string>, (val: Set<string>) => any];
+  localTotal: string;
+  groupData: Group | undefined;
+  memberPhotoUrls: Record<string, string | undefined>;
+}) => {
+  const balancedSplit = Math.floor(formattedStrToNum(localTotal) / balancedData.size);
+
+  // ------------------------------
+  // Event Handlers
+  // ------------------------------
+
+  const handleChanged = (memberGroupId: string) => (e: ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.currentTarget.checked;
+    const nextBalancedData = new Set([...balancedData]);
+
+    if (isChecked) nextBalancedData.add(memberGroupId);
+    else nextBalancedData.delete(memberGroupId);
+
+    setBalancedData(nextBalancedData);
+  };
+
+  return (
+    <div className="flex flex-col gap-2 py-6">
+      <h3 className="font-semibold">Members Split</h3>
+      {Object.entries(groupData?.members ?? {}).map(([memberGroupId, member]) => {
+        const memberChecked = balancedData.has(memberGroupId);
+
+        return (
+          <div key={memberGroupId} className="flex flex-row items-center justify-baseline gap-2">
+            <input
+              id={`balanced-${memberGroupId}`}
+              type="checkbox"
+              checked={memberChecked}
+              onChange={handleChanged(memberGroupId)}
+              className="h-4 w-4 rounded-sm accent-black checked:bg-black"
+            />{' '}
+            <label
+              htmlFor={`balanced-${memberGroupId}`}
+              className="text-ink-400 flex w-full cursor-pointer flex-row gap-2 font-light"
+            >
+              <div
+                {...(memberPhotoUrls[memberGroupId] && {
+                  style: {
+                    backgroundImage: `url('${memberPhotoUrls[memberGroupId]}')`,
+                  },
+                })}
+                className={`${!memberPhotoUrls[memberGroupId] && 'border'} border-ink-400 flex h-6 w-6 items-center justify-center rounded-full bg-cover`}
+              >
+                {!memberPhotoUrls[memberGroupId] && <UserIcon className="text-ink-400" />}
+              </div>
+              <p className="grow text-left">{member.displayName}</p>
+              <p className="text-sm">
+                Php{' '}
+                <span className="font-courier-prime" data-testid="balanced-amt">
+                  {balancedData.has(memberGroupId) ? formatToDigit(`${balancedSplit}`) : '0.00'}
+                </span>
+              </p>
+            </label>
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 /**
@@ -47,6 +121,9 @@ const SplitTransactionPage = ({
   const [localTotal, setLocalTotal] = useState(total); // Local total to use for the split
   const [remainder, setRemainder] = useState(0);
   const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>([]);
+  const [balancedData, setBalancedData] = useState<Set<string>>(
+    new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
+  );
 
   // ------------------------------
   // Computed Variables
@@ -186,7 +263,12 @@ const SplitTransactionPage = ({
             memberPhotoUrls={memberPhotoUrls}
           />
         ) : (
-          <BalancedSplit />
+          <BalancedSplit
+            localTotal={localTotal}
+            balancedData={[balancedData, setBalancedData]}
+            groupData={groupData}
+            memberPhotoUrls={memberPhotoUrls}
+          />
         )}
       </div>
     </div>

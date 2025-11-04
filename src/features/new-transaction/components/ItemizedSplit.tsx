@@ -4,7 +4,7 @@ import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 import { User as UserIcon } from 'lucide-react';
 import { Group } from '@/features/groups/types';
 import Panel from '@/components/neubrutalist/Panel';
-import { type ItemizedEntry } from '@/app/routes/App/NewTransaction';
+import { ItemizedEntry } from './SplitTransaction';
 
 const ItemizedSplit = ({
   itemizedData: [itemizedData, setItemizedData],
@@ -69,8 +69,8 @@ const ItemizedSplit = ({
     };
   };
 
-  const handleMemberClicked = (i: number, memberGroupId: string) => {
-    return (e: MouseEvent<HTMLInputElement>) => {
+  const handleMemberChanged = (i: number, memberGroupId: string) => {
+    return (e: ChangeEvent<HTMLInputElement>) => {
       const isChecked = e.currentTarget.checked;
       const nextItemizedData = [...itemizedData];
 
@@ -150,7 +150,7 @@ const ItemizedSplit = ({
                     <input
                       // {...(itemizedItem.payingMembers.has(memberGroupId) && { checked: true })}
                       checked={itemizedItem.payingMembers.has(memberGroupId)}
-                      onClick={handleMemberClicked(i, memberGroupId)}
+                      onChange={handleMemberChanged(i, memberGroupId)}
                       id={`split-${i}-${memberGroupId}`}
                       type="checkbox"
                       className="h-4 w-4 rounded-sm accent-black checked:bg-black"
