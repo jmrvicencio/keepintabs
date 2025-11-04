@@ -1,6 +1,7 @@
 import { ChangeEvent, useState } from 'react';
 
-export const formatValue = (val: string): string => {
+export const formatValue = (initialVal: string | number): string => {
+  let val: string = typeof initialVal == 'string' ? initialVal : `${initialVal}`;
   val = val.replaceAll(',', '').replaceAll('.', '');
   const formatted = new Intl.NumberFormat('en-US', {
     style: 'decimal',
