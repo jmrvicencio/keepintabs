@@ -127,7 +127,7 @@ const NewGroup = () => {
               id="name"
               type="text"
               autoComplete="off"
-              className={`${nameError && 'error'} peer [.error]:border-error border-charcoal-300 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border-1 bg-white px-2 py-1 focus:outline-2`}
+              className={`${nameError && 'error'} peer [.error]:border-error border-charcoal-300 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border bg-white px-2 py-1 focus:outline-2`}
               placeholder={nameError ? 'Group name is required' : 'Group Name'}
               maxLength={32}
               value={groupName}
@@ -150,7 +150,7 @@ const NewGroup = () => {
               <input
                 id="name"
                 type="text"
-                className="border-charcoal-300 focus:outline-accent-400/60 w-0 grow-2 rounded-md border-1 bg-white px-2 py-1 focus:outline-2"
+                className="border-charcoal-300 focus:outline-accent-400/60 w-0 grow-2 rounded-md border bg-white px-2 py-1 focus:outline-2"
                 placeholder="Name"
                 value={inviteName}
                 onChange={handleInviteNameChange}
@@ -159,7 +159,7 @@ const NewGroup = () => {
                 id="email"
                 ref={addEmailRef}
                 type="email"
-                className="border-charcoal-300 focus:outline-accent-400/60 w-0 grow-3 rounded-md border-1 bg-white px-2 py-1 not-focus:invalid:border-red-500 focus:outline-2"
+                className="border-charcoal-300 focus:outline-accent-400/60 w-0 grow-3 rounded-md border bg-white px-2 py-1 not-focus:invalid:border-red-500 focus:outline-2"
                 placeholder="Email (optional)"
                 value={inviteEmail}
                 onChange={handleInviteEmailChange}
@@ -182,7 +182,7 @@ const NewGroup = () => {
           <div className="mt-6 flex flex-col gap-2">
             {members.map((member, i) => (
               // Mmebers to be added to the group
-              <div key={i} className="rounded-lg border-1 bg-white p-2">
+              <div key={i} className="rounded-lg border bg-white p-2">
                 <AddedUser
                   id={i}
                   member={member}
@@ -269,9 +269,9 @@ const AddedUser = ({
   };
 
   return (
-    <div className="border-ink-800 flex flex-row items-center gap-3 not-first:mt-2 not-first:border-t-1 not-first:pt-4">
+    <div className="border-ink-800 flex flex-row items-center gap-3 not-first:mt-2 not-first:border-t not-first:pt-4">
       <UserRound className="h-5 w-5" />
-      <div className="flex grow-1 flex-col">
+      <div className="flex grow flex-col">
         {editName ? (
           <form onSubmit={handleSubmit}>
             <input
