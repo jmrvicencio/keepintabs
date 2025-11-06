@@ -49,8 +49,7 @@ const BalancedSplit = ({
               type="checkbox"
               checked={memberChecked}
               onChange={handleChanged(memberGroupId)}
-              className="sr-only h-4 w-4 rounded-sm accent-black checked:bg-black"
-              hidden={true}
+              className="sr-only qh-4 w-4 rounded-sm accent-black checked:bg-black"
             />{' '}
             <label
               htmlFor={`balanced-${memberGroupId}`}
