@@ -2,17 +2,16 @@ import { useState, useRef, useMemo, useEffect, type ChangeEvent } from 'react';
 import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 import { formattedStrToNum } from '@/util/helpers';
-
-import { UserIcon } from 'lucide-react';
-import { Group } from '@/features/groups/types';
-import { type SplitType } from '@/app/routes/App/NewTransaction';
-
 import ItemizedSplit from './ItemizedSplit';
 import BalancedSplit from './BalancedSplit';
 
+import { UserIcon } from 'lucide-react';
+import { Group } from '@/features/groups/types';
+import { SplitType } from '@/features/transactions/types';
+
 export interface ItemizedEntry {
   description: string;
-  amount: string;
+  amount: number;
   payingMembers: Set<string>; // set of groupUserIds
 }
 
@@ -61,10 +60,7 @@ const SplitTransactionPage = ({
 
   const itemizedPrices = itemizedData.map((item) => item.amount).join('|');
   const itemizedTotal = useMemo(() => {
-    return itemizedData.reduce(
-      (acc, item) => Math.floor(acc + Number(item.amount.replaceAll(',', '').replaceAll('.', ''))),
-      0,
-    );
+    return itemizedData.reduce((acc, item) => Math.floor(acc + item.amount), 0);
   }, [itemizedPrices]);
   const splitTotalNum = Number(localTotal);
   const groupData = currGroup?.data();

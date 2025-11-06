@@ -16,3 +16,6 @@ export interface Member {
   email?: string;
   photoUrl?: string;
 }
+
+// Split Data
+export type SplitType = 'balanced' | 'itemized';

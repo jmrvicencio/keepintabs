@@ -5,7 +5,7 @@ import { formattedStrToNum } from '@/util/helpers';
 
 import { UserIcon, Check } from 'lucide-react';
 import { Group } from '@/features/groups/types';
-import { type SplitType } from '@/app/routes/App/NewTransaction';
+import { SplitType } from '@/features/transactions/types';
 
 const BalancedSplit = ({
   balancedData: [balancedData, setBalancedData],
@@ -49,7 +49,7 @@ const BalancedSplit = ({
               type="checkbox"
               checked={memberChecked}
               onChange={handleChanged(memberGroupId)}
-              className="sr-only qh-4 w-4 rounded-sm accent-black checked:bg-black"
+              className="sr-only h-4 w-4 rounded-sm accent-black checked:bg-black"
             />{' '}
             <label
               htmlFor={`balanced-${memberGroupId}`}

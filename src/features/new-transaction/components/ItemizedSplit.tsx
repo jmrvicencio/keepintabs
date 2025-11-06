@@ -1,10 +1,11 @@
 import { useState, useLayoutEffect, type ChangeEvent, MouseEvent, RefObject } from 'react';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
+import { ItemizedEntry } from './SplitTransaction';
+import { formattedStrToNum } from '@/util/helpers';
 
 import { User as UserIcon } from 'lucide-react';
 import { Group } from '@/features/groups/types';
 import Panel from '@/components/neubrutalist/Panel';
-import { ItemizedEntry } from './SplitTransaction';
 
 const ItemizedSplit = ({
   itemizedData: [itemizedData, setItemizedData],
@@ -64,7 +65,7 @@ const ItemizedSplit = ({
 
       nextVal = formatToDigit(nextVal);
 
-      nextSplitData[i] = { ...nextSplitData[i], amount: nextVal };
+      nextSplitData[i] = { ...nextSplitData[i], amount: formattedStrToNum(nextVal) };
       setItemizedData(nextSplitData);
     };
   };
@@ -87,7 +88,7 @@ const ItemizedSplit = ({
     const nextItemizedData = [...itemizedData];
     const nextItem: ItemizedEntry = {
       description: '',
-      amount: '0.00',
+      amount: 0,
       payingMembers: new Set<string>(),
     };
     nextItemizedData.push(nextItem);
@@ -133,7 +134,7 @@ const ItemizedSplit = ({
               data-testid="item-price"
               placeholder="0.00"
               onChange={handleItemPriceChanged(i)}
-              value={itemizedItem.amount}
+              value={formatToDigit(itemizedItem.amount)}
               className="font-courier-prime field-sizing-content max-w-1/2 px-1"
               autoComplete="off"
             />
@@ -142,8 +143,7 @@ const ItemizedSplit = ({
             {groupData &&
               Object.entries(groupData.members).map(([memberGroupId, member]) => {
                 const membersSplitting = itemizedItem.payingMembers.size;
-                const itemizedItemAmount = Number(itemizedItem.amount.replaceAll(',', '').replaceAll('.', ''));
-                const itemizedSplit = Math.floor(itemizedItemAmount / membersSplitting);
+                const itemizedSplit = Math.floor(itemizedItem.amount / membersSplitting);
 
                 return (
                   <div key={memberGroupId} className="flex flex-row items-center justify-baseline gap-2">

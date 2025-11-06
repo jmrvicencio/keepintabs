@@ -64,7 +64,7 @@ vi.mock('../src/features/groups/utils/memberUtil', () => ({
   getMemberPhotoUrl: () => undefined,
 }));
 
-vi.mock('@/features/groups/hooks/useAddTransaction', () => ({
+vi.mock('@/features/transactions/hooks/useAddTransaction', () => ({
   default: mockUseAddTransaction,
 }));
 

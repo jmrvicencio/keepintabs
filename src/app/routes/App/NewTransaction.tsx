@@ -4,22 +4,23 @@ import { ROUTES } from '../../routes';
 import { type DocumentSnapshot } from 'firebase/firestore';
 import { auth } from '@/lib/firebase/auth';
 import { format } from 'date-fns';
+import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
+import { getMemberPhotoUrl } from '@/features/groups/utils/memberUtil';
 
+// Import Custom Components
 import SplitTransactionPage from '@/features/new-transaction/components/SplitTransaction';
 import Panel from '@/components/neubrutalist/Panel';
 import { User as UserIcon } from 'lucide-react';
 import DatePicker from '@/features/date-picker/DatePicker';
 
+// Import Custom Hooks
 import { usePopupMenu } from '@/features/popup-menu/hooks/usePopupMenu';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import { Group } from '@/features/groups/types';
-import { getMemberPhotoUrl } from '@/features/groups/utils/memberUtil';
+import { SplitType } from '@/features/transactions/types';
 import useDigitField from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
-import useAddTransaction from '@/features/groups/hooks/useAddTransaction';
-import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
-
-export type SplitType = 'balanced' | 'itemized';
+import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 
 const NewTransaction = () => {
   // Call Hooks
