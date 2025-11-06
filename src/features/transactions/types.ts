@@ -1,2 +1,43 @@
 // Split Data
 export type SplitType = 'balanced' | 'itemized';
+
+export type GroupUserId = string;
+
+export interface Transaction {
+  amount: number;
+  paidBy: GroupUserId;
+  date: number; //timestamp is a number, not a Date object
+  splitData: SplitData;
+}
+
+export interface SplitData {
+  splitType: SplitType;
+  splitData: BalancedSplit | ItemizedSplit;
+}
+
+/**
+ * An array of members who are splitting the transaction evenly
+ */
+export interface BalancedSplit {
+  payingMembers: Set<GroupUserId>;
+}
+
+/**
+ * An array of entries which split and make up the entire transaction
+ */
+export interface ItemizedSplit {
+  entries: {
+    description: string;
+    amount: number;
+    payingMembers: Set<GroupUserId>;
+  }[];
+  remainder: number;
+}
+
+export interface FormRef {
+  getData: () => any;
+}
+
+export interface SplitRef {
+  getData: () => any;
+}

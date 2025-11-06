@@ -49,7 +49,7 @@ const BalancedSplit = ({
               type="checkbox"
               checked={memberChecked}
               onChange={handleChanged(memberGroupId)}
-              className="sr-only h-4 w-4 rounded-sm accent-black checked:bg-black"
+              className="qh-4 sr-only w-4 rounded-sm accent-black checked:bg-black"
             />{' '}
             <label
               htmlFor={`balanced-${memberGroupId}`}
@@ -80,7 +80,7 @@ const BalancedSplit = ({
                     </span>
                   </p>
                 </div>
-                <div className="bg-accent-600/20 relative z-0 h-2 w-full overflow-clip rounded-full">
+                <div className="relative z-0 h-2 w-full overflow-clip rounded-full bg-black/10">
                   <div
                     className="bg-accent-600 absolute top-0 bottom-0 left-0 -z-1 w-full origin-left transition-transform"
                     style={{ transform: `scaleX(${splitPercent})` }}
