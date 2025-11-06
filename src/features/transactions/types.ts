@@ -39,5 +39,8 @@ export interface FormRef {
 }
 
 export interface SplitRef {
-  getData: () => any;
+  getData: () => {
+    splitType: SplitType;
+    splitData: ItemizedSplit | BalancedSplit;
+  };
 }

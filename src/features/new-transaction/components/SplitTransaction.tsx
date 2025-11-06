@@ -122,7 +122,18 @@ const SplitTransactionPage = forwardRef(
 
     useImperativeHandle(ref, () => ({
       getData: () => {
-        return { testData: 'this is the returned test data' };
+        return {
+          splitType: splitType,
+          splitData:
+            splitType == 'balanced'
+              ? {
+                  payingMembers: balancedData,
+                }
+              : {
+                  entries: itemizedData,
+                  remainder: remainder,
+                },
+        };
       },
     }));
 

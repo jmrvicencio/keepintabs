@@ -2,7 +2,6 @@ import {
   useState,
   useEffect,
   useMemo,
-  useReducer,
   useRef,
   forwardRef,
   useImperativeHandle,
@@ -108,8 +107,6 @@ const NewTransaction = () => {
   const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
   const [splitData, setSplitData] = useState<CombinedSplitType>();
 
-  console.log(splitData);
-
   // ------------------------------
   // Event Handlers
   // ------------------------------
@@ -125,6 +122,11 @@ const NewTransaction = () => {
 
   const handleDoneClicked = () => {
     if (!showSplitPage) {
+      const formData = formRef.current?.getData();
+      const splitData = splitRef.current?.getData();
+
+      console.log('ref data:', formData, splitData);
+
       const transactionData: Transaction = {
         amount: 0,
         paidBy,
@@ -140,9 +142,10 @@ const NewTransaction = () => {
       addTransaction(transactionData);
       navigate(returnRoute);
     } else {
+      debugger;
       // TODO: Make "Done" set the splitData on the transaction
       const testData = splitRef.current?.getData();
-      console.log('this is test data:', testData);
+      console.log('this is test data:\n', testData);
 
       setShowSplitPage(false);
     }
@@ -172,6 +175,7 @@ const NewTransaction = () => {
           </div>
         </div>
         <TransactionForm
+          ref={formRef}
           showSplitPage={showSplitPage}
           setShowSplitPage={setShowSplitPage}
           currGroup={currGroup}
@@ -291,7 +295,9 @@ const TransactionForm = forwardRef(
     // ------------------------------
 
     useImperativeHandle(ref, () => ({
-      getData: () => null,
+      getData: () => ({
+        testData: 'this is some test data',
+      }),
     }));
 
     // ------------------------------
