@@ -510,7 +510,7 @@ const TransactionForm = forwardRef(
               </button>
             </div>
           </div>
-          <div className="border-ink-400 relative flex flex-col gap-1 border-b border-dashed py-6 text-base">
+          <div className="relative flex flex-col gap-1 py-6 text-base">
             <div className="flex flex-row items-center justify-between">
               <label htmlFor="split-type" className="text-ink-400 text-sm font-light">
                 Split Type:
