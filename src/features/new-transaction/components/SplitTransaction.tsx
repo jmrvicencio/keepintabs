@@ -219,23 +219,6 @@ const SplitTransactionPage = forwardRef(
     return (
       <div className="px-4 outline-none">
         <div className="m-auto max-w-120 border border-black bg-white p-6">
-          <div className="border-ink-400 gap:2 relative flex flex-col border-b border-dashed py-6">
-            <h2 className="font-gieonto text-4xl">Split Type</h2>
-            <div className="flex flex-row justify-center gap-2 py-4">
-              <input
-                type="button"
-                value="Balanced"
-                className={`${splitType == 'balanced' && 'selected'} border-ink-400 cursor-pointer rounded-md border px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
-                onClick={handleSplitTypeClicked('balanced')}
-              />
-              <input
-                type="button"
-                value="Itemized"
-                className={`${splitType == 'itemized' && 'selected'} border-ink-400 cursor-pointer rounded-md border px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
-                onClick={handleSplitTypeClicked('itemized')}
-              />
-            </div>
-          </div>
           <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
             <input
               id="total"
@@ -255,6 +238,23 @@ const SplitTransactionPage = forwardRef(
                 Total Amount
               </label>
               <p className="font-bold">(PHP)</p>
+            </div>
+          </div>
+          <div className="border-ink-400 gap:2 relative flex flex-col border-b border-dashed py-6">
+            <h2 className="font-gieonto text-4xl">Split Type</h2>
+            <div className="flex flex-row justify-center gap-2 py-4">
+              <input
+                type="button"
+                value="Balanced"
+                className={`${splitType == 'balanced' && 'selected'} border-ink-400 cursor-pointer rounded-md border px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
+                onClick={handleSplitTypeClicked('balanced')}
+              />
+              <input
+                type="button"
+                value="Itemized"
+                className={`${splitType == 'itemized' && 'selected'} border-ink-400 cursor-pointer rounded-md border px-3 py-0.5 [.selected]:bg-black [.selected]:text-white`}
+                onClick={handleSplitTypeClicked('itemized')}
+              />
             </div>
           </div>
           {splitType == 'itemized' ? (
