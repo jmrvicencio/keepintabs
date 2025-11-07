@@ -143,11 +143,13 @@ const NewTransaction = () => {
       addTransaction(transactionData);
       navigate(returnRoute);
     } else {
-      debugger;
       // TODO: Make "Done" set the splitData on the transaction
+      const isValid = splitRef.current?.verifySplits() ?? true;
       const testData = splitRef.current?.getData();
-      console.log('this is test data:\n', testData);
 
+      if (!isValid) return;
+
+      console.log('this is test data:\n', testData);
       setShowSplitPage(false);
     }
   };

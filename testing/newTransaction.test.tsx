@@ -368,6 +368,24 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     expect(totalAmountField).toHaveValue('2.00');
   });
 
+  it('Itemized Split error if no paying members is chosen', async () => {
+    // Open Split type Page
+    await act(async () => {
+      await user.click(screen.getByLabelText('Split Type:'));
+      await user.click(screen.getByRole('button', { name: 'Itemized' }));
+      await user.click(screen.getByRole('button', { name: 'Add Item' }));
+      await user.click(screen.getByRole('button', { name: 'Continue' }));
+    });
+
+    const errorText = screen.getByText('Must have atleast 1 paying member');
+    expect(errorText).toBeInTheDocument();
+
+    await act(async () => {
+      await user.click(await screen.getAllByTestId('item-member')[0]);
+    });
+    expect(errorText).not.toBeInTheDocument();
+  });
+
   it('Split total should reflect the shown total when entering split type page', async () => {
     const totalField = screen.getByLabelText('Total Amount');
     await act(async () => {

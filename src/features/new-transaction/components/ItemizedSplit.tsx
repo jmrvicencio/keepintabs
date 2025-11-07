@@ -75,7 +75,8 @@ const ItemizedSplit = ({
       const isChecked = e.currentTarget.checked;
       const nextItemizedData = [...itemizedData];
 
-      nextItemizedData[i] = { ...nextItemizedData[i], payingMembers: new Set([...nextItemizedData[i].payingMembers]) };
+      const { error: _, ...cleandItemData } = nextItemizedData[i];
+      nextItemizedData[i] = { ...cleandItemData, payingMembers: new Set([...nextItemizedData[i].payingMembers]) };
 
       if (isChecked) nextItemizedData[i].payingMembers.add(memberGroupId);
       else nextItemizedData[i].payingMembers.delete(memberGroupId);
@@ -139,7 +140,9 @@ const ItemizedSplit = ({
               autoComplete="off"
             />
           </div>
-          <div className="flex flex-col gap-2">
+          <div
+            className={`${itemizedItem.error && 'error'} box-border flex flex-col gap-2 rounded-lg border border-black/0 p-2 [.error]:border-red-500`}
+          >
             {groupData &&
               Object.entries(groupData.members).map(([memberGroupId, member]) => {
                 const membersSplitting = itemizedItem.payingMembers.size;
@@ -148,7 +151,7 @@ const ItemizedSplit = ({
                 return (
                   <div key={memberGroupId} className="flex flex-row items-center justify-baseline gap-2">
                     <input
-                      // {...(itemizedItem.payingMembers.has(memberGroupId) && { checked: true })}
+                      data-testid="item-member"
                       checked={itemizedItem.payingMembers.has(memberGroupId)}
                       onChange={handleMemberChanged(i, memberGroupId)}
                       id={`split-${i}-${memberGroupId}`}
@@ -181,6 +184,7 @@ const ItemizedSplit = ({
                 );
               })}
           </div>
+          {itemizedItem.error && <p className="text-sm text-red-500">{itemizedItem.error}</p>}
           <div className="">
             <input
               type="button"

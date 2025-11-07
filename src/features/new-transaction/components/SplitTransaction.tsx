@@ -28,6 +28,7 @@ export interface ItemizedEntry {
   description: string;
   amount: number;
   payingMembers: Set<string>; // set of groupUserIds
+  error?: 'Must have atleast 1 paying member';
 }
 
 /**
@@ -68,6 +69,8 @@ const SplitTransactionPage = forwardRef(
     // Local States
     // ------------------------------
 
+    debugger;
+
     const [localTotal, setLocalTotal] = useState(total); // Local total to use for the split
     const [remainder, setRemainder] = useState(0);
     const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>(
@@ -85,9 +88,11 @@ const SplitTransactionPage = forwardRef(
     // Computed Variables
     // ------------------------------
 
-    const itemizedPrices = itemizedData.map((item) => item.amount).join('|');
+    // debugger;
+
+    const itemizedPrices = (itemizedData ?? []).map((item) => item.amount).join('|');
     const itemizedTotal = useMemo(() => {
-      return itemizedData.reduce((acc, item) => Math.floor(acc + item.amount), 0);
+      return (itemizedData ?? []).reduce((acc, item) => Math.floor(acc + item.amount), 0);
     }, [itemizedPrices]);
     const splitTotalNum = Number(localTotal);
     const groupData = currGroup?.data();
@@ -121,6 +126,25 @@ const SplitTransactionPage = forwardRef(
     // ------------------------------
 
     useImperativeHandle(ref, () => ({
+      //f Check that all splits have a paying Member
+      verifySplits: () => {
+        let errorFound = false;
+
+        if (splitType == 'itemized') {
+          const nextItemizedData = [...itemizedData];
+
+          for (let [i, entry] of itemizedData.entries()) {
+            if (entry.payingMembers.size == 0) {
+              errorFound = true;
+              nextItemizedData[i].error = 'Must have atleast 1 paying member';
+            }
+          }
+
+          if (errorFound) setItemizedData(nextItemizedData);
+        }
+
+        return !errorFound;
+      },
       getData: () => {
         return {
           splitType: splitType,
