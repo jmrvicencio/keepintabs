@@ -10,10 +10,15 @@ export interface Transaction {
   splitData: SplitData;
 }
 
-export interface SplitData {
-  splitType: SplitType;
-  splitData: BalancedSplit | ItemizedSplit;
-}
+export type SplitData =
+  | {
+      type: 'balanced';
+      data: BalancedSplit;
+    }
+  | {
+      type: 'itemized';
+      data: ItemizedSplit;
+    };
 
 /**
  * An array of members who are splitting the transaction evenly
@@ -41,7 +46,7 @@ export interface FormRef {
 export interface SplitRef {
   verifySplits: () => boolean;
   getData: () => {
-    splitType: SplitType;
-    splitData: ItemizedSplit | BalancedSplit;
+    amount: number;
+    splitData: SplitData;
   };
 }

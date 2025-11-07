@@ -42,17 +42,17 @@ export interface ItemizedEntry {
 const SplitTransactionPage = forwardRef(
   (
     {
-      splitType: [initialSplitType, setInitialSplitType],
+      splitType: initialSplitType,
       total: [total, setTotal],
       currGroup,
       memberPhotoUrls,
       splitData,
     }: {
-      splitType: [SplitType, (val: SplitType) => any];
+      splitType: SplitType;
       total: [string, (val: string) => any];
       currGroup?: DocumentSnapshot<Group, DocumentData>;
       memberPhotoUrls: Record<string, string | undefined>;
-      splitData: ItemizedSplitType | BalancedSplitType;
+      splitData: SplitData;
     },
     ref: ForwardedRef<SplitRef>,
   ) => {
@@ -73,13 +73,13 @@ const SplitTransactionPage = forwardRef(
     const [localTotal, setLocalTotal] = useState(total); // Local total to use for the split
     const [remainder, setRemainder] = useState(0);
     const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>(
-      splitType == 'itemized' //
-        ? (splitData as ItemizedSplitType).entries
+      splitData.type == 'itemized' //
+        ? splitData.data.entries
         : [],
     );
     const [balancedData, setBalancedData] = useState<Set<string>>(
-      splitType == 'balanced'
-        ? (splitData as BalancedSplitType).payingMembers
+      splitData.type == 'balanced'
+        ? splitData.data.payingMembers
         : new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
     );
 
@@ -145,17 +145,25 @@ const SplitTransactionPage = forwardRef(
         return !errorFound;
       },
       getData: () => {
-        return {
-          splitType: splitType,
-          splitData:
-            splitType == 'balanced'
-              ? {
-                  payingMembers: balancedData,
-                }
-              : {
+        const splitData: SplitData =
+          splitType == 'itemized'
+            ? {
+                type: 'itemized',
+                data: {
+                  remainder,
                   entries: itemizedData,
-                  remainder: remainder,
                 },
+              }
+            : {
+                type: 'balanced',
+                data: {
+                  payingMembers: balancedData,
+                },
+              };
+
+        return {
+          amount: formattedStrToNum(localTotal),
+          splitData,
         };
       },
     }));

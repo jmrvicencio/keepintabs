@@ -18,6 +18,7 @@ import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
 import { getMemberPhotoUrl } from '@/features/groups/utils/memberUtil';
 import { BalancedSplit, ItemizedSplit, SplitData, Transaction } from '@/features/transactions/types';
 import { capitalize } from '@/util/helpers';
+import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
 // Import Custom Components
 import SplitTransactionPage from '@/features/new-transaction/components/SplitTransaction';
@@ -31,7 +32,7 @@ import { usePopupMenu } from '@/features/popup-menu/hooks/usePopupMenu';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import { Group } from '@/features/groups/types';
 import { SplitType, SplitRef, FormRef } from '@/features/transactions/types';
-import useDigitField from '@/hooks/useDigitField';
+import useDigitField, { DigitField } from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 
@@ -87,15 +88,20 @@ const NewTransaction = () => {
   }, [loading]);
 
   useEffect(() => {
-    const nextSplitData = {
-      payingMembers: new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
+    const nextSplitData: SplitData = {
+      type: 'balanced',
+      data: {
+        payingMembers: new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
+      },
     };
 
-    const isDefined: boolean = splitData != undefined;
-    const nextPayingMembers: string = [...nextSplitData.payingMembers].join('|');
-    const prevPayingMembers: string = isDefined ? [...(splitData as BalancedSplit).payingMembers].join('|') : '';
+    const isDefined = splitData != undefined && splitData != null;
+    const isBalancedSplit: boolean = isDefined && splitData.type == 'balanced';
+    const nextPayingMembers: string = [...(nextSplitData.data as BalancedSplit).payingMembers].join('|');
+    const prevPayingMembers: string =
+      isDefined && isBalancedSplit ? [...(splitData.data as BalancedSplit).payingMembers].join('|') : '';
     const isNewMembers: boolean = nextPayingMembers != prevPayingMembers;
-    const updateSplitData = !isDefined || isNewMembers;
+    const updateSplitData = !isDefined || (isBalancedSplit && isNewMembers);
 
     if (updateSplitData) setSplitData(nextSplitData);
   }, [currGroup]);
@@ -104,9 +110,10 @@ const NewTransaction = () => {
   // Form States
   // ------------------------------
 
+  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
   const [date, setDate] = useState(Date.now());
   const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
-  const [splitData, setSplitData] = useState<CombinedSplitType>();
+  const [splitData, setSplitData] = useState<SplitData>();
 
   // ------------------------------
   // Event Handlers
@@ -133,8 +140,8 @@ const NewTransaction = () => {
         paidBy,
         date,
         splitData: {
-          splitType: 'balanced',
-          splitData: {
+          type: 'balanced',
+          data: {
             payingMembers: new Set<string>(),
           },
         },
@@ -143,13 +150,15 @@ const NewTransaction = () => {
       addTransaction(transactionData);
       navigate(returnRoute);
     } else {
-      // TODO: Make "Done" set the splitData on the transaction
       const isValid = splitRef.current?.verifySplits() ?? true;
-      const testData = splitRef.current?.getData();
+      const splitFormData = splitRef.current?.getData();
+      const nextSplitData = splitFormData?.splitData;
 
       if (!isValid) return;
 
-      console.log('this is test data:\n', testData);
+      console.log('this is test data:\n', nextSplitData);
+      setSplitData(nextSplitData);
+      setTotal(formatToDigit(splitFormData?.amount ?? 0));
       setShowSplitPage(false);
     }
   };
@@ -182,12 +191,13 @@ const NewTransaction = () => {
         ) : (
           <TransactionForm
             ref={formRef}
+            total={{ value: total, setValue: setTotal, handleChange: handleTotalChanged }}
             showSplitPage={showSplitPage}
             setShowSplitPage={setShowSplitPage}
             currGroup={currGroup}
             paidBy={[paidBy, setPaidBy]}
             date={[date, setDate]}
-            splitData={[splitData ?? { payingMembers: new Set() }, setSplitData]}
+            splitData={splitData ? splitData : { type: 'balanced', data: { payingMembers: new Set() } }}
             splitRef={splitRef}
           />
         )}
@@ -199,20 +209,22 @@ const NewTransaction = () => {
 const TransactionForm = forwardRef(
   (
     {
+      total: { value: total, setValue: setTotal, handleChange: handleTotalChanged },
       currGroup,
       showSplitPage,
       setShowSplitPage,
       paidBy: [paidById, setPaidById],
       date: [date, setDate],
-      splitData: [splitData, setSplitData],
+      splitData,
       splitRef,
     }: {
+      total: DigitField;
       currGroup?: DocumentSnapshot<Group>;
       showSplitPage: boolean;
       setShowSplitPage: (val: boolean) => any;
       paidBy: [string, (val: string) => any];
       date: [number, (val: number) => any];
-      splitData: [CombinedSplitType, (val: CombinedSplitType) => any];
+      splitData: SplitData;
       splitRef: RefObject<SplitRef | null>;
     },
     ref: ForwardedRef<FormRef>,
@@ -228,9 +240,8 @@ const TransactionForm = forwardRef(
     // ------------------------------
 
     // Form States
-    const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
+    // const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
     const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
-    const [splitType, setSplitType] = useState<SplitType>('balanced');
 
     // We use a state instead of a computed value here since useMemo can't handle async values
     const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
@@ -508,7 +519,7 @@ const TransactionForm = forwardRef(
                 className="border-ink-400 rounded-md border px-3 py-0.5"
                 onClick={() => setShowSplitPage(true)}
               >
-                {capitalize(splitType)}
+                {capitalize(splitData.type)}
               </button>
             </div>
           </div>
@@ -517,7 +528,7 @@ const TransactionForm = forwardRef(
     ) : (
       <SplitTransactionPage
         ref={splitRef}
-        splitType={[splitType, setSplitType]}
+        splitType={splitData.type}
         total={[total, setTotal]}
         currGroup={currGroup}
         memberPhotoUrls={memberPhotoUrls}
