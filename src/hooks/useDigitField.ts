@@ -1,5 +1,11 @@
 import { ChangeEvent, useState } from 'react';
 
+export interface DigitField {
+  value: string;
+  setValue: (val: string) => any;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => any;
+}
+
 export const formatValue = (initialVal: string | number): string => {
   let val: string = typeof initialVal == 'string' ? initialVal : `${initialVal}`;
   val = val.replaceAll(',', '').replaceAll('.', '');
@@ -12,7 +18,7 @@ export const formatValue = (initialVal: string | number): string => {
   return formatted;
 };
 
-const useDigitField = (initialVal: string = '0.00') => {
+const useDigitField = (initialVal: string = '0.00'): DigitField => {
   const [value, setValue] = useState<string>(initialVal);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
