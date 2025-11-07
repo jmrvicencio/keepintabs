@@ -429,6 +429,7 @@ const TransactionForm = forwardRef(
               maxLength={32}
               onChange={handleTotalChanged}
               value={total}
+              readOnly={splitData.type == 'itemized'}
               autoFocus
             />
             <div className="flex flex-row justify-center">
