@@ -42,7 +42,7 @@ export interface ItemizedEntry {
 const SplitTransactionPage = forwardRef(
   (
     {
-      splitType: [splitType, setSplitType],
+      splitType: [initialSplitType, setInitialSplitType],
       total: [total, setTotal],
       currGroup,
       memberPhotoUrls,
@@ -69,8 +69,7 @@ const SplitTransactionPage = forwardRef(
     // Local States
     // ------------------------------
 
-    debugger;
-
+    const [splitType, setSplitType] = useState<SplitType>(initialSplitType);
     const [localTotal, setLocalTotal] = useState(total); // Local total to use for the split
     const [remainder, setRemainder] = useState(0);
     const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>(
