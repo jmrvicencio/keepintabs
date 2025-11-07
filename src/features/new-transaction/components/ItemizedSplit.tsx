@@ -175,7 +175,7 @@ const ItemizedSplit = ({
                       <p className="grow text-left">{member.displayName}</p>
                       <p className="text-sm">
                         Php{' '}
-                        <span className="font-courier-prime">
+                        <span className="font-courier-prime" data-testid="item-member-amt">
                           {itemizedItem.payingMembers.has(memberGroupId) ? formatToDigit(`${itemizedSplit}`) : '0.00'}
                         </span>
                       </p>

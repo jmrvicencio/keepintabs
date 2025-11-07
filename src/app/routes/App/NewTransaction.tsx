@@ -515,15 +515,14 @@ const TransactionForm = forwardRef(
               <label htmlFor="split-type" className="text-ink-400 text-sm font-light">
                 Split Type:
               </label>
-              <button
+              <input
+                type="button"
                 name="split-type"
                 id="split-type"
-                type="button"
                 className="border-ink-400 rounded-md border px-3 py-0.5"
                 onClick={() => setShowSplitPage(true)}
-              >
-                {capitalize(splitData.type)}
-              </button>
+                value={capitalize(splitData.type)}
+              />
             </div>
           </div>
         </div>

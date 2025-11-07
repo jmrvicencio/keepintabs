@@ -259,6 +259,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
   it('Can create itemized split type transactions', async () => {
     // Open Split type Page
     const splitTypeButton = screen.getByLabelText('Split Type:');
+    expect(splitTypeButton).toHaveValue('Balanced');
 
     await act(async () => {
       await user.click(splitTypeButton);
@@ -276,11 +277,13 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     const lastItemDesc = itemDescInputs[0];
     expect(lastItemDesc).toHaveFocus();
 
+    // Update Desc of item
     await act(async () => {
       await user.type(lastItemDesc, 'Jollibee Chicken');
     });
     expect(lastItemDesc).toHaveValue('Jollibee Chicken');
 
+    // Get Item Price Fields
     let itemPriceInputs = screen.getAllByTestId('item-price');
     const lastItemprice = itemPriceInputs[0];
 
@@ -289,7 +292,26 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     });
     expect(lastItemprice).toHaveValue('1.00');
 
-    expect(screen.getByText('Julian')).toBeInTheDocument();
+    const memberCheckboxes = screen.getAllByTestId('item-member');
+    const memberAmts = screen.getAllByTestId('item-member-amt');
+
+    await act(async () => {
+      for (const member of memberCheckboxes) {
+        await user.click(member);
+      }
+    });
+
+    // All Members should split the item
+    for (const amt of memberAmts) {
+      expect(amt).toHaveTextContent('0.25');
+    }
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: 'Continue' }));
+    });
+
+    expect(screen.getByLabelText('Total Amount')).toHaveValue('1.00');
+    expect(screen.getByLabelText('Split Type:')).toHaveValue('Itemized');
   });
 
   it('Itemized Split type transactions show a "remainder" and inputted amount should not go below total of itemized items', async () => {
