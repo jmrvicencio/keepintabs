@@ -432,12 +432,15 @@ const TransactionForm = forwardRef(
               readOnly={splitData.type == 'itemized'}
               autoFocus
             />
-            <div className="flex flex-row justify-center">
+            <div className="flex flex-row items-end justify-center">
               <label htmlFor="total" className="text-ink-400 pr-2 text-sm font-light">
                 Total Amount
               </label>
               <p className="font-bold">(PHP)</p>
             </div>
+            {splitData.type == 'itemized' && (
+              <p className="text-ink-400 text-sm font-light">(Total Amount cannot be edited for itemized split type)</p>
+            )}
           </div>
           <div className="border-ink-400 relative flex flex-col gap-2 border-b border-dashed py-6 text-base">
             <p className="text-ink-400 mb-2 font-light">(Tap on items to edit)</p>

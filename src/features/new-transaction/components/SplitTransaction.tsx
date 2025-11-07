@@ -233,7 +233,7 @@ const SplitTransactionPage = forwardRef(
               value={localTotal}
               autoFocus
             />
-            <div className="flex flex-row justify-center">
+            <div className="flex flex-row items-end justify-center">
               <label htmlFor="total" className="text-ink-400 pr-2 text-sm font-light">
                 Total Amount
               </label>
