@@ -156,7 +156,6 @@ const NewTransaction = () => {
 
       if (!isValid) return;
 
-      console.log('this is test data:\n', nextSplitData);
       setSplitData(nextSplitData);
       setTotal(formatToDigit(splitFormData?.amount ?? 0));
       setShowSplitPage(false);
