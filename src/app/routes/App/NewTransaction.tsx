@@ -24,6 +24,7 @@ import SplitTransactionPage from '@/features/new-transaction/components/SplitTra
 import Panel from '@/components/neubrutalist/Panel';
 import { User as UserIcon } from 'lucide-react';
 import DatePicker from '@/features/date-picker/DatePicker';
+import Loading from '@/components/Loading';
 
 // Import Custom Hooks
 import { usePopupMenu } from '@/features/popup-menu/hooks/usePopupMenu';
@@ -174,16 +175,20 @@ const NewTransaction = () => {
             </Panel>
           </div>
         </div>
-        <TransactionForm
-          ref={formRef}
-          showSplitPage={showSplitPage}
-          setShowSplitPage={setShowSplitPage}
-          currGroup={currGroup}
-          paidBy={[paidBy, setPaidBy]}
-          date={[date, setDate]}
-          splitData={[splitData ?? { payingMembers: new Set() }, setSplitData]}
-          splitRef={splitRef}
-        />
+        {loading ? (
+          <Loading />
+        ) : (
+          <TransactionForm
+            ref={formRef}
+            showSplitPage={showSplitPage}
+            setShowSplitPage={setShowSplitPage}
+            currGroup={currGroup}
+            paidBy={[paidBy, setPaidBy]}
+            date={[date, setDate]}
+            splitData={[splitData ?? { payingMembers: new Set() }, setSplitData]}
+            splitRef={splitRef}
+          />
+        )}
       </main>
     </div>
   );
