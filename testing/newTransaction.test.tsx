@@ -5,7 +5,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 import { ROUTES } from '../src/app/routes';
 import { Group } from '../src/features/groups/types';
-import PopupMenu from '../src/features/popup-menu/components/PopupMenu';
+import PopupOverlay from '../src/features/popup-menu/components/PopupOverlay';
 
 const mockNavigate = vi.fn();
 const { mockUseLocation, mockAddTransaction, mockUseAddTransaction } = vi.hoisted(() => {
@@ -99,7 +99,7 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
             path="/transactions/new"
             element={
               <>
-                <PopupMenu />
+                <PopupOverlay />
                 <NewTransaction />
               </>
             }
@@ -243,7 +243,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
             path="/transactions/new"
             element={
               <>
-                <PopupMenu />
+                <PopupOverlay />
                 <NewTransaction />
               </>
             }

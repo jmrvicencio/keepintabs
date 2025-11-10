@@ -156,10 +156,6 @@ const Group = memo(function Group() {
           </section>
         </main>
       </div>
-      {/* <FAB onClick={handleAddClicked}>
-        <PlusMemo />
-        Add Transaction
-      </FAB> */}
     </>
   );
 });

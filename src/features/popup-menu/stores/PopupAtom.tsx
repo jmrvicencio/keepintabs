@@ -1,13 +1,25 @@
 import { atom } from 'jotai';
 import { ReactNode } from 'react';
 
-export interface Popup {
+export interface PopupOverlay {
+  type: 'popup-overlay';
   title?: string;
   body: ReactNode;
   closeCallback?: () => any;
 }
 
-const popup: Popup = {
+export interface PopupMenu {
+  type: 'menu';
+  reference?: HTMLElement;
+  options: {
+    label: string;
+    action?: () => any;
+  }[];
+  closeCallback?: () => any;
+}
+
+const popup: PopupOverlay | PopupMenu = {
+  type: 'popup-overlay',
   title: 'Popup Title',
   body: (
     <>
@@ -16,6 +28,6 @@ const popup: Popup = {
   ),
 };
 
-export const popupAtom = atom<Popup>(popup);
+export const popupAtom = atom<PopupOverlay | PopupMenu>(popup);
 
 export const showPopupAtom = atom<boolean>(false);

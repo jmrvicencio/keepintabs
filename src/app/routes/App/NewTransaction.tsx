@@ -28,7 +28,7 @@ import DatePicker from '@/features/date-picker/DatePicker';
 import Loading from '@/components/Loading';
 
 // Import Custom Hooks
-import { usePopupMenu } from '@/features/popup-menu/hooks/usePopupMenu';
+import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import { Group } from '@/features/groups/types';
 import { SplitRef, FormRef } from '@/features/transactions/types';
@@ -61,7 +61,7 @@ const TransactionForm = forwardRef(
     // Hooks
     // ------------------------------
 
-    const { setShowPopup, setPopup, resetPopup } = usePopupMenu();
+    const { setShowPopup, setPopup, resetPopup } = usePopupOverlay();
 
     // ------------------------------
     // States
@@ -72,7 +72,7 @@ const TransactionForm = forwardRef(
     const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
 
     // Local States
-    const [showPaidBy, setShowPaidby] = useState(false);
+    const [showPaidBy, setShowPaidby] = useState(false); // used to prevent paidBy popup when memberPhotoUrls has reloaded
 
     // ------------------------------
     // Computed Values
@@ -161,6 +161,7 @@ const TransactionForm = forwardRef(
       );
 
       setPopup((prev) => ({
+        type: 'popup-overlay',
         title: 'Paid By',
         body: memberList,
         closeCallback: () => setShowPaidby(false),
@@ -207,6 +208,7 @@ const TransactionForm = forwardRef(
       );
 
       setPopup((prev) => ({
+        type: 'popup-overlay',
         title: 'Date',
         body: <PopupElement />,
       }));

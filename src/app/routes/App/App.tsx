@@ -7,7 +7,7 @@ import ProtectedRoute from '../../../components/ProtectedRoute';
 import Header from '../../../components/Header';
 import Sidebar from '../../../components/sidebar/Sidebar';
 import Debug from '../../../components/Debug';
-import PopupMenu from '../../../features/popup-menu/components/PopupMenu';
+import PopupOverlay from '../../../features/popup-menu/components/PopupOverlay';
 import FAB from '../../../components/FAB';
 import { Plus } from 'lucide-react';
 import { MainContentRefAtom } from '../../../store/mainArea';
@@ -58,7 +58,7 @@ function App() {
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
-        <PopupMenu />
+        <PopupOverlay />
         <Debug showDebug={showDebug} />
         {/* This is the main container for the website */}
         <div className={`relative h-full min-w-dvw md:w-full md:max-w-190 md:min-w-0`}>
