@@ -57,7 +57,7 @@ const BalancedSplit = ({
             <label
               htmlFor={`balanced-${memberGroupId}`}
               data-testid={'balanced-member'}
-              className={`${balancedData.error && 'error'} border-ink-300 flex w-full cursor-pointer flex-row items-center gap-2 overflow-clip rounded-xl border bg-black/2 p-2 py-3 pr-3 font-light text-black [.error]:border-red-500`}
+              className={`${balancedData.error && 'error'} border-ink-300 flex w-full cursor-pointer flex-row items-center gap-2 overflow-clip rounded-xl border bg-gray-50 p-2 py-3 pr-3 font-light text-black [.error]:border-red-500`}
             >
               <div
                 className={`${memberChecked && 'checked'} group [.checked]:bg-accent-600 ml-2 flex aspect-square h-4 w-4 items-center justify-center rounded-full border-black/80 not-[.checked]:border`}

@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
 import { getMemberPhotoUrl } from '@/features/groups/utils/memberUtil';
 import { BalancedSplit, ItemizedSplit, SplitData, Transaction } from '@/features/transactions/types';
-import { capitalize } from '@/util/helpers';
+import { capitalize, formattedStrToNum } from '@/util/helpers';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
 // Import Custom Components
@@ -418,7 +418,7 @@ const TransactionForm = forwardRef(
     };
 
     return (
-      <form className="px-2 outline-none">
+      <form className="min-w-80 px-2 outline-none">
         <div className="m-auto max-w-120 border border-black bg-white p-6">
           <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
             <input
@@ -471,12 +471,12 @@ const TransactionForm = forwardRef(
               </label>
               <div className="flex grow flex-row items-center justify-end gap-2">
                 <div
-                  className="border-ink-400 flex h-6 w-6 items-center justify-center overflow-clip rounded-full border bg-cover"
+                  className="border-ink-400 flex h-5 w-5 items-center justify-center overflow-clip rounded-full border bg-cover"
                   style={{
                     backgroundImage: `url('${paidByPhotoUrl}')`,
                   }}
                 >
-                  {paidByPhotoUrl == undefined && <UserIcon className="text-ink-400 h-5 w-5" />}
+                  {paidByPhotoUrl == undefined && <UserIcon className="text-ink-400 h-4 w-4" />}
                 </div>
                 <input
                   id="paid_by"
@@ -529,19 +529,49 @@ const TransactionForm = forwardRef(
             </div>
           </div>
           <div className="relative flex flex-col gap-1 py-6 text-base">
-            <div className="flex flex-row items-center justify-between">
-              <label htmlFor="split-type" className="text-ink-400 text-sm font-light">
-                Split Type:
-              </label>
-              <input
-                type="button"
-                name="split-type"
-                id="split-type"
-                className="border-ink-400 rounded-md border px-3 py-0.5"
-                onClick={() => setShowSplitPage(true)}
-                value={capitalize(splitData.type)}
-              />
-            </div>
+            {splitData.type == 'balanced' && (
+              <div className="flex flex-col">
+                <div className="flex flex-row items-center justify-between">
+                  <label htmlFor="balanced-split" className="text-ink-400 text-left text-sm font-light">
+                    Per member:
+                  </label>
+                  <input
+                    type="text"
+                    name="balanced-split"
+                    id="balanced-split"
+                    className="field-sizing-content py-0.5 outline-0"
+                    readOnly={true}
+                    value={(() => {
+                      const totalNum = formattedStrToNum(total);
+                      const toSplit = splitData.data.payingMembers.size;
+                      const splitTotal = formatToDigit(Math.floor(totalNum / toSplit));
+                      return `php ${splitTotal}`;
+                    })()}
+                  />
+                </div>
+                <div className="flex flex-row items-center justify-between">
+                  <div className="user-icons -gap-2 flex">
+                    {[...splitData.data.payingMembers].map((memberGroupId) => {
+                      const photoUrl = memberPhotoUrls[memberGroupId];
+                      return (
+                        <div
+                          {...(photoUrl && {
+                            style: {
+                              backgroundImage: `url(${photoUrl})`,
+                            },
+                          })}
+                          data-testid="balanced-member-photo"
+                          className="h-6 w-6 rounded-full border border-white bg-gray-200 bg-cover not-first:-ml-1"
+                        />
+                      );
+                    })}
+                  </div>
+                  <p className="text-ink-400 text-sm">
+                    {splitData.data.payingMembers.size} split{splitData.data.payingMembers.size > 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </form>

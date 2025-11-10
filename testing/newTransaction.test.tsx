@@ -541,8 +541,21 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     // Error message is removed when user checks any boxes
     await act(async () => {
       await user.click(balancedCheckboxes[0]);
+      await user.click(balancedCheckboxes[1]);
+      await user.click(balancedCheckboxes[2]);
+      await user.click(balancedCheckboxes[3]);
     });
 
     expect(errorText).not.toBeInTheDocument();
+
+    // Display the balanced split info on the NewTransaction Component
+    await act(async () => {
+      await user.click(continueButton);
+    });
+
+    const balancedSplit = screen.getByLabelText('Per member:');
+    expect(balancedSplit).toBeInTheDocument();
+    expect(balancedSplit).toHaveValue('php 25.00');
+    expect(screen.getAllByTestId('balanced-member-photo').length).toBe(4);
   });
 });
