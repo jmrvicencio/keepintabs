@@ -17,6 +17,8 @@ import { useGroupDebugOptions } from '../../../features/groups/utils/debuggerFun
 import Panel from '../../../components/neubrutalist/Panel';
 import PanelButton from '../../../components/neubrutalist/PanelButton';
 import UserIcon from '../../../components/user_stack/UserIcon';
+import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
+import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
@@ -52,7 +54,7 @@ const Group = memo(function Group() {
         // displayed element will still align with the screen position.
         <PopupOverlay setShowSelf={setShowGroupMenu}>
           <div
-            className="absolute h-10 w-10 border-1 border-red-500 bg-amber-800"
+            className="absolute h-10 w-10 border border-red-500 bg-amber-800"
             style={{
               top: (menuRect?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
               right: window.innerWidth - (menuRect?.right ?? 0),
@@ -60,7 +62,7 @@ const Group = memo(function Group() {
           ></div>
         </PopupOverlay>
       )}
-      <div className="relative flex shrink-0 grow-1 flex-col pt-3">
+      <div className="relative flex shrink-0 grow flex-col pt-3">
         <main className="flex h-full flex-col items-stretch">
           <GroupInfo
             userBalance={userBalance}
@@ -82,11 +84,11 @@ const Group = memo(function Group() {
                   <p className="text-base/4">Aug</p>
                   <p className="text-2xl font-bold">25</p>
                 </div>
-                <div className="text-charcoal-800 flex grow-1 flex-col gap-1 text-left">
+                <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
                   <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
                   <p className="text-sm/snug font-light">You paid Php 2,000</p>
                   <div>
-                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 py-0.5 text-sm/tight font-light">
+                    <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
                       Gcash
                     </p>
                   </div>
@@ -107,11 +109,11 @@ const Group = memo(function Group() {
                   <p className="text-base/4">Aug</p>
                   <p className="text-2xl font-bold">25</p>
                 </div>
-                <div className="text-charcoal-800 flex grow-1 flex-col gap-1 text-left">
+                <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
                   <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
                   <p className="text-sm/snug font-light">You paid Php 2,000</p>
                   <div>
-                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 py-0.5 text-sm/tight font-light">
+                    <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
                       Gcash
                     </p>
                   </div>
@@ -132,11 +134,11 @@ const Group = memo(function Group() {
                   <p className="text-base/4">Aug</p>
                   <p className="text-2xl font-bold">25</p>
                 </div>
-                <div className="text-charcoal-800 flex grow-1 flex-col gap-1 text-left">
+                <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
                   <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
                   <p className="text-sm/snug font-light">You paid Php 2,000</p>
                   <div>
-                    <p className="border-shell-300 w-fit rounded-lg border-1 px-1 py-0.5 text-sm/tight font-light">
+                    <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
                       Gcash
                     </p>
                   </div>
@@ -173,10 +175,23 @@ const GroupInfo = ({
   userGroupUid: string | undefined;
   ref: RefObject<HTMLDivElement | null>;
 }) => {
-  const MenuMemo = memo(() => <Menu onClick={() => setShowGroupMenu(true)} className="w-8 cursor-pointer" />);
+  const { setShowPopup, setPopup } = usePopupOverlay();
+
+  const handleMenuClicked = useCallback(() => {
+    const menuPopup: PopupMenu = {
+      type: 'menu',
+      options: [],
+      reference: ref,
+    };
+
+    setPopup(menuPopup);
+    setShowPopup(true);
+  }, []);
+
+  const MenuMemo = memo(() => <Menu onClick={handleMenuClicked} className="w-8 cursor-pointer" />);
 
   return (
-    <section className="border-wheat-400 mx-3 flex grow-1 flex-col items-start gap-2 border-b-1 border-dashed pb-8">
+    <section className="border-wheat-400 mx-3 flex grow flex-col items-start gap-2 border-b border-dashed pb-8">
       <div className="w-full">
         <div className="text-ink-800 pointer-cursor mb-4 flex flex-row items-center justify-between gap-2 text-lg font-normal">
           <Link to={ROUTES.APP}>
@@ -184,7 +199,7 @@ const GroupInfo = ({
               <ArrowLeft className="text-ink-800" />
             </Panel>
           </Link>
-          <div className="border-wheat-400 bg-wheat-200 flex flex-row items-center gap-2 rounded-full border-1 px-2 py-1">
+          <div className="border-wheat-400 bg-wheat-200 flex flex-row items-center gap-2 rounded-full border px-2 py-1">
             <p className="ml-1">{Object.keys(groupData?.members ?? {}).length}</p>
             <div className="flex flex-row">
               <UserIcon bgColor="bg-wheat-400" border="border-wheat-200" />
@@ -195,7 +210,7 @@ const GroupInfo = ({
         </div>
         <div className="mb-4 flex w-full flex-row items-center justify-between" ref={ref}>
           <h1 className="font-gieonto text-left text-4xl font-medium">{groupData?.name}</h1>
-          <div className="p1 border-wheat-400 flex h-8 w-8 items-center justify-center rounded-lg border-1">
+          <div className="p1 border-wheat-400 flex h-8 w-8 items-center justify-center rounded-lg border">
             <MenuMemo />
           </div>
         </div>
@@ -210,7 +225,7 @@ const GroupInfo = ({
         </Panel>
       )}
       <p className="text-xs opacity-72">Debts are being simplified</p>
-      <div className="border-wheat-400 cursor-pointer rounded-xl border-1 px-3 py-1">See full breakdown</div>
+      <div className="border-wheat-400 cursor-pointer rounded-xl border px-3 py-1">See full breakdown</div>
     </section>
   );
 };

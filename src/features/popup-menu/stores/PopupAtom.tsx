@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { ReactNode } from 'react';
+import { ReactNode, type RefObject } from 'react';
 
 export interface PopupOverlay {
   type: 'popup-overlay';
@@ -10,7 +10,7 @@ export interface PopupOverlay {
 
 export interface PopupMenu {
   type: 'menu';
-  reference?: HTMLElement;
+  reference?: RefObject<HTMLElement | null>;
   options: {
     label: string;
     action?: () => any;
