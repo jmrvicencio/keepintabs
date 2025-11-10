@@ -148,13 +148,21 @@ const SplitTransactionPage = forwardRef(
           for (let [i, entry] of itemizedData.entries()) {
             if (entry.payingMembers.size == 0) {
               errorFound = true;
-              nextItemizedData[i].error = 'Must have atleast 1 paying member';
+              const nextItemizedEntry = { ...nextItemizedData[i] };
+              nextItemizedEntry.error = 'Must have atleast 1 paying member';
+              nextItemizedData[i] = nextItemizedEntry;
             }
           }
 
           if (errorFound) setItemizedData(nextItemizedData);
         } else {
-          if (balancedData.payingMembers.size == 0) errorFound = true;
+          if (balancedData.payingMembers.size == 0) {
+            const nextBalancedData = { ...balancedData };
+
+            errorFound = true;
+            nextBalancedData.error = 'Must have atleast 1 paying member';
+            setBalancedData(nextBalancedData);
+          }
         }
 
         return !errorFound;
@@ -285,7 +293,7 @@ const SplitTransactionPage = forwardRef(
           ) : (
             <BalancedSplit
               localTotal={localTotal}
-              balancedData={[balancedData.payingMembers, setBalancedDataWrapper]}
+              balancedData={[balancedData, setBalancedData]}
               groupData={groupData}
               memberPhotoUrls={memberPhotoUrls}
             />

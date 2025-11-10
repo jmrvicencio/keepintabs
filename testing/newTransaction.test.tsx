@@ -528,18 +528,21 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
       await user.click(balancedCheckboxes[1]);
     });
 
+    // Error message shows up when no items are selected and continue is pressed
     expect(balancedAmts[0]).toHaveTextContent('0.00');
 
     await act(async () => {
       await user.click(continueButton);
     });
 
-    const errorText = screen.getByText('Must have atelast 1 paying member');
+    const errorText = screen.getByText('Must have atleast 1 paying member');
     expect(errorText).toBeInTheDocument();
 
+    // Error message is removed when user checks any boxes
     await act(async () => {
       await user.click(balancedCheckboxes[0]);
     });
+
     expect(errorText).not.toBeInTheDocument();
   });
 });

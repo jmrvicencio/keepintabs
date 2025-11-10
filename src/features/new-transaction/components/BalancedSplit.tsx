@@ -6,6 +6,7 @@ import { formattedStrToNum } from '@/util/helpers';
 import { UserIcon, Check } from 'lucide-react';
 import { Group } from '@/features/groups/types';
 import { SplitType } from '@/features/transactions/types';
+import { BalancedData } from './SplitTransaction';
 
 const BalancedSplit = ({
   balancedData: [balancedData, setBalancedData],
@@ -13,12 +14,12 @@ const BalancedSplit = ({
   groupData,
   memberPhotoUrls,
 }: {
-  balancedData: [Set<string>, (val: Set<string>) => any];
+  balancedData: [BalancedData, (val: BalancedData) => any];
   localTotal: string;
   groupData: Group | undefined;
   memberPhotoUrls: Record<string, string | undefined>;
 }) => {
-  const splits = balancedData.size;
+  const splits = balancedData.payingMembers.size;
   const balancedSplit = Math.floor(formattedStrToNum(localTotal) / splits);
 
   // ------------------------------
@@ -27,10 +28,12 @@ const BalancedSplit = ({
 
   const handleChanged = (memberGroupId: string) => (e: ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.currentTarget.checked;
-    const nextBalancedData = new Set([...balancedData]);
+    const { error: _, ...nextBalancedData } = balancedData;
+    const nextPayingMembers = new Set([...nextBalancedData.payingMembers]);
+    nextBalancedData.payingMembers = nextPayingMembers;
 
-    if (isChecked) nextBalancedData.add(memberGroupId);
-    else nextBalancedData.delete(memberGroupId);
+    if (isChecked) nextPayingMembers.add(memberGroupId);
+    else nextPayingMembers.delete(memberGroupId);
 
     setBalancedData(nextBalancedData);
   };
@@ -39,7 +42,7 @@ const BalancedSplit = ({
     <div className="flex flex-col gap-2 py-6">
       <h3 className="font-semibold">Members Split</h3>
       {Object.entries(groupData?.members ?? {}).map(([memberGroupId, member]) => {
-        const memberChecked = balancedData.has(memberGroupId);
+        const memberChecked = balancedData.payingMembers.has(memberGroupId);
         const splitPercent = memberChecked ? 1 / splits : 0;
 
         return (
@@ -53,7 +56,8 @@ const BalancedSplit = ({
             />{' '}
             <label
               htmlFor={`balanced-${memberGroupId}`}
-              className="border-ink-300 flex w-full cursor-pointer flex-row items-center gap-2 overflow-clip rounded-xl border bg-black/2 p-2 py-3 pr-3 font-light text-black"
+              data-testid={'balanced-member'}
+              className={`${balancedData.error && 'error'} border-ink-300 flex w-full cursor-pointer flex-row items-center gap-2 overflow-clip rounded-xl border bg-black/2 p-2 py-3 pr-3 font-light text-black [.error]:border-red-500`}
             >
               <div
                 className={`${memberChecked && 'checked'} group [.checked]:bg-accent-600 ml-2 flex aspect-square h-4 w-4 items-center justify-center rounded-full border-black/80 not-[.checked]:border`}
@@ -76,7 +80,7 @@ const BalancedSplit = ({
                   <p className="text-sm">
                     Php{' '}
                     <span className="font-courier-prime" data-testid="balanced-amt">
-                      {balancedData.has(memberGroupId) ? formatToDigit(`${balancedSplit}`) : '0.00'}
+                      {balancedData.payingMembers.has(memberGroupId) ? formatToDigit(`${balancedSplit}`) : '0.00'}
                     </span>
                   </p>
                 </div>
@@ -91,7 +95,7 @@ const BalancedSplit = ({
           </div>
         );
       })}
-      <p>Must have atelast 1 paying member</p>
+      {balancedData.error && <p className="text-sm text-red-500">{balancedData.error}</p>}
     </div>
   );
 };
