@@ -31,12 +31,10 @@ import Loading from '@/components/Loading';
 import { usePopupMenu } from '@/features/popup-menu/hooks/usePopupMenu';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import { Group } from '@/features/groups/types';
-import { SplitType, SplitRef, FormRef } from '@/features/transactions/types';
+import { SplitRef, FormRef } from '@/features/transactions/types';
 import useDigitField, { DigitField } from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
-
-type CombinedSplitType = BalancedSplit | ItemizedSplit;
 
 const NewTransaction = () => {
   // Declare Refs
@@ -52,6 +50,8 @@ const NewTransaction = () => {
   const [groupId, setGroupId] = useState(location.state?.groupId);
   const [showSplitPage, setShowSplitPage] = useState(false);
   const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
+  // We use a state instead of a computed value here since useMemo can't handle async values
+  const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
 
   // Late Hooks
   const addTransaction = useAddTransaction(groupId);
@@ -76,6 +76,32 @@ const NewTransaction = () => {
   // ------------------------------
   // Effects
   // ------------------------------
+
+  // Get all member photoUrls every time currGroup has updated
+  useEffect(() => {
+    if (!currGroup) return;
+
+    const fetchMemberPhotoUrls = async () => {
+      const group = currGroup.data()!;
+      const groupMembers = group.members;
+      const photoUrlsArray = await Promise.all(
+        Object.keys(groupMembers).map(async (key) => {
+          const photoUrl = await getMemberPhotoUrl(group, key);
+          return { key, photoUrl };
+        }),
+      );
+
+      // convert the array of entries into an actual Record Object
+      const photoUrlsObject = photoUrlsArray.reduce((acc: Record<string, string | undefined>, { key, photoUrl }) => {
+        acc[key] = photoUrl;
+        return acc;
+      }, {});
+
+      setMemberPhotoUrls(photoUrlsObject);
+    };
+
+    fetchMemberPhotoUrls();
+  }, [currGroup]);
 
   // Update the groupIds after groups are done loading
   useEffect(() => {
@@ -113,7 +139,7 @@ const NewTransaction = () => {
   const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
   const [date, setDate] = useState(Date.now());
   const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
-  const [splitData, setSplitData] = useState<SplitData>();
+  const [splitData, setSplitData] = useState<SplitData>({ type: 'balanced', data: { payingMembers: new Set() } });
 
   // ------------------------------
   // Event Handlers
@@ -156,7 +182,7 @@ const NewTransaction = () => {
 
       if (!isValid) return;
 
-      setSplitData(nextSplitData);
+      setSplitData(nextSplitData!);
       setTotal(formatToDigit(splitFormData?.amount ?? 0));
       setShowSplitPage(false);
     }
@@ -187,7 +213,7 @@ const NewTransaction = () => {
         </div>
         {loading ? (
           <Loading />
-        ) : (
+        ) : !showSplitPage ? (
           <TransactionForm
             ref={formRef}
             total={{ value: total, setValue: setTotal, handleChange: handleTotalChanged }}
@@ -196,8 +222,17 @@ const NewTransaction = () => {
             currGroup={currGroup}
             paidBy={[paidBy, setPaidBy]}
             date={[date, setDate]}
-            splitData={splitData ? splitData : { type: 'balanced', data: { payingMembers: new Set() } }}
-            splitRef={splitRef}
+            splitData={splitData}
+            memberPhotoUrls={memberPhotoUrls}
+          />
+        ) : (
+          <SplitTransactionPage
+            ref={splitRef}
+            splitType={splitData.type}
+            total={[total, setTotal]}
+            currGroup={currGroup}
+            memberPhotoUrls={memberPhotoUrls}
+            splitData={splitData}
           />
         )}
       </main>
@@ -215,7 +250,7 @@ const TransactionForm = forwardRef(
       paidBy: [paidById, setPaidById],
       date: [date, setDate],
       splitData,
-      splitRef,
+      memberPhotoUrls,
     }: {
       total: DigitField;
       currGroup?: DocumentSnapshot<Group>;
@@ -224,7 +259,7 @@ const TransactionForm = forwardRef(
       paidBy: [string, (val: string) => any];
       date: [number, (val: number) => any];
       splitData: SplitData;
-      splitRef: RefObject<SplitRef | null>;
+      memberPhotoUrls: Record<string, string | undefined>;
     },
     ref: ForwardedRef<FormRef>,
   ) => {
@@ -241,9 +276,6 @@ const TransactionForm = forwardRef(
     // Form States
     // const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
     const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
-
-    // We use a state instead of a computed value here since useMemo can't handle async values
-    const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
 
     // Local States
     const [showPaidBy, setShowPaidby] = useState(false);
@@ -272,32 +304,6 @@ const TransactionForm = forwardRef(
         );
         setPaidById(member && member[0] ? member[0] : Object.keys(currGroup!.data()!.members)[0]);
       }
-    }, [currGroup]);
-
-    // Get all member photoUrls every time currGroup has updated
-    useEffect(() => {
-      if (!currGroup) return;
-
-      const fetchMemberPhotoUrls = async () => {
-        const group = currGroup.data()!;
-        const groupMembers = group.members;
-        const photoUrlsArray = await Promise.all(
-          Object.keys(groupMembers).map(async (key) => {
-            const photoUrl = await getMemberPhotoUrl(group, key);
-            return { key, photoUrl };
-          }),
-        );
-
-        // convert the array of entries into an actual Record Object
-        const photoUrlsObject = photoUrlsArray.reduce((acc: Record<string, string | undefined>, { key, photoUrl }) => {
-          acc[key] = photoUrl;
-          return acc;
-        }, {});
-
-        setMemberPhotoUrls(photoUrlsObject);
-      };
-
-      fetchMemberPhotoUrls();
     }, [currGroup]);
 
     // Update the popup when the currGroup or memberPhotoUrls has finished loading
@@ -349,7 +355,7 @@ const TransactionForm = forwardRef(
               className="relative flex h-8 cursor-pointer flex-row items-center"
             >
               <div
-                className="absolute left-0 flex h-8 w-8 items-center justify-center rounded-lg border bg-cover"
+                className="border-ink-400 absolute left-0 flex h-8 w-8 items-center justify-center rounded-lg border bg-cover"
                 style={{ backgroundImage: `url('${memberPhotoUrls[memberId]}')` }}
               >
                 {!memberPhotoUrls[memberId] && <UserIcon className="text-ink-400" />}
@@ -414,7 +420,7 @@ const TransactionForm = forwardRef(
       setShowPopup(true);
     };
 
-    return !showSplitPage ? (
+    return (
       <form className="px-4 outline-none">
         <div className="m-auto max-w-120 border border-black bg-white p-6">
           <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
@@ -468,7 +474,7 @@ const TransactionForm = forwardRef(
               </label>
               <div className="flex grow flex-row items-center justify-end gap-2">
                 <div
-                  className="flex h-6 w-6 items-center justify-center overflow-clip rounded-full border bg-cover"
+                  className="border-ink-400 flex h-6 w-6 items-center justify-center overflow-clip rounded-full border bg-cover"
                   style={{
                     backgroundImage: `url('${paidByPhotoUrl}')`,
                   }}
@@ -527,15 +533,6 @@ const TransactionForm = forwardRef(
           </div>
         </div>
       </form>
-    ) : (
-      <SplitTransactionPage
-        ref={splitRef}
-        splitType={splitData.type}
-        total={[total, setTotal]}
-        currGroup={currGroup}
-        memberPhotoUrls={memberPhotoUrls}
-        splitData={splitData}
-      />
     );
   },
 );
