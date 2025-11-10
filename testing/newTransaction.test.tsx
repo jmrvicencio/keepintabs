@@ -557,5 +557,17 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     expect(balancedSplit).toBeInTheDocument();
     expect(balancedSplit).toHaveValue('php 25.00');
     expect(screen.getAllByTestId('balanced-member-photo').length).toBe(4);
+
+    const yourSharelabel = screen.getByLabelText('Your Share');
+    expect(yourSharelabel).toHaveValue('25.00');
+
+    await act(async () => {
+      await user.type(
+        screen.getByLabelText('Total Amount'),
+        '{backspace}{backspace}{backspace}{backspace}{backspace}20000',
+      );
+    });
+    expect(balancedSplit).toHaveValue('php 50.00');
+    expect(yourSharelabel).toHaveValue('php 50.00');
   });
 });

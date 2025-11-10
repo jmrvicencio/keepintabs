@@ -23,7 +23,7 @@ import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 // Import Custom Components
 import SplitTransactionPage from '@/features/new-transaction/components/SplitTransaction';
 import Panel from '@/components/neubrutalist/Panel';
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, ListFilter } from 'lucide-react';
 import DatePicker from '@/features/date-picker/DatePicker';
 import Loading from '@/components/Loading';
 
@@ -35,209 +35,6 @@ import { SplitRef, FormRef } from '@/features/transactions/types';
 import useDigitField, { DigitField } from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
-
-const NewTransaction = () => {
-  // Declare Refs
-  const splitRef = useRef<SplitRef>(null);
-  const formRef = useRef<FormRef>(null);
-
-  // Call Hooks
-  const { groups, loading } = useGroups();
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // Local States
-  const [groupId, setGroupId] = useState(location.state?.groupId);
-  const [showSplitPage, setShowSplitPage] = useState(false);
-  const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
-  // We use a state instead of a computed value here since useMemo can't handle async values
-  const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
-
-  // Late Hooks
-  const addTransaction = useAddTransaction(groupId);
-
-  // ------------------------------
-  // Computed Values
-  // ------------------------------
-
-  const currGroup = useMemo(() => {
-    let currGroupId: string = groupId;
-    if (!groupId || loading) return undefined;
-
-    if (!groupId) {
-      const firstGroup = groups[0];
-      currGroupId = firstGroup.id;
-    }
-
-    const currGroup = groups.find((group) => group.id == currGroupId);
-    return currGroup;
-  }, [groupId, loading]);
-
-  // ------------------------------
-  // Effects
-  // ------------------------------
-
-  // Get all member photoUrls every time currGroup has updated
-  useEffect(() => {
-    if (!currGroup) return;
-
-    const fetchMemberPhotoUrls = async () => {
-      const group = currGroup.data()!;
-      const groupMembers = group.members;
-      const photoUrlsArray = await Promise.all(
-        Object.keys(groupMembers).map(async (key) => {
-          const photoUrl = await getMemberPhotoUrl(group, key);
-          return { key, photoUrl };
-        }),
-      );
-
-      // convert the array of entries into an actual Record Object
-      const photoUrlsObject = photoUrlsArray.reduce((acc: Record<string, string | undefined>, { key, photoUrl }) => {
-        acc[key] = photoUrl;
-        return acc;
-      }, {});
-
-      setMemberPhotoUrls(photoUrlsObject);
-    };
-
-    fetchMemberPhotoUrls();
-  }, [currGroup]);
-
-  // Update the groupIds after groups are done loading
-  useEffect(() => {
-    if (loading) return;
-
-    if (!groupId) {
-      const firstGroup = groups[0];
-      setGroupId(firstGroup.id);
-    }
-  }, [loading]);
-
-  useEffect(() => {
-    const nextSplitData: SplitData = {
-      type: 'balanced',
-      data: {
-        payingMembers: new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
-      },
-    };
-
-    const isDefined = splitData != undefined && splitData != null;
-    const isBalancedSplit: boolean = isDefined && splitData.type == 'balanced';
-    const nextPayingMembers: string = [...(nextSplitData.data as BalancedSplit).payingMembers].join('|');
-    const prevPayingMembers: string =
-      isDefined && isBalancedSplit ? [...(splitData.data as BalancedSplit).payingMembers].join('|') : '';
-    const isNewMembers: boolean = nextPayingMembers != prevPayingMembers;
-    const updateSplitData = !isDefined || (isBalancedSplit && isNewMembers);
-
-    if (updateSplitData) setSplitData(nextSplitData);
-  }, [currGroup]);
-
-  // ------------------------------
-  // Form States
-  // ------------------------------
-
-  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
-  const [date, setDate] = useState(Date.now());
-  const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
-  const [splitData, setSplitData] = useState<SplitData>({ type: 'balanced', data: { payingMembers: new Set() } });
-
-  // ------------------------------
-  // Event Handlers
-  // ------------------------------
-
-  const handleCancelClicked = () => {
-    if (!showSplitPage) {
-      console.log('returning to route: ', returnRoute);
-      navigate(returnRoute);
-    } else {
-      setShowSplitPage(false);
-    }
-  };
-
-  const handleDoneClicked = () => {
-    if (!showSplitPage) {
-      const formData = formRef.current?.getData();
-      const splitData = splitRef.current?.getData();
-
-      console.log('ref data:', formData, splitData);
-
-      const transactionData: Transaction = {
-        amount: 0,
-        paidBy,
-        date,
-        splitData: {
-          type: 'balanced',
-          data: {
-            payingMembers: new Set<string>(),
-          },
-        },
-      };
-
-      addTransaction(transactionData);
-      navigate(returnRoute);
-    } else {
-      const isValid = splitRef.current?.verifySplits() ?? true;
-      const splitFormData = splitRef.current?.getData();
-      const nextSplitData = splitFormData?.splitData;
-
-      if (!isValid) return;
-
-      setSplitData(nextSplitData!);
-      setTotal(formatToDigit(splitFormData?.amount ?? 0));
-      setShowSplitPage(false);
-    }
-  };
-
-  return (
-    <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
-      <main className="flex w-full flex-col">
-        <div className="mb-4 flex w-full flex-row justify-between">
-          <Panel
-            bgColor="bg-accent-200"
-            className="text-ink-800 flex cursor-pointer flex-row"
-            dropOnClick={true}
-            onClick={handleCancelClicked}
-          >
-            {!showSplitPage ? 'Cancel' : 'Back'}
-          </Panel>
-          <div className="right-0 cursor-pointer">
-            <Panel
-              bgColor="bg-accent-200"
-              className="text-ink-800 flex flex-row"
-              dropOnClick={true}
-              onClick={handleDoneClicked}
-            >
-              {!showSplitPage ? 'Done' : 'Continue'}
-            </Panel>
-          </div>
-        </div>
-        {loading ? (
-          <Loading />
-        ) : !showSplitPage ? (
-          <TransactionForm
-            ref={formRef}
-            total={{ value: total, setValue: setTotal, handleChange: handleTotalChanged }}
-            setShowSplitPage={setShowSplitPage}
-            currGroup={currGroup}
-            paidBy={[paidBy, setPaidBy]}
-            date={[date, setDate]}
-            splitData={splitData}
-            memberPhotoUrls={memberPhotoUrls}
-          />
-        ) : (
-          <SplitTransactionPage
-            ref={splitRef}
-            splitType={splitData.type}
-            total={[total, setTotal]}
-            currGroup={currGroup}
-            memberPhotoUrls={memberPhotoUrls}
-            splitData={splitData}
-          />
-        )}
-      </main>
-    </div>
-  );
-};
 
 const TransactionForm = forwardRef(
   (
@@ -578,5 +375,248 @@ const TransactionForm = forwardRef(
     );
   },
 );
+
+const TransactionBreakdown = ({ splitData, total }: { splitData: SplitData; total: string }) => {
+  const personalAmtNum = useMemo(
+    () => Math.floor(formattedStrToNum(total) / (splitData.data as BalancedSplit).payingMembers.size),
+    [total, splitData],
+  );
+  const personalAmt = formatToDigit(personalAmtNum);
+
+  return (
+    <div className="mt-6 flex w-full max-w-130 flex-col gap-4 rounded-xl bg-black px-3 py-4">
+      <div className="flex cursor-pointer flex-row items-center justify-end gap-2 text-white">
+        <p className="font-extralight">filter member</p>
+        <ListFilter className="h-4 w-4" />
+      </div>
+      <div className="bg-accent-200 flex flex-col items-center justify-center rounded-xl py-3">
+        <input
+          id="personal-share"
+          name="personal-share"
+          type="text"
+          readOnly={true}
+          value={personalAmt}
+          className="field-sizing-content text-4xl font-bold outline-0"
+        />
+        <label htmlFor="personal-share" className="text-xl font-light">
+          Your Share
+        </label>
+      </div>
+      <div className="flex flex-col gap-2 px-2 text-white">
+        <h3 className="w-fit">Breakdown</h3>
+        <div className="flex justify-between">
+          <label className="text-sm font-extralight">Even Split</label>
+          <input type="text" value={personalAmt} className="field-sizing-content font-light" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const NewTransaction = () => {
+  // Declare Refs
+  const splitRef = useRef<SplitRef>(null);
+  const formRef = useRef<FormRef>(null);
+
+  // Call Hooks
+  const { groups, loading } = useGroups();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Local States
+  const [groupId, setGroupId] = useState(location.state?.groupId);
+  const [showSplitPage, setShowSplitPage] = useState(false);
+  const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
+  // We use a state instead of a computed value here since useMemo can't handle async values
+  const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
+
+  // Late Hooks
+  const addTransaction = useAddTransaction(groupId);
+
+  // ------------------------------
+  // Computed Values
+  // ------------------------------
+
+  const currGroup = useMemo(() => {
+    let currGroupId: string = groupId;
+    if (!groupId || loading) return undefined;
+
+    if (!groupId) {
+      const firstGroup = groups[0];
+      currGroupId = firstGroup.id;
+    }
+
+    const currGroup = groups.find((group) => group.id == currGroupId);
+    return currGroup;
+  }, [groupId, loading]);
+
+  // ------------------------------
+  // Effects
+  // ------------------------------
+
+  // Get all member photoUrls every time currGroup has updated
+  useEffect(() => {
+    if (!currGroup) return;
+
+    const fetchMemberPhotoUrls = async () => {
+      const group = currGroup.data()!;
+      const groupMembers = group.members;
+      const photoUrlsArray = await Promise.all(
+        Object.keys(groupMembers).map(async (key) => {
+          const photoUrl = await getMemberPhotoUrl(group, key);
+          return { key, photoUrl };
+        }),
+      );
+
+      // convert the array of entries into an actual Record Object
+      const photoUrlsObject = photoUrlsArray.reduce((acc: Record<string, string | undefined>, { key, photoUrl }) => {
+        acc[key] = photoUrl;
+        return acc;
+      }, {});
+
+      setMemberPhotoUrls(photoUrlsObject);
+    };
+
+    fetchMemberPhotoUrls();
+  }, [currGroup]);
+
+  // Update the groupIds after groups are done loading
+  useEffect(() => {
+    if (loading) return;
+
+    if (!groupId) {
+      const firstGroup = groups[0];
+      setGroupId(firstGroup.id);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    const nextSplitData: SplitData = {
+      type: 'balanced',
+      data: {
+        payingMembers: new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
+      },
+    };
+
+    const isDefined = splitData != undefined && splitData != null;
+    const isBalancedSplit: boolean = isDefined && splitData.type == 'balanced';
+    const nextPayingMembers: string = [...(nextSplitData.data as BalancedSplit).payingMembers].join('|');
+    const prevPayingMembers: string =
+      isDefined && isBalancedSplit ? [...(splitData.data as BalancedSplit).payingMembers].join('|') : '';
+    const isNewMembers: boolean = nextPayingMembers != prevPayingMembers;
+    const updateSplitData = !isDefined || (isBalancedSplit && isNewMembers);
+
+    if (updateSplitData) setSplitData(nextSplitData);
+  }, [currGroup]);
+
+  // ------------------------------
+  // Form States
+  // ------------------------------
+
+  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
+  const [date, setDate] = useState(Date.now());
+  const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
+  const [splitData, setSplitData] = useState<SplitData>({ type: 'balanced', data: { payingMembers: new Set() } });
+
+  // ------------------------------
+  // Event Handlers
+  // ------------------------------
+
+  const handleCancelClicked = () => {
+    if (!showSplitPage) {
+      console.log('returning to route: ', returnRoute);
+      navigate(returnRoute);
+    } else {
+      setShowSplitPage(false);
+    }
+  };
+
+  const handleDoneClicked = () => {
+    if (!showSplitPage) {
+      const formData = formRef.current?.getData();
+      const splitData = splitRef.current?.getData();
+
+      console.log('ref data:', formData, splitData);
+
+      const transactionData: Transaction = {
+        amount: 0,
+        paidBy,
+        date,
+        splitData: {
+          type: 'balanced',
+          data: {
+            payingMembers: new Set<string>(),
+          },
+        },
+      };
+
+      addTransaction(transactionData);
+      navigate(returnRoute);
+    } else {
+      const isValid = splitRef.current?.verifySplits() ?? true;
+      const splitFormData = splitRef.current?.getData();
+      const nextSplitData = splitFormData?.splitData;
+
+      if (!isValid) return;
+
+      setSplitData(nextSplitData!);
+      setTotal(formatToDigit(splitFormData?.amount ?? 0));
+      setShowSplitPage(false);
+    }
+  };
+
+  return (
+    <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
+      <main className="flex w-full flex-col items-center">
+        <div className="mb-4 flex w-full flex-row justify-between">
+          <Panel
+            bgColor="bg-accent-200"
+            className="text-ink-800 flex cursor-pointer flex-row"
+            dropOnClick={true}
+            onClick={handleCancelClicked}
+          >
+            {!showSplitPage ? 'Cancel' : 'Back'}
+          </Panel>
+          <div className="right-0 cursor-pointer">
+            <Panel
+              bgColor="bg-accent-200"
+              className="text-ink-800 flex flex-row"
+              dropOnClick={true}
+              onClick={handleDoneClicked}
+            >
+              {!showSplitPage ? 'Done' : 'Continue'}
+            </Panel>
+          </div>
+        </div>
+        {loading ? (
+          <Loading />
+        ) : !showSplitPage ? (
+          <>
+            <TransactionForm
+              ref={formRef}
+              total={{ value: total, setValue: setTotal, handleChange: handleTotalChanged }}
+              setShowSplitPage={setShowSplitPage}
+              currGroup={currGroup}
+              paidBy={[paidBy, setPaidBy]}
+              date={[date, setDate]}
+              splitData={splitData}
+              memberPhotoUrls={memberPhotoUrls}
+            />
+            <TransactionBreakdown total={total} splitData={splitData} />
+          </>
+        ) : (
+          <SplitTransactionPage
+            ref={splitRef}
+            splitType={splitData.type}
+            total={[total, setTotal]}
+            currGroup={currGroup}
+            memberPhotoUrls={memberPhotoUrls}
+            splitData={splitData}
+          />
+        )}
+      </main>
+    </div>
+  );
+};
 
 export default NewTransaction;
