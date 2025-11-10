@@ -91,6 +91,7 @@ const BalancedSplit = ({
           </div>
         );
       })}
+      <p>Must have atelast 1 paying member</p>
     </div>
   );
 };

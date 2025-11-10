@@ -217,7 +217,6 @@ const NewTransaction = () => {
           <TransactionForm
             ref={formRef}
             total={{ value: total, setValue: setTotal, handleChange: handleTotalChanged }}
-            showSplitPage={showSplitPage}
             setShowSplitPage={setShowSplitPage}
             currGroup={currGroup}
             paidBy={[paidBy, setPaidBy]}
@@ -245,7 +244,6 @@ const TransactionForm = forwardRef(
     {
       total: { value: total, setValue: setTotal, handleChange: handleTotalChanged },
       currGroup,
-      showSplitPage,
       setShowSplitPage,
       paidBy: [paidById, setPaidById],
       date: [date, setDate],
@@ -254,7 +252,6 @@ const TransactionForm = forwardRef(
     }: {
       total: DigitField;
       currGroup?: DocumentSnapshot<Group>;
-      showSplitPage: boolean;
       setShowSplitPage: (val: boolean) => any;
       paidBy: [string, (val: string) => any];
       date: [number, (val: number) => any];
@@ -421,7 +418,7 @@ const TransactionForm = forwardRef(
     };
 
     return (
-      <form className="px-4 outline-none">
+      <form className="px-2 outline-none">
         <div className="m-auto max-w-120 border border-black bg-white p-6">
           <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
             <input
@@ -517,6 +514,21 @@ const TransactionForm = forwardRef(
             </div>
           </div>
           <div className="border-ink-400 relative flex flex-col gap-1 border-b border-dashed py-6 text-base">
+            <div className="flex flex-row items-center justify-between">
+              <label htmlFor="split-type" className="text-ink-400 text-sm font-light">
+                Split Type:
+              </label>
+              <input
+                type="button"
+                name="split-type"
+                id="split-type"
+                className="border-ink-400 rounded-md border px-3 py-0.5"
+                onClick={() => setShowSplitPage(true)}
+                value={capitalize(splitData.type)}
+              />
+            </div>
+          </div>
+          <div className="relative flex flex-col gap-1 py-6 text-base">
             <div className="flex flex-row items-center justify-between">
               <label htmlFor="split-type" className="text-ink-400 text-sm font-light">
                 Split Type:

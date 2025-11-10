@@ -23,11 +23,17 @@ import {
   BalancedSplit as BalancedSplitType,
   ItemizedSplit as ItemizedSplitType,
 } from '@/features/transactions/types';
+import { set } from 'date-fns';
 
 export interface ItemizedEntry {
   description: string;
   amount: number;
   payingMembers: Set<string>; // set of groupUserIds
+  error?: 'Must have atleast 1 paying member';
+}
+
+export interface BalancedData {
+  payingMembers: Set<string>;
   error?: 'Must have atleast 1 paying member';
 }
 
@@ -77,17 +83,15 @@ const SplitTransactionPage = forwardRef(
         ? splitData.data.entries
         : [],
     );
-    const [balancedData, setBalancedData] = useState<Set<string>>(
+    const [balancedData, setBalancedData] = useState<BalancedData>(
       splitData.type == 'balanced'
-        ? splitData.data.payingMembers
-        : new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
+        ? splitData.data
+        : { payingMembers: new Set([...Object.keys(currGroup?.data()?.members ?? {})]) },
     );
 
     // ------------------------------
     // Computed Variables
     // ------------------------------
-
-    // debugger;
 
     const itemizedPrices = (itemizedData ?? []).map((item) => item.amount).join('|');
     const itemizedTotal = useMemo(() => {
@@ -95,6 +99,15 @@ const SplitTransactionPage = forwardRef(
     }, [itemizedPrices]);
     const splitTotalNum = Number(localTotal);
     const groupData = currGroup?.data();
+    const setBalancedDataWrapper = (val: Set<string>) => {
+      const { payingMembers: _, ...cleaned } = balancedData;
+      const nextBalancedData = {
+        payingMembers: val,
+        ...cleaned,
+      };
+
+      setBalancedData(nextBalancedData);
+    };
 
     // ------------------------------
     // Effects
@@ -140,6 +153,8 @@ const SplitTransactionPage = forwardRef(
           }
 
           if (errorFound) setItemizedData(nextItemizedData);
+        } else {
+          if (balancedData.payingMembers.size == 0) errorFound = true;
         }
 
         return !errorFound;
@@ -157,7 +172,7 @@ const SplitTransactionPage = forwardRef(
             : {
                 type: 'balanced',
                 data: {
-                  payingMembers: balancedData,
+                  payingMembers: balancedData.payingMembers,
                 },
               };
 
@@ -217,7 +232,7 @@ const SplitTransactionPage = forwardRef(
     // ------------------------------
 
     return (
-      <div className="px-4 outline-none">
+      <div className="px-2 outline-none">
         <div className="m-auto max-w-120 border border-black bg-white p-6">
           <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
             <input
@@ -270,7 +285,7 @@ const SplitTransactionPage = forwardRef(
           ) : (
             <BalancedSplit
               localTotal={localTotal}
-              balancedData={[balancedData, setBalancedData]}
+              balancedData={[balancedData.payingMembers, setBalancedDataWrapper]}
               groupData={groupData}
               memberPhotoUrls={memberPhotoUrls}
             />

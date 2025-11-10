@@ -493,7 +493,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     },
   );
 
-  it('balanced split type have a list of all group members', async () => {
+  it('Balanced Split Type Flow', async () => {
     await act(async () => {
       await user.click(screen.getByLabelText('Split Type:'));
       await user.click(screen.getByRole('button', { name: 'Balanced' }));
@@ -501,6 +501,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
 
     const balancedCheckboxes = screen.getAllByRole('checkbox');
     const totalInput = screen.getByLabelText('Total Amount');
+    const continueButton = screen.getByRole('button', { name: 'Continue' });
 
     await act(async () => {
       await user.type(totalInput, '10000');
@@ -520,5 +521,25 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     });
 
     expect(balancedAmts[0]).toHaveTextContent('50.00');
+    expect(balancedAmts[1]).toHaveTextContent('50.00');
+
+    await act(async () => {
+      await user.click(balancedCheckboxes[0]);
+      await user.click(balancedCheckboxes[1]);
+    });
+
+    expect(balancedAmts[0]).toHaveTextContent('0.00');
+
+    await act(async () => {
+      await user.click(continueButton);
+    });
+
+    const errorText = screen.getByText('Must have atelast 1 paying member');
+    expect(errorText).toBeInTheDocument();
+
+    await act(async () => {
+      await user.click(balancedCheckboxes[0]);
+    });
+    expect(errorText).not.toBeInTheDocument();
   });
 });
