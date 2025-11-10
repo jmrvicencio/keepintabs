@@ -1,11 +1,35 @@
 import { MouseEvent, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { showPopupAtom } from '../stores/PopupAtom';
+import { PopupMenu, showPopupAtom } from '../stores/PopupAtom';
 import { useAtom } from 'jotai';
 
 import { X } from 'lucide-react';
 import Panel from '../../../components/neubrutalist/Panel';
 import { usePopupOverlay } from '../hooks/usePopupOverlay';
+import { MainContentRefAtom } from '@/store/mainArea';
+
+const Menu = ({ popup }: { popup: PopupMenu }) => {
+  const [mainContentRef] = useAtom(MainContentRefAtom);
+  const ref = popup.reference?.current?.getBoundingClientRect();
+  // style={{
+  //   top: (menuRect?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
+  //   right: window.innerWidth - (menuRect?.right ?? 0),
+  // }}
+
+  return (
+    <div
+      style={{
+        top: (ref?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
+        right: window.innerWidth - (ref?.right ?? 0),
+      }}
+      className="bg-accent-400 absolute w-12 p-2"
+    >
+      {popup.options.map((option) => (
+        <div>{option.label}</div>
+      ))}
+    </div>
+  );
+};
 
 const PopupOverlay = () => {
   const location = useLocation();
@@ -52,10 +76,8 @@ const PopupOverlay = () => {
         </div>
       </div>
     ) : (
-      <div className="absolute inset-0 z-40 bg-black/70" onClick={handleClose}>
-        {popup.options.map((option) => (
-          <div>{option.label}</div>
-        ))}
+      <div data-testid="popup-overlay" className="absolute inset-0 z-40 bg-black/70" onClick={handleClose}>
+        <Menu popup={popup} />
       </div>
     )
   ) : (
