@@ -33,6 +33,7 @@ vi.mock('../src/features/groups/hooks/useGroups', () => ({
           members: {
             a: {
               displayName: 'Kyle',
+              linkedUid: 'user',
             },
             b: {
               displayName: 'Marlon',
@@ -62,6 +63,7 @@ vi.mock('../src/lib/firebase/auth', () => ({
 
 vi.mock('../src/features/groups/utils/memberUtil', () => ({
   getMemberPhotoUrl: () => undefined,
+  getUserGroupId: () => 'a',
 }));
 
 vi.mock('@/features/transactions/hooks/useAddTransaction', () => ({
@@ -80,6 +82,7 @@ vi.mock('react-router-dom', async () => {
 
 import NewTransaction from '../src/app/routes/App/NewTransaction';
 import { act } from 'react';
+import { getUserGroupId } from '@/features/groups/utils/memberUtil';
 
 describe('[Unit] [New Transaction] New Transaction Page', () => {
   beforeEach(() => {
@@ -542,8 +545,6 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     await act(async () => {
       await user.click(balancedCheckboxes[0]);
       await user.click(balancedCheckboxes[1]);
-      await user.click(balancedCheckboxes[2]);
-      await user.click(balancedCheckboxes[3]);
     });
 
     expect(errorText).not.toBeInTheDocument();
@@ -555,11 +556,11 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
 
     const balancedSplit = screen.getByLabelText('Per member:');
     expect(balancedSplit).toBeInTheDocument();
-    expect(balancedSplit).toHaveValue('php 25.00');
-    expect(screen.getAllByTestId('balanced-member-photo').length).toBe(4);
+    expect(balancedSplit).toHaveValue('php 50.00');
+    expect(screen.getAllByTestId('balanced-member-photo').length).toBe(2);
 
-    const yourSharelabel = screen.getByLabelText('Your Share');
-    expect(yourSharelabel).toHaveValue('25.00');
+    const yourShareInput = screen.getByLabelText('Your Share');
+    expect(yourShareInput).toHaveValue('50.00');
 
     await act(async () => {
       await user.type(
@@ -567,7 +568,14 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
         '{backspace}{backspace}{backspace}{backspace}{backspace}20000',
       );
     });
-    expect(balancedSplit).toHaveValue('php 50.00');
-    expect(yourSharelabel).toHaveValue('php 50.00');
+    expect(balancedSplit).toHaveValue('php 100.00');
+    expect(yourShareInput).toHaveValue('100.00');
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: 'filter member' }));
+      await user.click(screen.getByRole('button', { name: 'Jayni' }));
+    });
+
+    expect(yourShareInput).toHaveValue('0.00');
   });
 });

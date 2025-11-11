@@ -30,11 +30,11 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
   };
 
   useLayoutEffect(() => {
-    const isOverflowingY = (menuRect?.bottom ?? 0) < screen.bottom;
+    const isOverflowingY = (menuRect?.bottom ?? 0) + padding < screen.bottom;
 
     if (isOverflowingY) {
       setStyleY({
-        top: (ref?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
+        top: (ref?.bottom ?? 0) + padding,
       });
     } else {
       setStyleY({
@@ -43,6 +43,9 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
     }
   }, [popup.reference, menuRef.current, mainContentRef?.current]);
 
+  console.log(styleY);
+  console.log(mainContentRef?.current?.scrollTop);
+
   return (
     <div
       ref={menuRef}
@@ -50,10 +53,12 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
         ...styleY,
         right: screen.right - (ref?.right ?? 0),
       }}
-      className="bg-accent-400 absolute p-2 px-4"
+      className="absolute flex min-w-40 flex-col gap-2 rounded-sm bg-white p-4"
     >
       {popup.options.map((option, i) => (
-        <div key={i}>{option.label}</div>
+        <div key={i} className="cursor-pointer">
+          {option.label}
+        </div>
       ))}
     </div>
   );

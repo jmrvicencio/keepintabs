@@ -396,16 +396,19 @@ const TransactionBreakdown = ({
   // Local States
   const [filterUid, setFilterUid] = useState<string>(getUserGroupId(auth.currentUser!.uid, currGroup?.data()) ?? '');
 
-  console.log('filterUid: ', filterUid);
-
   // ------------------------------
   // Computed Values
   // ------------------------------
 
-  const personalAmtNum = useMemo(
-    () => Math.floor(formattedStrToNum(total) / (splitData.data as BalancedSplit).payingMembers.size),
-    [total, splitData],
-  );
+  const personalAmtNum = useMemo(() => {
+    if (splitData.type == 'balanced') {
+      return Math.floor(formattedStrToNum(total) / (splitData.data as BalancedSplit).payingMembers.size);
+    } else if (splitData.type == 'itemized') {
+      return 0;
+    }
+    return 0;
+  }, [total, splitData]);
+
   const personalAmt = formatToDigit(personalAmtNum);
   const options = useMemo(() => {
     const members: Record<string, Member> = currGroup?.data()?.members ?? {};
@@ -430,18 +433,26 @@ const TransactionBreakdown = ({
   // ------------------------------
 
   const handleFilterMemberClicked = () => {
+    const members = Object.entries(currGroup?.data()?.members ?? {});
+    const options = members.map(([userGroupId, member]) => ({
+      label: member.displayName,
+    }));
+
     const popup: PopupMenu = {
       type: 'menu',
       reference: filterRef,
-      options: [{ label: 'first' }],
+      options: options,
     };
+
     callPopup(popup);
   };
 
   return (
-    <div className="mt-6 flex w-full max-w-130 flex-col gap-4 rounded-xl bg-black px-3 py-4">
+    <div className="mt-6 mb-400 flex w-full max-w-130 flex-col gap-4 rounded-xl bg-black px-3 py-4">
       <div
+        role="button"
         ref={filterRef}
+        onKeyDown={buttonHandleKeypress(handleFilterMemberClicked)}
         className="flex cursor-pointer flex-row items-center justify-end gap-2 text-white"
         onClick={handleFilterMemberClicked}
       >
