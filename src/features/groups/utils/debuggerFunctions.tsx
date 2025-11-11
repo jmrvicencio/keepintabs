@@ -87,21 +87,26 @@ export const useGroupDebugOptions = () => {
     const docData = await getDoc(groupDoc);
     const memberUids = docData.data()?.memberUids;
 
-    const data = {
+    const data: Group = {
+      name: 'CWDB',
       memberUids: [...memberUids],
       members: {
         testUser: {
           displayName: 'Kyle',
           linkedUid: auth.currentUser!.uid,
+          photoUrl: 'https://i.pinimg.com/1200x/97/47/02/9747029215bbd5677b8114e43b7c9589.jpg',
         },
         testId1234: {
           displayName: 'Julian',
+          photoUrl: 'https://i.pinimg.com/736x/a2/a6/e1/a2a6e13821ad970f0790054db790cff1.jpg',
         },
         testId3214: {
           displayName: 'Marlon',
+          photoUrl: 'https://i.pinimg.com/736x/f8/23/31/f82331683e3c17da6b6498475d3c1888.jpg',
         },
         testIdabd: {
           displayName: 'Jayni',
+          photoUrl: 'https://i.pinimg.com/736x/1c/4b/c4/1c4bc411f32787cdef1490f396089225.jpg',
         },
       },
       balance: {
