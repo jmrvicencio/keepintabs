@@ -411,13 +411,30 @@ const TransactionBreakdown = ({
     return 0;
   }, [total, splitData]);
 
-  const personalAmt = formatToDigit(personalAmtNum);
+  const filterName = useMemo(
+    () => currGroup?.data()?.members[filterUid].displayName ?? 'Unknown',
+    [filterUid, currGroup],
+  );
+
+  const personalAmt = useMemo(() => {
+    if (splitData.type == 'balanced') {
+      return formatToDigit(splitData.data.payingMembers.has(filterUid) ? personalAmtNum : 0);
+    }
+  }, [total, splitData, filterUid]);
+
   const options = useMemo(() => {
     const members: Record<string, Member> = currGroup?.data()?.members ?? {};
 
-    Object.entries(members).map(([key, member]) => {
+    return Object.entries(members).map(([userGroupId, member]) => {
       return {
         label: member.displayName,
+        action: () => {
+          const isCurrentUser = auth.currentUser!.uid == member.linkedUid;
+
+          setFilterUid(userGroupId);
+          setIsFiltering(!isCurrentUser);
+          resetPopup();
+        },
       };
     });
   }, [currGroup]);
@@ -436,16 +453,6 @@ const TransactionBreakdown = ({
 
   const handleFilterMemberClicked = () => {
     const members = Object.entries(currGroup?.data()?.members ?? {});
-    const options = members.map(([userGroupId, member]) => ({
-      label: member.displayName,
-      action: () => {
-        const isCurrentUser = auth.currentUser!.uid == member.linkedUid;
-
-        setFilterUid(userGroupId);
-        setIsFiltering(!isCurrentUser);
-        resetPopup();
-      },
-    }));
 
     const popup: PopupMenu = {
       type: 'menu',
@@ -477,7 +484,7 @@ const TransactionBreakdown = ({
         {isFiltering ? (
           <>
             <p className="sr-only">filtering member </p>
-            <p>{filterUid}</p>
+            <p>{filterName}</p>
             <X className="h-4 w-4" onClick={handleXFilterClicked} />
           </>
         ) : (
@@ -491,13 +498,14 @@ const TransactionBreakdown = ({
         <input
           id="personal-share"
           name="personal-share"
+          aria-label="member share"
           type="text"
           readOnly={true}
-          value={personalAmt}
+          value={personalAmt ?? ''}
           className="field-sizing-content text-4xl font-bold outline-0"
         />
         <label htmlFor="personal-share" className="text-xl font-light">
-          Your Share
+          {!isFiltering ? 'Your Share' : `${filterName}'s Share`}
         </label>
       </div>
       <div className="flex flex-col gap-2 px-2 text-white">

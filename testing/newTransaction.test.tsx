@@ -559,7 +559,8 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     expect(balancedSplit).toHaveValue('php 50.00');
     expect(screen.getAllByTestId('balanced-member-photo').length).toBe(2);
 
-    const yourShareInput = screen.getByLabelText('Your Share');
+    const yourShareInput = screen.getByLabelText('member share');
+    expect(yourShareInput).toBeInTheDocument();
     expect(yourShareInput).toHaveValue('50.00');
 
     await act(async () => {
@@ -576,6 +577,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
       await user.click(screen.getByRole('button', { name: 'Jayni' }));
     });
 
+    expect(screen.getByText("Jayni's Share")).toBeInTheDocument();
     expect(yourShareInput).toHaveValue('0.00');
   });
 });

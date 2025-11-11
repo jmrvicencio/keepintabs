@@ -120,6 +120,8 @@ const SplitTransactionPage = forwardRef(
         return;
       }
 
+      if (splitType != 'itemized') return;
+
       const totalNumber = Number(localTotal.replaceAll(',', '').replaceAll('.', ''));
       const nextRemainder = remainder == 0 ? 0 : itemizedTotal < totalNumber ? totalNumber - itemizedTotal : 0;
       const nextTotal = itemizedTotal + nextRemainder;
