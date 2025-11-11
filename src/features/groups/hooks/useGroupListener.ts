@@ -11,6 +11,7 @@ const useGroupListener = (groupId: string = '') => {
   const navigate = useNavigate();
   const [group, setGroup] = useState<DocumentSnapshot<Group> | null>(null);
   const [userData, setUserData] = useState<Member | null>(null);
+  const [userGroupId, setUserGroupId] = useState<string | undefined>();
   const [unsubCalled, setUnsubCalled] = useState(false);
 
   let unsubscribeToSnapshot: Unsubscribe;
@@ -29,11 +30,12 @@ const useGroupListener = (groupId: string = '') => {
             const groupData = groupSnap.data() as Group;
             const memberEntries = Object.entries(groupData.members);
 
-            for (const [memberUid, val] of memberEntries) {
+            for (const [memberGroupId, val] of memberEntries) {
               const memberData = val as Member;
               if (memberData.linkedUid == auth.currentUser!.uid) {
-                memberData.groupUid = memberUid;
+                memberData.groupUid = memberGroupId;
                 setUserData(memberData);
+                setUserGroupId(memberGroupId);
                 break;
               }
             }
@@ -59,7 +61,7 @@ const useGroupListener = (groupId: string = '') => {
     };
   }, []);
 
-  return { group, userData };
+  return { group, userData, userGroupId };
 };
 
 export default useGroupListener;

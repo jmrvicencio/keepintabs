@@ -25,7 +25,7 @@ const Group = memo(function Group() {
   const PlusMemo = memo(() => <Plus />);
 
   const { group: groupParam } = useParams();
-  const { group, userData } = useGroupListener(groupParam);
+  const { group, userGroupId } = useGroupListener(groupParam);
   const groupData = group?.data();
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ const Group = memo(function Group() {
 
   const records = useMemo(() => getSimplifiedBalance(group?.data()), [group]);
   const userBalance = {
-    total: getTotalFromSimplified(userData?.groupUid, records),
+    total: getTotalFromSimplified(userGroupId, records),
     records,
   };
 
@@ -50,7 +50,7 @@ const Group = memo(function Group() {
     <>
       <div className="relative flex shrink-0 grow flex-col pt-3">
         <main className="flex h-full flex-col items-stretch">
-          <GroupInfo userBalance={userBalance} groupData={groupData} userGroupUid={userData?.groupUid} ref={menuRef} />
+          <GroupInfo userBalance={userBalance} groupData={groupData} userGroupUid={userGroupId} ref={menuRef} />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3">
             <div className="text-leather-900 my-6 flex w-full flex-row items-baseline justify-between px-3">
               <h2 className="text-2xl">
