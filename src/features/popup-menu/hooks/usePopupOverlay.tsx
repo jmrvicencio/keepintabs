@@ -5,6 +5,11 @@ export const usePopupOverlay = () => {
   const [showPopup, setShowPopup] = useAtom(showPopupAtom);
   const [popup, setPopup] = useAtom<PopupOverlay | PopupMenu>(popupAtom);
 
+  function callPopup(popup: PopupOverlay | PopupMenu) {
+    setPopup(popup);
+    setShowPopup(true);
+  }
+
   function resetPopup() {
     setShowPopup(false);
     setPopup({
@@ -23,5 +28,6 @@ export const usePopupOverlay = () => {
     popup,
     setPopup,
     resetPopup,
+    callPopup,
   };
 };

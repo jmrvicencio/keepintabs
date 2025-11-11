@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect } from 'react';
+import { MouseEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PopupMenu, showPopupAtom } from '../stores/PopupAtom';
 import { useAtom } from 'jotai';
@@ -7,22 +7,50 @@ import { X } from 'lucide-react';
 import Panel from '../../../components/neubrutalist/Panel';
 import { usePopupOverlay } from '../hooks/usePopupOverlay';
 import { MainContentRefAtom } from '@/store/mainArea';
+import { M } from 'vitest/dist/chunks/reporters.d.BFLkQcL6';
 
 const Menu = ({ popup }: { popup: PopupMenu }) => {
+  const menuRef = useRef<HTMLDivElement>(null);
   const [mainContentRef] = useAtom(MainContentRefAtom);
   const ref = popup.reference?.current?.getBoundingClientRect();
-  // style={{
-  //   top: (menuRect?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
-  //   right: window.innerWidth - (menuRect?.right ?? 0),
-  // }}
+  const mainContainer = mainContentRef?.current;
+  const menuRect = menuRef.current?.getBoundingClientRect();
+  const mainRect = mainContentRef?.current?.getBoundingClientRect();
+  const padding = 12;
+
+  const [styleY, setStyleY] = useState<{ top?: number; bottom?: number }>({
+    top: (ref?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
+  });
+
+  const screen = {
+    top: mainContainer?.scrollTop ?? 0,
+    bottom: (mainContainer?.scrollTop ?? 0) + window.innerHeight,
+    left: 0,
+    right: window.innerWidth,
+  };
+
+  useLayoutEffect(() => {
+    const isOverflowingY = (menuRect?.bottom ?? 0) < screen.bottom;
+
+    if (isOverflowingY) {
+      setStyleY({
+        top: (ref?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
+      });
+    } else {
+      setStyleY({
+        bottom: 0 + padding,
+      });
+    }
+  }, [popup.reference, menuRef.current, mainContentRef?.current]);
 
   return (
     <div
+      ref={menuRef}
       style={{
-        top: (ref?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
-        right: window.innerWidth - (ref?.right ?? 0),
+        ...styleY,
+        right: screen.right - (ref?.right ?? 0),
       }}
-      className="bg-accent-400 absolute w-12 p-2"
+      className="bg-accent-400 absolute p-2 px-4"
     >
       {popup.options.map((option) => (
         <div>{option.label}</div>
@@ -58,11 +86,7 @@ const PopupOverlay = () => {
         id="testing"
         onClick={handleClose}
       >
-        <div
-          data-testid="popup-menu"
-          className="w-100 rounded-2xl border border-black bg-white"
-          onClick={handlePopupClicked}
-        >
+        <div data-testid="popup-menu" className="rounded-2xl border border-black bg-white" onClick={handlePopupClicked}>
           <div className="border-ink-300/40 relative flex items-center justify-center border-b p-4 font-semibold">
             {popup.title}
             <div
