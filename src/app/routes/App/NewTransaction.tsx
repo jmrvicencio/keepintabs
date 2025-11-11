@@ -15,7 +15,7 @@ import { type DocumentSnapshot } from 'firebase/firestore';
 import { auth } from '@/lib/firebase/auth';
 import { format } from 'date-fns';
 import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
-import { getMemberPhotoUrl } from '@/features/groups/utils/memberUtil';
+import { getMemberPhotoUrl, getUserGroupId } from '@/features/groups/utils/memberUtil';
 import { BalancedSplit, ItemizedSplit, SplitData, Transaction } from '@/features/transactions/types';
 import { capitalize, formattedStrToNum } from '@/util/helpers';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
@@ -30,11 +30,12 @@ import Loading from '@/components/Loading';
 // Import Custom Hooks
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { useGroups } from '@/features/groups/hooks/useGroups';
-import { Group } from '@/features/groups/types';
+import { Group, Member } from '@/features/groups/types';
 import { SplitRef, FormRef } from '@/features/transactions/types';
 import useDigitField, { DigitField } from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
+import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
 
 const TransactionForm = forwardRef(
   (
@@ -354,6 +355,7 @@ const TransactionForm = forwardRef(
                       const photoUrl = memberPhotoUrls[memberGroupId];
                       return (
                         <div
+                          key={memberGroupId}
                           {...(photoUrl && {
                             style: {
                               backgroundImage: `url(${photoUrl})`,
@@ -378,16 +380,71 @@ const TransactionForm = forwardRef(
   },
 );
 
-const TransactionBreakdown = ({ splitData, total }: { splitData: SplitData; total: string }) => {
+const TransactionBreakdown = ({
+  splitData,
+  total,
+  currGroup,
+}: {
+  splitData: SplitData;
+  total: string;
+  currGroup: DocumentSnapshot<Group> | undefined;
+}) => {
+  // Hooks
+  const { setShowPopup, setPopup, callPopup } = usePopupOverlay();
+  const filterRef = useRef(null);
+
+  // Local States
+  const [filterUid, setFilterUid] = useState<string>(getUserGroupId(auth.currentUser!.uid, currGroup?.data()) ?? '');
+
+  console.log('filterUid: ', filterUid);
+
+  // ------------------------------
+  // Computed Values
+  // ------------------------------
+
   const personalAmtNum = useMemo(
     () => Math.floor(formattedStrToNum(total) / (splitData.data as BalancedSplit).payingMembers.size),
     [total, splitData],
   );
   const personalAmt = formatToDigit(personalAmtNum);
+  const options = useMemo(() => {
+    const members: Record<string, Member> = currGroup?.data()?.members ?? {};
+
+    Object.entries(members).map(([key, member]) => {
+      return {
+        label: member.displayName,
+      };
+    });
+  }, [currGroup]);
+
+  // ------------------------------
+  // Effects
+  // ------------------------------
+
+  useEffect(() => {
+    setFilterUid(getUserGroupId(auth.currentUser!.uid, currGroup?.data()) ?? '');
+  }, [currGroup]);
+
+  // ------------------------------
+  // Event Handlers
+  // ------------------------------
+
+  const handleFilterMemberClicked = () => {
+    const popup: PopupMenu = {
+      type: 'menu',
+      reference: filterRef,
+      options: [{ label: 'first' }],
+    };
+    callPopup(popup);
+  };
 
   return (
     <div className="mt-6 flex w-full max-w-130 flex-col gap-4 rounded-xl bg-black px-3 py-4">
-      <div className="flex cursor-pointer flex-row items-center justify-end gap-2 text-white">
+      <div
+        ref={filterRef}
+        className="flex cursor-pointer flex-row items-center justify-end gap-2 text-white"
+        onClick={handleFilterMemberClicked}
+      >
         <p className="font-extralight">filter member</p>
         <ListFilter className="h-4 w-4" />
       </div>
@@ -408,7 +465,7 @@ const TransactionBreakdown = ({ splitData, total }: { splitData: SplitData; tota
         <h3 className="w-fit">Breakdown</h3>
         <div className="flex justify-between">
           <label className="text-sm font-extralight">Even Split</label>
-          <input type="text" value={personalAmt} className="field-sizing-content font-light" />
+          <input type="text" value={personalAmt} readOnly={true} className="field-sizing-content font-light" />
         </div>
       </div>
     </div>
@@ -604,7 +661,7 @@ const NewTransaction = () => {
               splitData={splitData}
               memberPhotoUrls={memberPhotoUrls}
             />
-            <TransactionBreakdown total={total} splitData={splitData} />
+            <TransactionBreakdown total={total} splitData={splitData} currGroup={currGroup} />
           </>
         ) : (
           <SplitTransactionPage

@@ -21,3 +21,10 @@ export const getMemberPhotoUrl = async (group: Group, groupUid: string): Promise
 
   return member.photoUrl;
 };
+
+export const getUserGroupId = (uid: string, group?: Group) => {
+  const members = group?.members ?? {};
+  const userGroupId = Object.entries(members).find(([userGroupId, member]) => uid == member.linkedUid);
+
+  return userGroupId?.[0];
+};
