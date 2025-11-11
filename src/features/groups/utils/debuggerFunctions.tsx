@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, updateDoc, getDoc, deleteField, increment, setDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  deleteField,
+  increment,
+  setDoc,
+  serverTimestamp,
+  DocumentSnapshot,
+} from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
 import { db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import { useDebug } from '../../../hooks/useDebug';
+import { Group } from '../types';
 
 export const useDashboardDebugOptions = (...reloadCallbacks: (() => void)[]) => {
   const { addOption, removeOption } = useDebug();
@@ -80,7 +90,7 @@ export const useGroupDebugOptions = () => {
     const data = {
       memberUids: [...memberUids],
       members: {
-        [auth.currentUser!.uid]: {
+        testUser: {
           displayName: 'Kyle',
           linkedUid: auth.currentUser!.uid,
         },
@@ -95,16 +105,16 @@ export const useGroupDebugOptions = () => {
         },
       },
       balance: {
-        [auth.currentUser!.uid]: {
+        testUser: {
           testId3214: 0,
           testId1234: 0,
         },
         testId3214: {
-          [auth.currentUser!.uid]: 150,
+          testUser: 150,
           testId1234: 0,
         },
         testId1234: {
-          [auth.currentUser!.uid]: 200,
+          testUser: 200,
           testId3214: 50,
         },
         testIdabd: {
@@ -128,15 +138,23 @@ export const useGroupDebugOptions = () => {
     const groupDoc = doc(db, 'groups', groupId!);
 
     await updateDoc(groupDoc, {
-      [`balance.${auth.currentUser!.uid}.testId3214`]: increment(-50),
+      [`balance.testUser.testId3214`]: increment(-50),
     });
   };
+
   const addLendToMarlon = async () => {
     const groupDoc = doc(db, 'groups', groupId!);
 
     await updateDoc(groupDoc, {
-      [`balance.${auth.currentUser!.uid}.testId3214`]: increment(50),
+      [`balance.testUser.testId3214`]: increment(50),
     });
+  };
+
+  const viewGroupData = async () => {
+    const groupRef = doc(db, 'groups', groupId!);
+    const groupDoc = await getDoc(groupRef);
+
+    console.log(groupDoc.data());
   };
 
   useEffect(() => {
@@ -144,12 +162,18 @@ export const useGroupDebugOptions = () => {
     addOption('Clear All Data', clearAllData);
     addOption('Add Debt -> Marlon', addDebtToMarlon);
     addOption('Add Lent -> Marlon', addLendToMarlon);
+    addOption('View Group Data', viewGroupData);
 
-    return () => {
-      removeOption('Add Dummy Data');
-      removeOption('Clear All Data');
-      removeOption('Add Debt -> Marlon');
-      removeOption('Add Lent -> Marlon');
-    };
+    return removeOptions;
   }, []);
+
+  function removeOptions() {
+    removeOption('Add Dummy Data');
+    removeOption('Clear All Data');
+    removeOption('Add Debt -> Marlon');
+    removeOption('Add Lent -> Marlon');
+    removeOption('View Group Data');
+  }
+
+  return removeOptions;
 };

@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo } from 'react';
+import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect } from 'react';
 import useGroupListener from '../../../features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
@@ -22,15 +22,12 @@ import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
-  useGroupDebugOptions();
   const PlusMemo = memo(() => <Plus />);
 
   const { group: groupParam } = useParams();
   const { group, userData } = useGroupListener(groupParam);
   const groupData = group?.data();
 
-  // TODO: Create actual Popup Menu Component
-  const [showGroupMenu, setShowGroupMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuRect = menuRef.current?.getBoundingClientRect();
   const [mainContentRef] = useAtom(MainContentRefAtom);
@@ -41,6 +38,8 @@ const Group = memo(function Group() {
     records,
   };
 
+  useGroupDebugOptions();
+
   // Event Listeners
   const handleAddClicked = useCallback(async () => {
     console.log('param: ', groupParam);
@@ -49,28 +48,9 @@ const Group = memo(function Group() {
 
   return (
     <>
-      {showGroupMenu && (
-        // TODO: popup component should be a component placed at the most parent element, so the
-        // displayed element will still align with the screen position.
-        <PopupOverlay setShowSelf={setShowGroupMenu}>
-          <div
-            className="absolute h-10 w-10 border border-red-500 bg-amber-800"
-            style={{
-              top: (menuRect?.bottom ?? 0) + (mainContentRef?.current?.scrollTop ?? 0),
-              right: window.innerWidth - (menuRect?.right ?? 0),
-            }}
-          ></div>
-        </PopupOverlay>
-      )}
       <div className="relative flex shrink-0 grow flex-col pt-3">
         <main className="flex h-full flex-col items-stretch">
-          <GroupInfo
-            userBalance={userBalance}
-            groupData={groupData}
-            userGroupUid={userData?.groupUid}
-            ref={menuRef}
-            setShowGroupMenu={setShowGroupMenu}
-          />
+          <GroupInfo userBalance={userBalance} groupData={groupData} userGroupUid={userData?.groupUid} ref={menuRef} />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3">
             <div className="text-leather-900 my-6 flex w-full flex-row items-baseline justify-between px-3">
               <h2 className="text-2xl">
@@ -166,12 +146,10 @@ const GroupInfo = ({
   userBalance,
   groupData,
   userGroupUid,
-  setShowGroupMenu,
   ref,
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
   groupData?: Group;
-  setShowGroupMenu: (state: boolean) => void;
   userGroupUid: string | undefined;
   ref: RefObject<HTMLDivElement | null>;
 }) => {
