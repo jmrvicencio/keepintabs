@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
   RefObject,
   ForwardedRef,
+  MouseEvent,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
@@ -23,7 +24,7 @@ import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 // Import Custom Components
 import SplitTransactionPage from '@/features/new-transaction/components/SplitTransaction';
 import Panel from '@/components/neubrutalist/Panel';
-import { User as UserIcon, ListFilter } from 'lucide-react';
+import { User as UserIcon, ListFilter, X } from 'lucide-react';
 import DatePicker from '@/features/date-picker/DatePicker';
 import Loading from '@/components/Loading';
 
@@ -390,11 +391,12 @@ const TransactionBreakdown = ({
   currGroup: DocumentSnapshot<Group> | undefined;
 }) => {
   // Hooks
-  const { setShowPopup, setPopup, callPopup } = usePopupOverlay();
+  const { setShowPopup, setPopup, callPopup, resetPopup } = usePopupOverlay();
   const filterRef = useRef(null);
 
   // Local States
   const [filterUid, setFilterUid] = useState<string>(getUserGroupId(auth.currentUser!.uid, currGroup?.data()) ?? '');
+  const [isFiltering, setIsFiltering] = useState(false);
 
   // ------------------------------
   // Computed Values
@@ -436,6 +438,13 @@ const TransactionBreakdown = ({
     const members = Object.entries(currGroup?.data()?.members ?? {});
     const options = members.map(([userGroupId, member]) => ({
       label: member.displayName,
+      action: () => {
+        const isCurrentUser = auth.currentUser!.uid == member.linkedUid;
+
+        setFilterUid(userGroupId);
+        setIsFiltering(!isCurrentUser);
+        resetPopup();
+      },
     }));
 
     const popup: PopupMenu = {
@@ -447,16 +456,35 @@ const TransactionBreakdown = ({
     callPopup(popup);
   };
 
+  const handleXFilterClicked = (e: MouseEvent) => {
+    e.stopPropagation();
+    const userGroupId = getUserGroupId(auth.currentUser!.uid, currGroup?.data());
+
+    setIsFiltering(false);
+    setFilterUid(userGroupId ?? '');
+  };
+
   return (
     <div className="mt-6 mb-400 flex w-full max-w-130 flex-col gap-4 rounded-xl bg-black px-3 py-4">
       <div
         role="button"
+        aria-label="filter member"
         ref={filterRef}
         onKeyDown={buttonHandleKeypress(handleFilterMemberClicked)}
         className="flex cursor-pointer flex-row items-center justify-end gap-2 text-white"
         onClick={handleFilterMemberClicked}
       >
-        <p className="font-extralight">filter member</p>
+        {isFiltering ? (
+          <>
+            <p className="sr-only">filtering member </p>
+            <p>{filterUid}</p>
+            <X className="h-4 w-4" onClick={handleXFilterClicked} />
+          </>
+        ) : (
+          <>
+            <p className="font-extralight">filter member</p>
+          </>
+        )}
         <ListFilter className="h-4 w-4" />
       </div>
       <div className="bg-accent-200 flex flex-col items-center justify-center rounded-xl py-3">

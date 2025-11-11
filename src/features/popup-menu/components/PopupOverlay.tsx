@@ -2,12 +2,12 @@ import { MouseEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom';
 import { PopupMenu, showPopupAtom } from '../stores/PopupAtom';
 import { useAtom } from 'jotai';
+import { buttonHandleKeypress, buttonRole } from '@/util/buttonHandleKeypress';
 
 import { X } from 'lucide-react';
 import Panel from '../../../components/neubrutalist/Panel';
 import { usePopupOverlay } from '../hooks/usePopupOverlay';
 import { MainContentRefAtom } from '@/store/mainArea';
-import { M } from 'vitest/dist/chunks/reporters.d.BFLkQcL6';
 
 const Menu = ({ popup }: { popup: PopupMenu }) => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -43,8 +43,13 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
     }
   }, [popup.reference, menuRef.current, mainContentRef?.current]);
 
-  console.log(styleY);
-  console.log(mainContentRef?.current?.scrollTop);
+  // ----------------------------
+  // Event Listeners
+  // ----------------------------
+
+  const handlePopupClicked = (e: MouseEvent) => {
+    e.stopPropagation();
+  };
 
   return (
     <div
@@ -54,9 +59,10 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
         right: screen.right - (ref?.right ?? 0),
       }}
       className="absolute flex min-w-40 flex-col gap-2 rounded-sm bg-white p-4"
+      onClick={handlePopupClicked}
     >
       {popup.options.map((option, i) => (
-        <div key={i} className="cursor-pointer">
+        <div {...buttonRole(option.action)} key={i} className="cursor-pointer">
           {option.label}
         </div>
       ))}
