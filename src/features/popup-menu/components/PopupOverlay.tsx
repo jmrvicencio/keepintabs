@@ -52,8 +52,8 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
       }}
       className="bg-accent-400 absolute p-2 px-4"
     >
-      {popup.options.map((option) => (
-        <div>{option.label}</div>
+      {popup.options.map((option, i) => (
+        <div key={i}>{option.label}</div>
       ))}
     </div>
   );
