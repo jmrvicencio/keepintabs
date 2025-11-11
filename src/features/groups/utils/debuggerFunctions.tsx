@@ -128,7 +128,7 @@ export const useGroupDebugOptions = () => {
       },
     };
 
-    await updateDoc(groupDoc, data);
+    await updateDoc(groupDoc, { ...data });
   };
 
   const clearAllData = async () => {

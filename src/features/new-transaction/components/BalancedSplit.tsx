@@ -70,7 +70,7 @@ const BalancedSplit = ({
                     backgroundImage: `url('${memberPhotoUrls[memberGroupId]}')`,
                   },
                 })}
-                className={`${!memberPhotoUrls[memberGroupId] && 'border'} border-ink-400 flex h-6 w-6 items-center justify-center rounded-full bg-cover`}
+                className={`${!memberPhotoUrls[memberGroupId] && 'border'} border-ink-400 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-cover`}
               >
                 {!memberPhotoUrls[memberGroupId] && <UserIcon className="text-ink-400" />}
               </div>
