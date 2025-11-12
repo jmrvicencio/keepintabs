@@ -1,0 +1,1 @@
+import{j as t}from"./index-D63cc4uB.js";function n({bgColor:r="bg-accent-100",border:o="border-accent-200"}){return t.jsx("div",{className:`${r} ${o} box-content h-5 w-5 rounded-full border-2 not-first:-ml-1`})}export{n as U};

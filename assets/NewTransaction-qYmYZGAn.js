@@ -1,1 +1,0 @@
-import{h as a,j as r}from"./index--mqDWwSn.js";import"./react-gH-7aFTg.js";import"./firebase-D57XAA0E.js";const o=()=>(a(),r.jsx("div",{className:"font-gieonto",children:"New Transaction Page"}));export{o as default};

@@ -1,1 +1,0 @@
-import{r as a,j as c}from"./index--mqDWwSn.js";const s=a.memo(({children:e,onClick:r=()=>{},inactive:t=!1})=>c.jsx("div",{className:`${t&&"inactive"} [.inactive]:bg-charcoal-300 [.inactive]:text-charcoal-800 bg-accent-600 flex h-7 w-fit cursor-pointer items-center rounded-xl px-3`,onClick:t?()=>{}:r,children:e}));export{s as S};
