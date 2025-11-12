@@ -330,7 +330,7 @@ const TransactionForm = forwardRef(
             </div>
           </div>
           <div className="relative flex flex-col gap-1 py-6 text-base">
-            {splitData.type == 'balanced' && (
+            {splitData.type == 'balanced' ? (
               <div className="flex flex-col">
                 <div className="flex flex-row items-center justify-between">
                   <label htmlFor="balanced-split" className="text-ink-400 text-left text-sm font-light">
@@ -372,6 +372,37 @@ const TransactionForm = forwardRef(
                     {splitData.data.payingMembers.size} split{splitData.data.payingMembers.size > 1 ? 's' : ''}
                   </p>
                 </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {splitData.data.entries.map((entry) => (
+                  <div className="flex flex-col">
+                    <div className="flex flex-row justify-between">
+                      <p className="text-ink-400 text-left text-sm font-light">{entry.description}</p>
+                      <p>{formatToDigit(entry.amount)}</p>
+                    </div>
+                    <div className="flex flex-row justify-between">
+                      <div className="flex flex-row">
+                        {[...entry.payingMembers].map((memberGroupId) => {
+                          const photoUrl = memberPhotoUrls[memberGroupId];
+                          return (
+                            <div
+                              key={memberGroupId}
+                              {...(photoUrl && {
+                                style: {
+                                  backgroundImage: `url(${photoUrl})`,
+                                },
+                              })}
+                              data-testid="balanced-member-photo"
+                              className="h-6 w-6 rounded-full border border-white bg-gray-200 bg-cover not-first:-ml-1"
+                            />
+                          );
+                        })}
+                      </div>
+                      <p className="text-ink-400 text-left text-sm font-light">{entry.payingMembers.size} splits</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
