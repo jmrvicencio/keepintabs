@@ -24,6 +24,7 @@ import {
   ItemizedSplit as ItemizedSplitType,
 } from '@/features/transactions/types';
 import { set } from 'date-fns';
+import { useNewTransactionDebugOptions } from '@/features/groups/utils/debuggerFunctions';
 
 export interface ItemizedEntry {
   description: string;
@@ -241,6 +242,8 @@ const SplitTransactionPage = forwardRef(
     // ------------------------------
     // Component Render
     // ------------------------------
+
+    useNewTransactionDebugOptions({ setItemizedData, setSplitType });
 
     return (
       <div className="px-2 outline-none">

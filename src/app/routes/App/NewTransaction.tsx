@@ -506,7 +506,12 @@ const TransactionBreakdown = ({
         <h3 className="w-fit">Breakdown</h3>
         <div className="flex justify-between">
           <label className="text-sm font-extralight">Even Split</label>
-          <input type="text" value={personalAmt} readOnly={true} className="field-sizing-content font-light" />
+          <input
+            type="text"
+            value={personalAmt}
+            readOnly={true}
+            className="field-sizing-content font-light outline-none"
+          />
         </div>
       </div>
     </div>

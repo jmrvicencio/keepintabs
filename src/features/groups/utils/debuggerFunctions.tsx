@@ -16,6 +16,8 @@ import { db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import { useDebug } from '../../../hooks/useDebug';
 import { Group } from '../types';
+import { SplitType } from '@/features/transactions/types';
+import { ItemizedEntry } from '@/features/new-transaction/components/SplitTransaction';
 
 export const useDashboardDebugOptions = (...reloadCallbacks: (() => void)[]) => {
   const { addOption, removeOption } = useDebug();
@@ -96,34 +98,34 @@ export const useGroupDebugOptions = () => {
           linkedUid: auth.currentUser!.uid,
           photoUrl: 'https://i.pinimg.com/1200x/97/47/02/9747029215bbd5677b8114e43b7c9589.jpg',
         },
-        testId1234: {
+        testIdA: {
           displayName: 'Julian',
           photoUrl: 'https://i.pinimg.com/736x/a2/a6/e1/a2a6e13821ad970f0790054db790cff1.jpg',
         },
-        testId3214: {
+        testIdB: {
           displayName: 'Marlon',
           photoUrl: 'https://i.pinimg.com/736x/f8/23/31/f82331683e3c17da6b6498475d3c1888.jpg',
         },
-        testIdabd: {
+        testIdC: {
           displayName: 'Jayni',
           photoUrl: 'https://i.pinimg.com/736x/1c/4b/c4/1c4bc411f32787cdef1490f396089225.jpg',
         },
       },
       balance: {
         testUser: {
-          testId3214: 0,
-          testId1234: 0,
+          testIdB: 0,
+          testIdA: 0,
         },
-        testId3214: {
+        testIdB: {
           testUser: 150,
-          testId1234: 0,
+          testIdA: 0,
         },
-        testId1234: {
+        testIdA: {
           testUser: 200,
-          testId3214: 50,
+          testIdB: 50,
         },
-        testIdabd: {
-          testId1234: 100,
+        testIdC: {
+          testIdA: 100,
         },
       },
     };
@@ -143,7 +145,7 @@ export const useGroupDebugOptions = () => {
     const groupDoc = doc(db, 'groups', groupId!);
 
     await updateDoc(groupDoc, {
-      [`balance.testUser.testId3214`]: increment(-50),
+      [`balance.testUser.testIdB`]: increment(-50),
     });
   };
 
@@ -151,7 +153,7 @@ export const useGroupDebugOptions = () => {
     const groupDoc = doc(db, 'groups', groupId!);
 
     await updateDoc(groupDoc, {
-      [`balance.testUser.testId3214`]: increment(50),
+      [`balance.testUser.testIdB`]: increment(50),
     });
   };
 
@@ -182,3 +184,50 @@ export const useGroupDebugOptions = () => {
 
   return removeOptions;
 };
+
+export function useNewTransactionDebugOptions({
+  setSplitType,
+  setItemizedData,
+}: {
+  setSplitType: (val: SplitType) => any;
+  setItemizedData: (val: ItemizedEntry[]) => any;
+}) {
+  const { addOption, removeOption } = useDebug();
+
+  const createItemizedData = () => {
+    const itemizedData: ItemizedEntry[] = [
+      {
+        amount: 8000,
+        description: 'Dumplings',
+        payingMembers: new Set(['testUser', 'testIdA', 'testIdB', 'testIdC']),
+      },
+      {
+        amount: 19000,
+        description: 'Chicken Teriyaki',
+        payingMembers: new Set(['testUser', 'testIdC']),
+      },
+      {
+        amount: 21000,
+        description: 'Kuro Ramen',
+        payingMembers: new Set(['testIdA']),
+      },
+      {
+        amount: 20000,
+        description: 'Shiro Ramen',
+        payingMembers: new Set(['testIdB']),
+      },
+    ];
+
+    setSplitType('itemized');
+    console.log('test');
+    setItemizedData(itemizedData);
+  };
+
+  useEffect(() => {
+    addOption('Create Itemized Data', createItemizedData);
+
+    return () => {
+      removeOption('Create Itemized Data');
+    };
+  }, []);
+}
