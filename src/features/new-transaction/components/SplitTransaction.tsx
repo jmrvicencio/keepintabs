@@ -243,6 +243,7 @@ const SplitTransactionPage = forwardRef(
     // Component Render
     // ------------------------------
 
+    console.log('env mode: ', import.meta.env.MODE);
     useNewTransactionDebugOptions({ setItemizedData, setSplitType });
 
     return (
