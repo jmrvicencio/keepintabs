@@ -1,4 +1,4 @@
-import { KeyboardEvent, useState, memo, useEffect, useRef, type MouseEvent } from 'react';
+import { KeyboardEvent, useState, memo, useEffect, useRef, type MouseEvent, UIEvent } from 'react';
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { atom, useAtom } from 'jotai';
 
@@ -12,10 +12,12 @@ import FAB from '../../../components/FAB';
 import { Plus } from 'lucide-react';
 import { MainContentRefAtom } from '../../../store/mainArea';
 import { ROUTES } from '../../routes';
+import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 
 export const dataFetchedAtom = atom(false);
 
 function App() {
+  const { showPopup } = usePopupOverlay();
   const navigate = useNavigate();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [_, setMainContentRef] = useAtom(MainContentRefAtom);
@@ -53,12 +55,12 @@ function App() {
 
   return (
     <ProtectedRoute>
+      <PopupOverlay />
       <div
         className="bg-wheat-200 text-ink-800 font-outfit relative z-0 flex h-dvh w-full justify-end overflow-x-hidden overflow-y-auto md:justify-center"
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
-        <PopupOverlay />
         <Debug showDebug={showDebug} />
         {/* This is the main container for the website */}
         <div className={`relative h-full min-w-dvw md:w-full md:max-w-190 md:min-w-0`}>
