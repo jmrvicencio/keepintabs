@@ -495,15 +495,9 @@ const TransactionBreakdown = ({
         <ListFilter className="h-4 w-4" />
       </div>
       <div className="bg-accent-200 flex flex-col items-center justify-center rounded-xl py-3">
-        <input
-          id="personal-share"
-          name="personal-share"
-          aria-label="member share"
-          type="text"
-          readOnly={true}
-          value={personalAmt ?? ''}
-          className="field-sizing-content text-4xl font-bold outline-0"
-        />
+        <p id="personal-share" aria-label="member share" className="w-fit text-4xl font-bold outline-0">
+          {personalAmt ?? ''}
+        </p>
         <label htmlFor="personal-share" className="text-xl font-light">
           {!isFiltering ? 'Your Share' : `${filterName}'s Share`}
         </label>

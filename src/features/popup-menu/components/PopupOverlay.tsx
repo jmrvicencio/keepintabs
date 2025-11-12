@@ -97,7 +97,11 @@ const PopupOverlay = () => {
         id="testing"
         onClick={handleClose}
       >
-        <div data-testid="popup-menu" className="rounded-2xl border border-black bg-white" onClick={handlePopupClicked}>
+        <div
+          data-testid="popup-menu"
+          className="w-100 rounded-2xl border border-black bg-white"
+          onClick={handlePopupClicked}
+        >
           <div className="border-ink-300/40 relative flex items-center justify-center border-b p-4 font-semibold">
             {popup.title}
             <div
