@@ -88,6 +88,7 @@ const TransactionForm = forwardRef(
     const groupName: string = currGroup && currGroup.data() ? currGroup.data()!.name : ' ';
     const dateString = format(date, 'dd/MM/yy');
     const timeString = format(date, 'K:mm aaa');
+    const memberIds: Set<string> = currGroup ? new Set(Object.keys(currGroup.data()!.members)) : new Set();
 
     // Update PaidById to the groupId of user so the uids match.
     // (groupUID might be different from users uid)
@@ -403,6 +404,32 @@ const TransactionForm = forwardRef(
                     </div>
                   </div>
                 ))}
+                <div className="flex flex-col">
+                  <div className="flex flex-row justify-between">
+                    <p className="text-ink-400 text-left text-sm font-light">Remainder</p>
+                    <p>{formatToDigit(splitData.data.remainder)}</p>
+                  </div>
+                  <div className="flex flex-row justify-between">
+                    <div className="flex flex-row">
+                      {[...memberIds].map((memberGroupId) => {
+                        const photoUrl = memberPhotoUrls[memberGroupId];
+                        return (
+                          <div
+                            key={memberGroupId}
+                            {...(photoUrl && {
+                              style: {
+                                backgroundImage: `url(${photoUrl})`,
+                              },
+                            })}
+                            data-testid="balanced-member-photo"
+                            className="h-6 w-6 rounded-full border border-white bg-gray-200 bg-cover not-first:-ml-1"
+                          />
+                        );
+                      })}
+                    </div>
+                    <p className="text-ink-400 text-left text-sm font-light">{memberIds.size} splits</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -429,6 +456,8 @@ const TransactionBreakdown = ({
   const [filterUid, setFilterUid] = useState<string>(getUserGroupId(auth.currentUser!.uid, currGroup?.data()) ?? '');
   const [isFiltering, setIsFiltering] = useState(false);
 
+  console.log('split data', splitData);
+
   // ------------------------------
   // Computed Values
   // ------------------------------
@@ -450,6 +479,8 @@ const TransactionBreakdown = ({
   const personalAmt = useMemo(() => {
     if (splitData.type == 'balanced') {
       return formatToDigit(splitData.data.payingMembers.has(filterUid) ? personalAmtNum : 0);
+    } else {
+      return formatToDigit(filterUid in splitData.data.totals ? splitData.data.totals[filterUid] : 0);
     }
   }, [total, splitData, filterUid]);
 
@@ -689,6 +720,7 @@ const NewTransaction = () => {
       addTransaction(transactionData);
       navigate(returnRoute);
     } else {
+      // From Split Page
       const isValid = splitRef.current?.verifySplits() ?? true;
       const splitFormData = splitRef.current?.getData();
       const nextSplitData = splitFormData?.splitData;

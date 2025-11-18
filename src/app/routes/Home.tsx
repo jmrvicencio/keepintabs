@@ -70,7 +70,7 @@ function Home() {
   console.log(user);
 
   return (
-    <div className="bg-olive font-outfit text-cream flex h-dvh flex-col items-center justify-center border-1 border-black">
+    <div className="bg-olive font-outfit text-cream flex h-dvh flex-col items-center justify-center border border-black">
       <div className="flex-rows flex items-center">
         <img src={logo} className="h-8" />
         <p className="font-outfit text-lg">Keepin' Tabs</p>

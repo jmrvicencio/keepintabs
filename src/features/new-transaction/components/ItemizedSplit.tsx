@@ -151,7 +151,7 @@ const ItemizedSplit = ({
                 return (
                   <div key={memberGroupId} className="flex flex-row items-center justify-baseline gap-2">
                     <input
-                      data-testid="item-member"
+                      data-testid={`split-${i}-${memberGroupId}`}
                       checked={itemizedItem.payingMembers.has(memberGroupId)}
                       onChange={handleMemberChanged(i, memberGroupId)}
                       id={`split-${i}-${memberGroupId}`}

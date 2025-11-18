@@ -142,7 +142,7 @@ const SplitTransactionPage = forwardRef(
     // ------------------------------
 
     useImperativeHandle(ref, () => ({
-      //f Check that all splits have a paying Member
+      // Check that all splits have a paying Member
       verifySplits: () => {
         let errorFound = false;
 
@@ -172,11 +172,23 @@ const SplitTransactionPage = forwardRef(
         return !errorFound;
       },
       getData: () => {
+        const groupMembers: Set<string> = currGroup ? new Set(Object.keys(currGroup.data()!.members)) : new Set();
+        const totals: Record<string, number> = {};
+
+        for (let member of [...groupMembers]) {
+          totals[member] = itemizedData.reduce(
+            (acc, entry) => (entry.payingMembers.has(member) ? acc + entry.amount : acc),
+            0,
+          );
+          totals[member] += Math.floor(remainder / groupMembers.size);
+        }
+
         const splitData: SplitData =
           splitType == 'itemized'
             ? {
                 type: 'itemized',
                 data: {
+                  totals,
                   remainder,
                   entries: itemizedData,
                 },

@@ -31,6 +31,7 @@ export interface BalancedSplit {
  * An array of entries which split and make up the entire transaction
  */
 export interface ItemizedSplit {
+  totals: Record<string, number>;
   entries: {
     description: string;
     amount: number;

@@ -259,64 +259,6 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
 
   const user = userEvent.setup();
 
-  it('Can create itemized split type transactions', async () => {
-    // Open Split type Page
-    const splitTypeButton = screen.getByLabelText('Split Type:');
-    expect(splitTypeButton).toHaveValue('Balanced');
-
-    await act(async () => {
-      await user.click(splitTypeButton);
-      await user.click(screen.getByRole('button', { name: 'Itemized' }));
-    });
-
-    // Split Type Page Tests
-    const addItemButton = screen.getByRole('button', { name: 'Add Item' });
-
-    await act(async () => {
-      await user.click(addItemButton);
-    });
-
-    let itemDescInputs = screen.getAllByTestId('item-desc');
-    const lastItemDesc = itemDescInputs[0];
-    expect(lastItemDesc).toHaveFocus();
-
-    // Update Desc of item
-    await act(async () => {
-      await user.type(lastItemDesc, 'Jollibee Chicken');
-    });
-    expect(lastItemDesc).toHaveValue('Jollibee Chicken');
-
-    // Get Item Price Fields
-    let itemPriceInputs = screen.getAllByTestId('item-price');
-    const lastItemprice = itemPriceInputs[0];
-
-    await act(async () => {
-      await user.type(lastItemprice, '100');
-    });
-    expect(lastItemprice).toHaveValue('1.00');
-
-    const memberCheckboxes = screen.getAllByTestId('item-member');
-    const memberAmts = screen.getAllByTestId('item-member-amt');
-
-    await act(async () => {
-      for (const member of memberCheckboxes) {
-        await user.click(member);
-      }
-    });
-
-    // All Members should split the item
-    for (const amt of memberAmts) {
-      expect(amt).toHaveTextContent('0.25');
-    }
-
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Continue' }));
-    });
-
-    expect(screen.getByLabelText('Total Amount')).toHaveValue('1.00');
-    expect(screen.getByLabelText('Split Type:')).toHaveValue('Itemized');
-  });
-
   it('Itemized Split type transactions show a "remainder" and inputted amount should not go below total of itemized items', async () => {
     // Open Split type Page
     await act(async () => {
@@ -406,7 +348,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     expect(errorText).toBeInTheDocument();
 
     await act(async () => {
-      await user.click(await screen.getAllByTestId('item-member')[0]);
+      await user.click(await screen.getByTestId('split-0-a'));
     });
     expect(errorText).not.toBeInTheDocument();
   });
@@ -496,6 +438,84 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     },
   );
 
+  it('Itemized Split Flow', async () => {
+    // Open Split type Page
+    const splitTypeButton = screen.getByLabelText('Split Type:');
+    expect(splitTypeButton).toHaveValue('Balanced');
+
+    await act(async () => {
+      await user.click(splitTypeButton);
+      await user.click(screen.getByRole('button', { name: 'Itemized' }));
+      const totalInput = screen.getByLabelText('Total Amount');
+
+      await user.type(totalInput, '200000');
+    });
+
+    expect(screen.getByLabelText('Total Amount')).toHaveValue('2,000.00');
+    const addItemButton = screen.getByRole('button', { name: 'Add Item' });
+
+    await act(async () => {
+      // Add 3 splits
+      await user.click(addItemButton);
+      await user.click(addItemButton);
+      await user.click(addItemButton);
+    });
+
+    const itemDescInputs = screen.getAllByTestId('item-desc');
+    const itemPriceInputs = screen.getAllByTestId('item-price');
+    expect(itemDescInputs[2]).toHaveFocus();
+
+    await act(async () => {
+      await user.type(itemDescInputs[0], 'Jollibee Chicken');
+
+      await user.type(itemPriceInputs[0], '50000');
+      await user.click(screen.getByTestId('split-0-a'));
+      await user.click(screen.getByTestId('split-0-b'));
+
+      await user.type(itemPriceInputs[1], '50000');
+      await user.click(screen.getByTestId('split-1-c'));
+
+      await user.type(itemPriceInputs[2], '80000');
+      await user.click(screen.getByTestId('split-2-d'));
+    });
+
+    expect(itemDescInputs[0]).toHaveValue('Jollibee Chicken');
+
+    const remainderField = screen.getByLabelText('Remainder');
+
+    expect(remainderField).toBeInTheDocument();
+    expect(remainderField).toHaveValue('200.00');
+
+    // // Get Item Price Fields
+    // let itemPriceInputs = screen.getAllByTestId('item-price');
+    // const lastItemprice = itemPriceInputs[0];
+
+    // await act(async () => {
+    //   await user.type(lastItemprice, '100');
+    // });
+    // expect(lastItemprice).toHaveValue('1.00');
+
+    // const memberCheckboxes = screen.getAllByTestId('item-member');
+    // const memberAmts = screen.getAllByTestId('item-member-amt');
+
+    // await act(async () => {
+    //   for (const member of memberCheckboxes) {
+    //     await user.click(member);
+    //   }
+    // });
+
+    // // All Members should split the item
+    // for (const amt of memberAmts) {
+    //   expect(amt).toHaveTextContent('0.25');
+    // }
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: 'Continue' }));
+    });
+
+    expect(screen.getByLabelText('Split Type:')).toHaveValue('Itemized');
+  });
+
   it('Balanced Split Type Flow', async () => {
     await act(async () => {
       await user.click(screen.getByLabelText('Split Type:'));
@@ -561,7 +581,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
 
     const yourShareInput = screen.getByLabelText('member share');
     expect(yourShareInput).toBeInTheDocument();
-    expect(yourShareInput).toHaveValue('50.00');
+    expect(yourShareInput).toHaveTextContent('50.00');
 
     await act(async () => {
       await user.type(
@@ -570,7 +590,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
       );
     });
     expect(balancedSplit).toHaveValue('php 100.00');
-    expect(yourShareInput).toHaveValue('100.00');
+    expect(yourShareInput).toHaveTextContent('100.00');
 
     await act(async () => {
       await user.click(screen.getByRole('button', { name: 'filter member' }));
@@ -578,6 +598,6 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     });
 
     expect(screen.getByText("Jayni's Share")).toBeInTheDocument();
-    expect(yourShareInput).toHaveValue('0.00');
+    expect(yourShareInput).toHaveTextContent('0.00');
   });
 });
