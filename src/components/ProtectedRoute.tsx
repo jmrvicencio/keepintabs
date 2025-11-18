@@ -1,12 +1,13 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { auth } from '../lib/firebase/auth';
-import { onAuthStateChanged, type User } from 'firebase/auth';
+import { signOut, onAuthStateChanged, type User } from 'firebase/auth';
 import { useState, useEffect, type ReactNode } from 'react';
 
 import logo from '/logo-spaced-white.svg';
 import Logo from './logo/Logo';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -20,6 +21,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     awaitAuth();
   });
+
+  useEffect(() => {
+    if (!user) return;
+
+    user.getIdTokenResult().then((result) => {
+      if (!('admin' in result.claims && result.claims.admin == true)) {
+        setUser(null);
+        signOut(auth);
+        navigate('/');
+      }
+    });
+  }, [loading]);
 
   if (loading)
     return (

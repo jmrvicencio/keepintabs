@@ -4,37 +4,43 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Database path rules
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId
+      allow read: if isValidUser();
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['username', 'photoUrl'])
+        && request.resource.data.username is string
+        && (request.resource.data.photoUrl is string || request.resource.data.photoUrl == null);
+      allow update: if isValidUser()
+        && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(['username', 'photoUrl'])
         && request.resource.data.username is string
         && (request.resource.data.photoUrl is string || request.resource.data.photoUrl == null);
     }
 
     match /groups/{groupId} {
-      allow read: if request.auth != null
+      allow read: if isValidUser()
         && request.auth.uid in resource.data.memberUids;
-      allow create: if request.auth != null
+      allow create: if isValidUser()
         && isInGroupMembers(groupId);
       allow update: if request.auth.uid in resource.data.memberUids
         || request.resource.data.inviteKey == get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey;
     }
 
     match /groups/{groupId}/transactions/{transactionId} {
-      allow read: if request.auth != null
+      allow read: if isValidUser()
         && isInGroupMembers(groupId);
-      allow create: if request.auth != null
+      allow create: if isValidUser()
         && isInGroupMembers(groupId);
     }
 
     match /groupSettings/{groupId} {
       allow read: if exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId))
-      allow create: if request.auth != null && request.resource.data.keys().hasAll(['inviteKey']);
+      allow create: if isValidUser() && request.resource.data.keys().hasAll(['inviteKey']);
     }
 
     match /groupMembers/{docId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null
+      allow read: if isValidUser() && request.auth.uid == resource.data.userId;
+      allow create: if isValidUser()
         && request.auth.uid == request.resource.data.userId
         && docId == request.resource.data.userId + "_" + request.resource.data.groupId
         && get(/databases/$(database)/documents/groupSettings/$(request.resource.data.groupId)).data.inviteKey == request.resource.data.inviteKey;
@@ -44,6 +50,10 @@ service cloud.firestore {
     // Custom Functions
     function isInGroupMembers(groupId){
       return exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId));
+    }
+
+    function isValidUser(){
+      return request.auth.token.admin == true;
     }
   }
 }
