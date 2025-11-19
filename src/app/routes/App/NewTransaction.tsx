@@ -36,6 +36,7 @@ import useDigitField, { DigitField } from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
+import toast from 'react-hot-toast';
 
 const TransactionForm = forwardRef(
   (
@@ -114,9 +115,15 @@ const TransactionForm = forwardRef(
     // ------------------------------
 
     useImperativeHandle(ref, () => ({
-      getData: () => ({
-        testData: 'this is some test data',
-      }),
+      getData: () => {
+        return {
+          paidBy: paidById,
+          date,
+          description,
+          amount: formattedStrToNum(total),
+          splitData,
+        };
+      },
     }));
 
     // ------------------------------
@@ -725,25 +732,49 @@ const NewTransaction = () => {
 
   const handleDoneClicked = () => {
     if (!showSplitPage) {
-      const formData = formRef.current?.getData();
-      const splitData = splitRef.current?.getData();
+      try {
+        const formData: Transaction = formRef.current!.getData();
+        let nextFormData = {};
 
-      console.log('ref data:', formData, splitData);
+        if (formData.splitData.type == 'balanced') {
+          nextFormData = {
+            ...formData,
+            splitData: {
+              ...formData.splitData,
+              data: {
+                payingMembers: [...formData.splitData.data.payingMembers],
+              },
+            },
+          };
+        } else {
+          // Convert our Sets into arrays so it can be saved in Firebase.
+          nextFormData = {
+            ...formData,
+            splitData: {
+              ...formData.splitData,
+              data: {
+                ...formData.splitData.data,
+                entries: formData.splitData.data.entries.map((entry) => ({
+                  ...entry,
+                  payingMembers: [...entry.payingMembers],
+                })),
+                remainder: {
+                  ...formData.splitData.data.remainder,
+                  payingMembers: [...formData.splitData.data.remainder.payingMembers],
+                },
+              },
+            },
+          };
+        }
 
-      const transactionData: Transaction = {
-        amount: 0,
-        paidBy,
-        date,
-        splitData: {
-          type: 'balanced',
-          data: {
-            payingMembers: new Set<string>(),
-          },
-        },
-      };
-
-      addTransaction(transactionData);
-      navigate(returnRoute);
+        addTransaction(nextFormData);
+      } catch (err) {
+        const error: Error = err as Error;
+        toast.error(error.message);
+        throw err;
+      } finally {
+        navigate(returnRoute);
+      }
     } else {
       // From Split Page
       const isValid = splitRef.current?.verifySplits() ?? true;

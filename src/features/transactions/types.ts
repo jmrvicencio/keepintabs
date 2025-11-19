@@ -5,6 +5,7 @@ export type GroupUserId = string;
 
 export interface Transaction {
   amount: number;
+  description: string;
   paidBy: GroupUserId;
   date: number; //timestamp is a number, not a Date object
   splitData: SplitData;
@@ -44,7 +45,13 @@ export interface ItemizedSplit {
 }
 
 export interface FormRef {
-  getData: () => any;
+  getData: () => {
+    amount: number;
+    description: string;
+    paidBy: GroupUserId;
+    date: number;
+    splitData: SplitData;
+  };
 }
 
 export interface SplitRef {
