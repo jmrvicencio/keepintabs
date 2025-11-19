@@ -28,6 +28,7 @@ function App() {
   const location = useLocation();
   const PlusMemo = memo(() => <Plus />);
   const showFab = location.pathname != ROUTES.NEW_GROUP;
+  const isDev = import.meta.env.MODE == 'development';
 
   console.log('pathname:', location.pathname);
 
@@ -61,7 +62,7 @@ function App() {
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
-        <Debug showDebug={showDebug} />
+        {isDev && <Debug showDebug={showDebug} />}
         {/* This is the main container for the website */}
         <div className={`relative h-full min-w-dvw md:w-full md:max-w-190 md:min-w-0`}>
           {showSidebar && <Overlay />}

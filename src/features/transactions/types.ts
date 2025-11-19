@@ -37,7 +37,10 @@ export interface ItemizedSplit {
     amount: number;
     payingMembers: Set<GroupUserId>;
   }[];
-  remainder: number;
+  remainder: {
+    amount: number;
+    payingMembers: Set<GroupUserId>;
+  };
 }
 
 export interface FormRef {

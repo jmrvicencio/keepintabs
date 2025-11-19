@@ -177,7 +177,8 @@ const SplitTransactionPage = forwardRef(
 
         for (let member of [...groupMembers]) {
           totals[member] = itemizedData.reduce(
-            (acc, entry) => (entry.payingMembers.has(member) ? acc + entry.amount : acc),
+            (acc, entry) =>
+              entry.payingMembers.has(member) ? acc + Math.floor(entry.amount / entry.payingMembers.size) : acc,
             0,
           );
           totals[member] += Math.floor(remainder / groupMembers.size);
@@ -189,7 +190,10 @@ const SplitTransactionPage = forwardRef(
                 type: 'itemized',
                 data: {
                   totals,
-                  remainder,
+                  remainder: {
+                    amount: remainder,
+                    payingMembers: groupMembers,
+                  },
                   entries: itemizedData,
                 },
               }
@@ -255,8 +259,9 @@ const SplitTransactionPage = forwardRef(
     // Component Render
     // ------------------------------
 
-    console.log('env mode: ', import.meta.env.MODE);
-    useNewTransactionDebugOptions({ setItemizedData, setSplitType });
+    if (import.meta.env.MODE == 'development') {
+      useNewTransactionDebugOptions({ setItemizedData, setSplitType });
+    }
 
     return (
       <div className="px-2 outline-none">

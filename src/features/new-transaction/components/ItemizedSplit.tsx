@@ -212,7 +212,8 @@ const ItemizedSplit = ({
         </div>
       )}
       <div className="border-ink-400 relative flex flex-col pt-6">
-        <div className="m-auto w-fit">
+        <div className="m-auto flex w-fit flex-col items-center justify-center gap-2">
+          {itemizedData.length == 0 && <p>Add items to get started!</p>}
           <Panel
             bgColor="bg-accent-200"
             padding="px-3 py-2"

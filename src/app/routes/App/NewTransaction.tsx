@@ -404,15 +404,15 @@ const TransactionForm = forwardRef(
                     </div>
                   </div>
                 ))}
-                {splitData.data.remainder > 0 && (
+                {splitData.data.remainder.amount > 0 && (
                   <div className="flex flex-col">
                     <div className="flex flex-row justify-between">
                       <p className="text-ink-400 text-left text-sm font-light">Remainder</p>
-                      <p aria-label="remainder amount">{formatToDigit(splitData.data.remainder)}</p>
+                      <p aria-label="remainder amount">{formatToDigit(splitData.data.remainder.amount)}</p>
                     </div>
                     <div className="flex flex-row justify-between">
                       <div className="flex flex-row">
-                        {[...memberIds].map((memberGroupId) => {
+                        {[...splitData.data.remainder.payingMembers].map((memberGroupId) => {
                           const photoUrl = memberPhotoUrls[memberGroupId];
                           return (
                             <div
@@ -536,7 +536,7 @@ const TransactionBreakdown = ({
   };
 
   return (
-    <div className="mt-6 mb-400 flex w-full max-w-130 flex-col gap-4 rounded-xl bg-black px-3 py-4">
+    <div className="my-6 flex w-full max-w-130 flex-col gap-4 rounded-xl bg-black px-3 py-4">
       <div
         role="button"
         aria-label="filter member"
@@ -568,15 +568,39 @@ const TransactionBreakdown = ({
       </div>
       <div className="flex flex-col gap-2 px-2 text-white">
         <h3 className="w-fit">Breakdown</h3>
-        <div className="flex justify-between">
-          <label className="text-sm font-extralight">Even Split</label>
-          <input
-            type="text"
-            value={personalAmt}
-            readOnly={true}
-            className="field-sizing-content font-light outline-none"
-          />
-        </div>
+        {splitData.type == 'balanced' ? (
+          <div className="flex justify-between">
+            <p className="text-sm font-extralight">Even Split</p>
+            <p arlia-label="even split" className="w-fit font-light outline-none">
+              {personalAmt}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {splitData.data.entries.map((entry) =>
+              entry.payingMembers.has(filterUid) ? (
+                <div className="flex justify-between">
+                  <p className="text-sm font-extralight">{entry.description}</p>
+                  <p aria-label={`${entry.description} share`} className="field-sizing-content font-light outline-none">
+                    {formatToDigit(Math.floor(entry.amount / entry.payingMembers.size))}
+                  </p>
+                </div>
+              ) : (
+                <></>
+              ),
+            )}
+            {splitData.data.remainder.amount > 0 && (
+              <div className="flex justify-between">
+                <p className="text-sm font-extralight">Remainder</p>
+                <p aria-label="remainder share" className="field-sizing-content font-light outline-none">
+                  {formatToDigit(
+                    Math.floor(splitData.data.remainder.amount / splitData.data.remainder.payingMembers.size),
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
