@@ -466,7 +466,9 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     expect(itemDescInputs[2]).toHaveFocus();
 
     await act(async () => {
-      await user.type(itemDescInputs[0], 'Jollibee Chicken');
+      await user.type(itemDescInputs[0], 'first');
+      await user.type(itemDescInputs[1], 'second');
+      await user.type(itemDescInputs[2], 'third');
 
       await user.type(itemPriceInputs[0], '50000');
       await user.click(screen.getByTestId('split-0-a'));
@@ -479,41 +481,28 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
       await user.click(screen.getByTestId('split-2-d'));
     });
 
-    expect(itemDescInputs[0]).toHaveValue('Jollibee Chicken');
+    expect(itemDescInputs[0]).toHaveValue('first');
 
     const remainderField = screen.getByLabelText('Remainder');
 
     expect(remainderField).toBeInTheDocument();
     expect(remainderField).toHaveValue('200.00');
 
-    // // Get Item Price Fields
-    // let itemPriceInputs = screen.getAllByTestId('item-price');
-    // const lastItemprice = itemPriceInputs[0];
-
-    // await act(async () => {
-    //   await user.type(lastItemprice, '100');
-    // });
-    // expect(lastItemprice).toHaveValue('1.00');
-
-    // const memberCheckboxes = screen.getAllByTestId('item-member');
-    // const memberAmts = screen.getAllByTestId('item-member-amt');
-
-    // await act(async () => {
-    //   for (const member of memberCheckboxes) {
-    //     await user.click(member);
-    //   }
-    // });
-
-    // // All Members should split the item
-    // for (const amt of memberAmts) {
-    //   expect(amt).toHaveTextContent('0.25');
-    // }
-
     await act(async () => {
       await user.click(screen.getByRole('button', { name: 'Continue' }));
     });
 
     expect(screen.getByLabelText('Split Type:')).toHaveValue('Itemized');
+
+    // All labels should be present
+    expect(screen.getByText('first')).toBeInTheDocument();
+    expect(screen.getByLabelText('first amount')).toHaveTextContent('500.00');
+    expect(screen.getByText('second')).toBeInTheDocument();
+    expect(screen.getByLabelText('second amount')).toHaveTextContent('500.00');
+    expect(screen.getByText('third')).toBeInTheDocument();
+    expect(screen.getByLabelText('third amount')).toHaveTextContent('800.00');
+    expect(screen.getByText('Remainder')).toBeInTheDocument();
+    expect(screen.getByLabelText('remainder amount')).toHaveTextContent('200.00');
   });
 
   it('Balanced Split Type Flow', async () => {

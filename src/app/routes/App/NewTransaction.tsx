@@ -376,11 +376,11 @@ const TransactionForm = forwardRef(
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                {splitData.data.entries.map((entry) => (
-                  <div className="flex flex-col">
+                {splitData.data.entries.map((entry, i) => (
+                  <div key={i} className="flex flex-col">
                     <div className="flex flex-row justify-between">
                       <p className="text-ink-400 text-left text-sm font-light">{entry.description}</p>
-                      <p>{formatToDigit(entry.amount)}</p>
+                      <p aria-label={`${entry.description} amount`}>{formatToDigit(entry.amount)}</p>
                     </div>
                     <div className="flex flex-row justify-between">
                       <div className="flex flex-row">
@@ -404,32 +404,34 @@ const TransactionForm = forwardRef(
                     </div>
                   </div>
                 ))}
-                <div className="flex flex-col">
-                  <div className="flex flex-row justify-between">
-                    <p className="text-ink-400 text-left text-sm font-light">Remainder</p>
-                    <p>{formatToDigit(splitData.data.remainder)}</p>
-                  </div>
-                  <div className="flex flex-row justify-between">
-                    <div className="flex flex-row">
-                      {[...memberIds].map((memberGroupId) => {
-                        const photoUrl = memberPhotoUrls[memberGroupId];
-                        return (
-                          <div
-                            key={memberGroupId}
-                            {...(photoUrl && {
-                              style: {
-                                backgroundImage: `url(${photoUrl})`,
-                              },
-                            })}
-                            data-testid="balanced-member-photo"
-                            className="h-6 w-6 rounded-full border border-white bg-gray-200 bg-cover not-first:-ml-1"
-                          />
-                        );
-                      })}
+                {splitData.data.remainder > 0 && (
+                  <div className="flex flex-col">
+                    <div className="flex flex-row justify-between">
+                      <p className="text-ink-400 text-left text-sm font-light">Remainder</p>
+                      <p aria-label="remainder amount">{formatToDigit(splitData.data.remainder)}</p>
                     </div>
-                    <p className="text-ink-400 text-left text-sm font-light">{memberIds.size} splits</p>
+                    <div className="flex flex-row justify-between">
+                      <div className="flex flex-row">
+                        {[...memberIds].map((memberGroupId) => {
+                          const photoUrl = memberPhotoUrls[memberGroupId];
+                          return (
+                            <div
+                              key={memberGroupId}
+                              {...(photoUrl && {
+                                style: {
+                                  backgroundImage: `url(${photoUrl})`,
+                                },
+                              })}
+                              data-testid="balanced-member-photo"
+                              className="h-6 w-6 rounded-full border border-white bg-gray-200 bg-cover not-first:-ml-1"
+                            />
+                          );
+                        })}
+                      </div>
+                      <p className="text-ink-400 text-left text-sm font-light">{memberIds.size} splits</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
