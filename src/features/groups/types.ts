@@ -8,8 +8,8 @@ export interface Group {
   members: Record<userGroupUid, Member>;
 }
 
-type Lender = string;
-type Lent = Record<string, number>;
+type Lender = userGroupUid; // Member who lent the money
+type Lent = Record<string, number>; // Members they lent to and the amounts lent
 
 export type userGroupUid = string;
 export interface Member {

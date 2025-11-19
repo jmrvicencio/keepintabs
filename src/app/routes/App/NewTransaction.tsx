@@ -6,7 +6,6 @@ import {
   forwardRef,
   useImperativeHandle,
   type KeyboardEvent,
-  RefObject,
   ForwardedRef,
   MouseEvent,
 } from 'react';
@@ -799,14 +798,25 @@ const NewTransaction = () => {
             <TransactionBreakdown total={total} splitData={splitData} currGroup={currGroup} />
           </>
         ) : (
-          <SplitTransactionPage
-            ref={splitRef}
-            splitType={splitData.type}
-            total={[total, setTotal]}
-            currGroup={currGroup}
-            memberPhotoUrls={memberPhotoUrls}
-            splitData={splitData}
-          />
+          <>
+            <SplitTransactionPage
+              ref={splitRef}
+              splitType={splitData.type}
+              total={[total, setTotal]}
+              currGroup={currGroup}
+              memberPhotoUrls={memberPhotoUrls}
+              splitData={splitData}
+            />
+            <Panel
+              onClick={handleDoneClicked}
+              margin="my-5"
+              bgColor="bg-accent-600"
+              className="text-white"
+              padding="px-8 py-2"
+            >
+              Continue
+            </Panel>
+          </>
         )}
       </main>
     </div>

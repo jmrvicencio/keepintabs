@@ -10,6 +10,7 @@ const Panel = ({
   dropOnClick = false,
   className = '',
   inactive = false,
+  margin,
 }: {
   children?: ReactNode;
   onClick?: () => any;
@@ -20,6 +21,7 @@ const Panel = ({
   wallColor?: string;
   dropOnClick?: boolean;
   inactive?: boolean;
+  margin?: string;
 }) => {
   const [pressed, setPressed] = useState(false);
 
@@ -57,7 +59,7 @@ const Panel = ({
   return (
     <div
       {...(handleClick != null ? { role: 'button', tabIndex: 0, onKeyDown: handleKeyDown } : {})}
-      className="relative pr-1 pb-1"
+      className={`relative pr-1 pb-1 ${margin}`}
       onMouseDown={handleMouseDown}
       onPointerDown={handleMouseDown}
       onMouseUp={handleMouseUp}
