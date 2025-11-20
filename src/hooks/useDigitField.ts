@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 export interface DigitField {
   value: string;
@@ -19,7 +19,7 @@ export const formatValue = (initialVal: string | number): string => {
 };
 
 const useDigitField = (initialVal: string = '0.00'): DigitField => {
-  const [value, setValue] = useState<string>(initialVal);
+  const [value, setValue] = useState<string>(formatValue(initialVal));
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     let currentVal: string = e.target.value;

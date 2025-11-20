@@ -63,7 +63,6 @@ const SplitTransactionPage = forwardRef(
     },
     ref: ForwardedRef<SplitRef>,
   ) => {
-    console.log('total', total);
     // ------------------------------
     // Local References
     // ------------------------------

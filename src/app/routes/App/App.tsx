@@ -30,8 +30,6 @@ function App() {
   const showFab = location.pathname != ROUTES.NEW_GROUP;
   const isDev = import.meta.env.MODE == 'development';
 
-  console.log('pathname:', location.pathname);
-
   useEffect(() => {
     setMainContentRef(mainContentRef);
   }, []);

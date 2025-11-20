@@ -465,8 +465,6 @@ const TransactionBreakdown = ({
   const [filterUid, setFilterUid] = useState<string>(getUserGroupId(auth.currentUser!.uid, currGroup?.data()) ?? '');
   const [isFiltering, setIsFiltering] = useState(false);
 
-  console.log('split data', splitData);
-
   // ------------------------------
   // Computed Values
   // ------------------------------
@@ -613,7 +611,27 @@ const TransactionBreakdown = ({
   );
 };
 
-const NewTransaction = () => {
+// const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
+// const [date, setDate] = useState(Date.now());
+// const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
+// const [splitData, setSplitData] = useState<SplitData>({ type: 'balanced', data: { payingMembers: new Set() } });
+
+const NewTransaction = ({
+  total: initialTotal = '0.00',
+  date: initialDate = Date.now(),
+  paidBy: initialPaidBy = auth.currentUser!.uid,
+  splitData: initialSplitData = {
+    type: 'balanced',
+    data: {
+      payingMembers: new Set(),
+    },
+  },
+}: {
+  total?: string;
+  date?: number;
+  paidBy?: string;
+  splitData?: SplitData;
+}) => {
   // Declare Refs
   const splitRef = useRef<SplitRef>(null);
   const formRef = useRef<FormRef>(null);
@@ -713,10 +731,10 @@ const NewTransaction = () => {
   // Form States
   // ------------------------------
 
-  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
-  const [date, setDate] = useState(Date.now());
-  const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
-  const [splitData, setSplitData] = useState<SplitData>({ type: 'balanced', data: { payingMembers: new Set() } });
+  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField(initialTotal);
+  const [date, setDate] = useState(initialDate);
+  const [paidBy, setPaidBy] = useState(initialPaidBy);
+  const [splitData, setSplitData] = useState<SplitData>(initialSplitData);
 
   // ------------------------------
   // Event Handlers
@@ -724,7 +742,6 @@ const NewTransaction = () => {
 
   const handleCancelClicked = () => {
     if (!showSplitPage) {
-      console.log('returning to route: ', returnRoute);
       navigate(returnRoute);
     } else {
       setShowSplitPage(false);
