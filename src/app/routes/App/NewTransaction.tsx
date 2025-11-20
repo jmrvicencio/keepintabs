@@ -582,9 +582,9 @@ const TransactionBreakdown = ({
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {splitData.data.entries.map((entry) =>
+            {splitData.data.entries.map((entry, i) =>
               entry.payingMembers.has(filterUid) ? (
-                <div className="flex justify-between">
+                <div key={i} className="flex justify-between">
                   <p className="text-sm font-extralight">{entry.description}</p>
                   <p aria-label={`${entry.description} share`} className="field-sizing-content font-light outline-none">
                     {formatToDigit(Math.floor(entry.amount / entry.payingMembers.size))}
