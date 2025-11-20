@@ -10,7 +10,7 @@ import { MainContentRefAtom } from '../../../store/mainArea';
 import { useAtom } from 'jotai';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
-import { type Group } from '../../../features/groups/types';
+import { type Group } from '@/features/groups/types';
 import { Menu, Plus, ArrowLeft } from 'lucide-react';
 import PopupOverlay from '../../../components/popup/PopupOverlay';
 import { ROUTES } from '../../routes';
@@ -20,8 +20,21 @@ import PanelButton from '../../../components/neubrutalist/PanelButton';
 import UserIcon from '../../../components/user_stack/UserIcon';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
+import { useTransacations } from '@/features/transactions/hooks/useTransactions';
+import { Transaction } from '@/features/transactions/types';
 
-const TransactionCard = () => {
+const TransactionCard = ({
+  transaction,
+  currGroup,
+  userGroupId,
+}: {
+  transaction: Transaction;
+  currGroup: Group;
+  userGroupId: string;
+}) => {
+  const description = transaction.description == '' ? 'No Description' : transaction.description;
+  const paidBy = userGroupId == transaction.paidBy ? 'You' : currGroup.members[transaction.paidBy].displayName;
+
   return (
     <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
       <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
@@ -29,10 +42,14 @@ const TransactionCard = () => {
         <p className="text-2xl font-bold">25</p>
       </div>
       <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
-        <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
-        <p className="text-sm/snug font-light">You paid Php 2,000</p>
+        <h3 className="text-leater text-lg/snug font-medium">{description}</h3>
+        <p className="text-sm/snug font-light">
+          {paidBy} paid {formatToDigit(transaction.amount)}
+        </p>
         <div>
-          <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">Gcash</p>
+          <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
+            {transaction.splits} splits
+          </p>
         </div>
       </div>
       <div className="flex flex-col items-end">
@@ -149,25 +166,35 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
 
 const Group = memo(function Group() {
   const navigate = useNavigate();
-  const PlusMemo = memo(() => <Plus />);
 
   const { group: groupParam } = useParams();
   const { group, userGroupId } = useGroupListener(groupParam);
   const groupData = group?.data();
 
+  const { transactions, loading, getPage, endReached, reload, isEmpty } = useTransacations(groupParam!);
+
   const menuRef = useRef<HTMLDivElement>(null);
   const menuRect = menuRef.current?.getBoundingClientRect();
   const [mainContentRef] = useAtom(MainContentRefAtom);
 
-  const records = useMemo(() => getSimplifiedBalance(group?.data()), [group]);
+  // -----------------------------------
+  // Computed Variables
+  // -----------------------------------
+
+  const simplifiedBalance = useMemo(() => getSimplifiedBalance(group?.data()), [group]);
   const userBalance = {
-    total: getTotalFromSimplified(userGroupId, records),
-    records,
+    total: getTotalFromSimplified(userGroupId, simplifiedBalance),
+    records: simplifiedBalance,
   };
 
-  useGroupDebugOptions();
+  if (import.meta.env.MODE == 'development') {
+    useGroupDebugOptions();
+  }
 
+  // -----------------------------------
   // Event Listeners
+  // -----------------------------------
+
   const handleAddClicked = useCallback(async () => {
     console.log('param: ', groupParam);
     navigate(`${ROUTES.NEW_TRANSACTION}${groupParam && '?g=' + groupParam}`);
@@ -186,9 +213,18 @@ const Group = memo(function Group() {
               {/* <p>2 Transactions</p> */}
             </div>
             <div className="flex flex-col gap-2 pb-24">
+              {isEmpty ? (
+                <>No Transactions</>
+              ) : (
+                Object.values(transactions).map((txnArray) =>
+                  txnArray.map((txn) => (
+                    <TransactionCard currGroup={group!.data()!} userGroupId={userGroupId!} transaction={txn} />
+                  )),
+                )
+              )}
+              {/* <TransactionCard />
               <TransactionCard />
-              <TransactionCard />
-              <TransactionCard />
+              <TransactionCard /> */}
             </div>
           </section>
         </main>

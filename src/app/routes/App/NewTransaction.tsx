@@ -117,11 +117,17 @@ const TransactionForm = forwardRef(
 
     useImperativeHandle(ref, () => ({
       getData: () => {
+        let splits: number;
+
+        if (splitData.type == 'balanced') splits = splitData.data.payingMembers.size;
+        else splits = Object.keys(splitData.data.totals).length;
+
         return {
           paidBy: paidById,
           date,
           description,
           amount: formattedStrToNum(total),
+          splits,
           splitData,
         };
       },
