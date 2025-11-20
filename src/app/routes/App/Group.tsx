@@ -8,6 +8,7 @@ import {
 } from '../../../features/groups/utils/balance';
 import { MainContentRefAtom } from '../../../store/mainArea';
 import { useAtom } from 'jotai';
+import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
 import { type Group } from '../../../features/groups/types';
 import { Menu, Plus, ArrowLeft } from 'lucide-react';
@@ -20,127 +21,33 @@ import UserIcon from '../../../components/user_stack/UserIcon';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
 
-const Group = memo(function Group() {
-  const navigate = useNavigate();
-  const PlusMemo = memo(() => <Plus />);
-
-  const { group: groupParam } = useParams();
-  const { group, userGroupId } = useGroupListener(groupParam);
-  const groupData = group?.data();
-
-  const menuRef = useRef<HTMLDivElement>(null);
-  const menuRect = menuRef.current?.getBoundingClientRect();
-  const [mainContentRef] = useAtom(MainContentRefAtom);
-
-  const records = useMemo(() => getSimplifiedBalance(group?.data()), [group]);
-  const userBalance = {
-    total: getTotalFromSimplified(userGroupId, records),
-    records,
-  };
-
-  useGroupDebugOptions();
-
-  // Event Listeners
-  const handleAddClicked = useCallback(async () => {
-    console.log('param: ', groupParam);
-    navigate(`${ROUTES.NEW_TRANSACTION}${groupParam && '?g=' + groupParam}`);
-  }, []);
-
+const TransactionCard = () => {
   return (
-    <>
-      <div className="relative flex shrink-0 grow flex-col pt-3">
-        <main className="flex h-full flex-col items-stretch">
-          <GroupInfo userBalance={userBalance} groupData={groupData} userGroupUid={userGroupId} ref={menuRef} />
-          <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3">
-            <div className="text-leather-900 my-6 flex w-full flex-row items-baseline justify-between px-3">
-              <h2 className="text-2xl">
-                August <span className="font-bold">2024</span>
-              </h2>
-              <p>2 Transactions</p>
-            </div>
-            <div className="flex flex-col gap-2 pb-24">
-              <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
-                <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
-                  <p className="text-base/4">Aug</p>
-                  <p className="text-2xl font-bold">25</p>
-                </div>
-                <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
-                  <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
-                  <p className="text-sm/snug font-light">You paid Php 2,000</p>
-                  <div>
-                    <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
-                      Gcash
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <p className="text-charcoal-600 font-medium">Php 2,000</p>
-                  <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
-                    You lent
-                    <span className="bg-positive-500 h-2 w-2 rounded-full" />
-                  </p>
-                  <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
-                    <p className="text-sm font-normal">Details</p>
-                  </Panel>
-                </div>
-              </Panel>
-              <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
-                <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
-                  <p className="text-base/4">Aug</p>
-                  <p className="text-2xl font-bold">25</p>
-                </div>
-                <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
-                  <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
-                  <p className="text-sm/snug font-light">You paid Php 2,000</p>
-                  <div>
-                    <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
-                      Gcash
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <p className="text-charcoal-600 font-medium">Php 2,000</p>
-                  <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
-                    You lent
-                    <span className="bg-positive-500 h-2 w-2 rounded-full" />
-                  </p>
-                  <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
-                    <p className="text-sm font-normal">Details</p>
-                  </Panel>
-                </div>
-              </Panel>
-              <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
-                <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
-                  <p className="text-base/4">Aug</p>
-                  <p className="text-2xl font-bold">25</p>
-                </div>
-                <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
-                  <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
-                  <p className="text-sm/snug font-light">You paid Php 2,000</p>
-                  <div>
-                    <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
-                      Gcash
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <p className="text-charcoal-600 font-medium">Php 2,000</p>
-                  <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
-                    You lent
-                    <span className="bg-positive-500 h-2 w-2 rounded-full" />
-                  </p>
-                  <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
-                    <p className="text-sm font-normal">Details</p>
-                  </Panel>
-                </div>
-              </Panel>
-            </div>
-          </section>
-        </main>
+    <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
+      <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
+        <p className="text-base/4">Aug</p>
+        <p className="text-2xl font-bold">25</p>
       </div>
-    </>
+      <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
+        <h3 className="text-leater text-lg/snug font-medium">Mendokoro</h3>
+        <p className="text-sm/snug font-light">You paid Php 2,000</p>
+        <div>
+          <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">Gcash</p>
+        </div>
+      </div>
+      <div className="flex flex-col items-end">
+        <p className="text-charcoal-600 font-medium">Php 2,000</p>
+        <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
+          You lent
+          <span className="bg-positive-500 h-2 w-2 rounded-full" />
+        </p>
+        <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
+          <p className="text-sm font-normal">Details</p>
+        </Panel>
+      </div>
+    </Panel>
   );
-});
+};
 
 const GroupInfo = ({
   userBalance,
@@ -158,7 +65,7 @@ const GroupInfo = ({
   const handleMenuClicked = useCallback(() => {
     const menuPopup: PopupMenu = {
       type: 'menu',
-      options: [],
+      options: [{ label: 'Delete Group' }],
       reference: ref,
     };
 
@@ -216,7 +123,7 @@ const BalanceLabel = ({ total }: { total: number }) => {
       ) : (
         <>
           {total > 0 ? 'You are owed' : 'You owe'}
-          <span className={`font-bold`}>&nbsp;Php {Math.abs(total)}</span>
+          <span className={`font-bold`}>&nbsp;Php {formatToDigit(Math.abs(total))}</span>
         </>
       )}
     </h2>
@@ -228,24 +135,65 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
     return (
       <p className="text-left">
         You owe {name}&nbsp;
-        <span className="font-outfit text-negative-500 font-bold">Php {Math.abs(amt)}</span>
+        <span className="font-outfit text-negative-500 font-bold">Php {formatToDigit(Math.abs(amt))}</span>
       </p>
     );
   else
     return (
       <p className="text-left">
-        {name} owes you <span className="font-outfit text-positive-500 font-bold">Php {Math.abs(amt)}</span>
+        {name} owes you{' '}
+        <span className="font-outfit text-positive-500 font-bold">Php {formatToDigit(Math.abs(amt))}</span>
       </p>
     );
 };
 
-const FAB = memo(({ onClick: handleClicked, children }: { onClick: () => void; children: ReactNode }) => {
+const Group = memo(function Group() {
+  const navigate = useNavigate();
+  const PlusMemo = memo(() => <Plus />);
+
+  const { group: groupParam } = useParams();
+  const { group, userGroupId } = useGroupListener(groupParam);
+  const groupData = group?.data();
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRect = menuRef.current?.getBoundingClientRect();
+  const [mainContentRef] = useAtom(MainContentRefAtom);
+
+  const records = useMemo(() => getSimplifiedBalance(group?.data()), [group]);
+  const userBalance = {
+    total: getTotalFromSimplified(userGroupId, records),
+    records,
+  };
+
+  useGroupDebugOptions();
+
+  // Event Listeners
+  const handleAddClicked = useCallback(async () => {
+    console.log('param: ', groupParam);
+    navigate(`${ROUTES.NEW_TRANSACTION}${groupParam && '?g=' + groupParam}`);
+  }, []);
+
   return (
-    <div className="fixed bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
-      <PanelButton className="flex flex-row text-white" bgColor="bg-accent-600" dropOnClick={true}>
-        {children}
-      </PanelButton>
-    </div>
+    <>
+      <div className="relative flex shrink-0 grow flex-col pt-3">
+        <main className="flex h-full flex-col items-stretch">
+          <GroupInfo userBalance={userBalance} groupData={groupData} userGroupUid={userGroupId} ref={menuRef} />
+          <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3">
+            <div className="text-leather-900 my-6 flex w-full flex-row items-baseline justify-between px-3">
+              <h2 className="text-2xl">
+                August <span className="font-bold">2024</span>
+              </h2>
+              {/* <p>2 Transactions</p> */}
+            </div>
+            <div className="flex flex-col gap-2 pb-24">
+              <TransactionCard />
+              <TransactionCard />
+              <TransactionCard />
+            </div>
+          </section>
+        </main>
+      </div>
+    </>
   );
 });
 
