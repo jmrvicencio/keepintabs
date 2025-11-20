@@ -2,10 +2,10 @@ import { doc, updateDoc, collection, deleteField, setDoc, serverTimestamp, runTr
 import { v4 as uuid } from 'uuid';
 
 import { db, collections } from '../../../lib/firebase/firestore';
-import { SplitType, Transaction } from '../types';
+import { SerializedTransaction } from '../types';
 
 const useAddTransaction = (groupId: string) => {
-  const addNewTransaction = (data: any) => {
+  const addNewTransaction = (data: SerializedTransaction) => {
     const id = uuid();
     const groupCollection = collection(db, collections.groups);
     const groupRef = doc(groupCollection, groupId);
@@ -16,20 +16,6 @@ const useAddTransaction = (groupId: string) => {
       createdAt: serverTimestamp(),
       ...data,
     });
-
-    // setDoc(groupsRef, {
-    //     createdAt: serverTimestamp(),
-    //     inviteKey,
-    //     name: groupName,
-    //     memberUids: [userId],
-    //     members: {
-    //       ...nextMembers,
-    //       [userId]: {
-    //         displayName: 'Kyle',
-    //         linkedUid: userId,
-    //       },
-    //     },
-    //   });
   };
 
   return addNewTransaction;

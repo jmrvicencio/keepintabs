@@ -1,3 +1,10 @@
+type ReplaceSetWithArray<T> =
+  T extends Set<infer U>
+    ? U[] // if T is a Set, replace it with an array of T
+    : T extends Object
+      ? { [K in keyof T]: ReplaceSetWithArray<T[K]> } // if it is an object, recursively replace all keys
+      : T; // Otherwise, just return the original type
+
 // Split Data
 export type SplitType = 'balanced' | 'itemized';
 
@@ -10,6 +17,9 @@ export interface Transaction {
   date: number; //timestamp is a number, not a Date object
   splitData: SplitData;
 }
+
+export type SerializedTransaction = ReplaceSetWithArray<Transaction>;
+export type SerializedSplitData = ReplaceSetWithArray<SplitData>;
 
 export type SplitData =
   | {

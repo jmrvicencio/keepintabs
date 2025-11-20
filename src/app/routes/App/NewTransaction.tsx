@@ -37,6 +37,7 @@ import useInputField from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
 import toast from 'react-hot-toast';
+import { serializeTransaction } from '@/features/transactions/utils/serializer';
 
 const TransactionForm = forwardRef(
   (
@@ -734,40 +735,7 @@ const NewTransaction = () => {
     if (!showSplitPage) {
       try {
         const formData: Transaction = formRef.current!.getData();
-        let nextFormData = {};
-
-        if (formData.splitData.type == 'balanced') {
-          nextFormData = {
-            ...formData,
-            splitData: {
-              ...formData.splitData,
-              data: {
-                payingMembers: [...formData.splitData.data.payingMembers],
-              },
-            },
-          };
-        } else {
-          // Convert our Sets into arrays so it can be saved in Firebase.
-          nextFormData = {
-            ...formData,
-            splitData: {
-              ...formData.splitData,
-              data: {
-                ...formData.splitData.data,
-                entries: formData.splitData.data.entries.map((entry) => ({
-                  ...entry,
-                  payingMembers: [...entry.payingMembers],
-                })),
-                remainder: {
-                  ...formData.splitData.data.remainder,
-                  payingMembers: [...formData.splitData.data.remainder.payingMembers],
-                },
-              },
-            },
-          };
-        }
-
-        addTransaction(nextFormData);
+        addTransaction(serializeTransaction(formData));
       } catch (err) {
         const error: Error = err as Error;
         toast.error(error.message);
