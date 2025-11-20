@@ -331,7 +331,7 @@ const TransactionForm = forwardRef(
                 type="button"
                 name="split-type"
                 id="split-type"
-                className="border-ink-400 rounded-md border px-3 py-0.5"
+                className="border-ink-400 cursor-pointer rounded-md border px-3 py-0.5"
                 onClick={() => setShowSplitPage(true)}
                 value={capitalize(splitData.type)}
               />
@@ -831,7 +831,7 @@ const NewTransaction = ({
               onClick={handleDoneClicked}
               margin="my-5"
               bgColor="bg-accent-600"
-              className="text-white"
+              className="cursor-pointer text-white"
               padding="px-8 py-2"
             >
               Continue

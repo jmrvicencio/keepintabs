@@ -58,7 +58,7 @@ function Sidebar() {
         Navigate to Test
       </div>
       <div className="p-4">
-        <FAB className="hidden md:block" onClick={handleFabClicked}>
+        <FAB className="hidden cursor-pointer md:block" onClick={handleFabClicked}>
           <Plus />
           Add Transaction
         </FAB>
