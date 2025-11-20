@@ -590,9 +590,7 @@ const TransactionBreakdown = ({
                     {formatToDigit(Math.floor(entry.amount / entry.payingMembers.size))}
                   </p>
                 </div>
-              ) : (
-                <></>
-              ),
+              ) : null,
             )}
             {splitData.data.remainder.amount > 0 && (
               <div className="flex justify-between">
@@ -610,11 +608,6 @@ const TransactionBreakdown = ({
     </div>
   );
 };
-
-// const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
-// const [date, setDate] = useState(Date.now());
-// const [paidBy, setPaidBy] = useState(auth.currentUser!.uid);
-// const [splitData, setSplitData] = useState<SplitData>({ type: 'balanced', data: { payingMembers: new Set() } });
 
 const NewTransaction = ({
   total: initialTotal = '0.00',
@@ -637,7 +630,7 @@ const NewTransaction = ({
   const formRef = useRef<FormRef>(null);
 
   // Call Hooks
-  const { groups, loading } = useGroups();
+  const { groups, loading, setLoading } = useGroups();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -647,9 +640,6 @@ const NewTransaction = ({
   const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
   // We use a state instead of a computed value here since useMemo can't handle async values
   const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
-
-  // Late Hooks
-  const addTransaction = useAddTransaction(groupId);
 
   // ------------------------------
   // Computed Values
@@ -748,11 +738,12 @@ const NewTransaction = ({
     }
   };
 
-  const handleDoneClicked = () => {
+  const handleDoneClicked = async () => {
     if (!showSplitPage) {
       try {
         const formData: Transaction = formRef.current!.getData();
-        addTransaction(serializeTransaction(formData));
+        setLoading(true);
+        await addTransaction(serializeTransaction(formData));
       } catch (err) {
         const error: Error = err as Error;
         toast.error(error.message);
@@ -774,7 +765,22 @@ const NewTransaction = ({
     }
   };
 
-  return (
+  // ------------------------------
+  // Late Hooks
+  // ------------------------------
+
+  const addTransaction = useAddTransaction(
+    groupId,
+    currGroup?.data() ?? { balance: {}, name: '', members: {}, memberUids: [] },
+  );
+
+  // ------------------------------
+  // Component Render
+  // ------------------------------
+
+  return loading ? (
+    <Loading />
+  ) : (
     <div className="relative flex w-full shrink-0 flex-col gap-8 p-3">
       <main className="flex w-full flex-col items-center">
         <div className="mb-4 flex w-full flex-row justify-between">
@@ -797,9 +803,7 @@ const NewTransaction = ({
             </Panel>
           </div>
         </div>
-        {loading ? (
-          <Loading />
-        ) : !showSplitPage ? (
+        {!showSplitPage ? (
           <>
             <TransactionForm
               ref={formRef}

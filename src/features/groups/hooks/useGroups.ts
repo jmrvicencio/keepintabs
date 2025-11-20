@@ -100,5 +100,5 @@ export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
     setRefetch((prev) => !prev);
   }, []);
 
-  return { groups, loading, reload };
+  return { groups, loading, reload, setLoading };
 };
