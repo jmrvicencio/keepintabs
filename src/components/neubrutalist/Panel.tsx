@@ -58,7 +58,7 @@ const Panel = ({
 
   return (
     <div
-      {...(handleClick != null ? { role: 'button', tabIndex: 0, onKeyDown: handleKeyDown } : {})}
+      {...(handleClick != null ? { tabIndex: 0, onKeyDown: handleKeyDown } : {})}
       className={`relative pr-1 pb-1 ${margin}`}
       onMouseDown={handleMouseDown}
       onPointerDown={handleMouseDown}
@@ -69,6 +69,7 @@ const Panel = ({
       onClick={handleClickWrapper}
     >
       <div
+        {...(handleClick != null && { role: 'button' })}
         className={`${inactive && 'inactive'} ${pressed && 'pressed'} ${bgColor || 'bg-white'} ${padding || 'p-2'} ${className} ${rounded || 'rounded-2xl'} border-ink-800 relative z-1 border-1 transition-transform [.pressed]:translate-0.5`}
       >
         {children}

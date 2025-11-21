@@ -784,9 +784,9 @@ const NewTransaction = ({
   // Late Hooks
   // ------------------------------
 
-  const addTransaction = useAddTransaction(
-    groupId,
-    currGroup?.data() ?? { balance: {}, name: '', members: {}, memberUids: [] },
+  const addTransaction = useMemo(
+    () => useAddTransaction(groupId, currGroup?.data() ?? { balance: {}, name: '', members: {}, memberUids: [] }),
+    [groupId, currGroup],
   );
 
   // ------------------------------

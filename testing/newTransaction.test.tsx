@@ -6,6 +6,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { ROUTES } from '../src/app/routes';
 import { Group } from '../src/features/groups/types';
 import PopupOverlay from '../src/features/popup-menu/components/PopupOverlay';
+import { useGroups } from '@/features/groups/hooks/useGroups';
 
 const mockNavigate = vi.fn();
 const { mockUseLocation, mockAddTransaction, mockUseAddTransaction } = vi.hoisted(() => {
@@ -50,6 +51,7 @@ vi.mock('../src/features/groups/hooks/useGroups', () => ({
     ],
     loading: false,
     reload: () => {},
+    setLoading: () => {},
   })),
 }));
 
@@ -188,7 +190,7 @@ describe('[Unit] [New Transaction] New Transaction Page', () => {
     await act(async () => {
       await user.click(doneButton);
     });
-    expect(mockUseAddTransaction).toHaveBeenCalledWith('abcd');
+    expect(mockUseAddTransaction).toHaveBeenCalledWith('abcd', expect.any(Object));
     expect(mockAddTransaction).toHaveBeenCalled();
   });
 });
@@ -341,7 +343,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
       await user.click(screen.getByLabelText('Split Type:'));
       await user.click(screen.getByRole('button', { name: 'Itemized' }));
       await user.click(screen.getByRole('button', { name: 'Add Item' }));
-      await user.click(screen.getByRole('button', { name: 'Continue' }));
+      await user.click(screen.getAllByRole('button', { name: 'Continue' })[0]);
     });
 
     const errorText = screen.getByText('Must have atleast 1 paying member');
@@ -489,19 +491,19 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
     expect(remainderField).toHaveValue('200.00');
 
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Continue' }));
+      await user.click(screen.getAllByRole('button', { name: 'Continue' })[0]);
     });
 
     expect(screen.getByLabelText('Split Type:')).toHaveValue('Itemized');
 
     // All labels should be present
-    expect(screen.getByText('first')).toBeInTheDocument();
+    expect(screen.getAllByText('first')[0]).toBeInTheDocument();
     expect(screen.getByLabelText('first amount')).toHaveTextContent('500.00');
-    expect(screen.getByText('second')).toBeInTheDocument();
+    expect(screen.getAllByText('second')[0]).toBeInTheDocument();
     expect(screen.getByLabelText('second amount')).toHaveTextContent('500.00');
-    expect(screen.getByText('third')).toBeInTheDocument();
+    expect(screen.getAllByText('third')[0]).toBeInTheDocument();
     expect(screen.getByLabelText('third amount')).toHaveTextContent('800.00');
-    expect(screen.getByText('Remainder')).toBeInTheDocument();
+    expect(screen.getAllByText('Remainder')[0]).toBeInTheDocument();
     expect(screen.getByLabelText('remainder amount')).toHaveTextContent('200.00');
   });
 
@@ -513,7 +515,7 @@ describe('[Unit] [New Transaction] New Transaction Split Types', () => {
 
     const balancedCheckboxes = screen.getAllByRole('checkbox');
     const totalInput = screen.getByLabelText('Total Amount');
-    const continueButton = screen.getByRole('button', { name: 'Continue' });
+    const continueButton = screen.getAllByRole('button', { name: 'Continue' })[0];
 
     await act(async () => {
       await user.type(totalInput, '10000');
