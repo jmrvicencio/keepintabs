@@ -43,9 +43,6 @@ export interface BalancedSplit {
  * An array of entries which split and make up the entire transaction
  */
 export interface ItemizedSplit {
-  totals: {
-    [userId: GroupUserId]: number;
-  };
   entries: {
     description: string;
     amount: number;
@@ -58,7 +55,7 @@ export interface ItemizedSplit {
 }
 
 export interface FormRef {
-  getData: () => SplitData;
+  getData: () => Transaction;
 }
 
 export interface SplitRef {
@@ -67,4 +64,8 @@ export interface SplitRef {
     amount: number;
     splitData: SplitData;
   };
+}
+
+export interface SplitTotal {
+  [memberUid: string]: number;
 }

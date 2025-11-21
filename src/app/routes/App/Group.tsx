@@ -1,69 +1,52 @@
 import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect } from 'react';
-import useGroupListener from '../../../features/groups/hooks/useGroupListener';
+import useGroupListener from '@/features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import {
-  getSimplifiedBalance,
-  getTotalFromSimplified,
-  type SimplifiedBalance,
-} from '../../../features/groups/utils/balance';
-import { MainContentRefAtom } from '../../../store/mainArea';
+import { getSimplifiedBalance, getTotalFromSimplified, type SimplifiedBalance } from '@/features/groups/utils/balance';
+import { MainContentRefAtom } from '@/store/mainArea';
 import { useAtom } from 'jotai';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
-
-import { type Group } from '@/features/groups/types';
-import { Menu, Plus, ArrowLeft } from 'lucide-react';
-import PopupOverlay from '../../../components/popup/PopupOverlay';
-import { ROUTES } from '../../routes';
-import { useGroupDebugOptions } from '../../../features/groups/utils/debuggerFunctions';
-import Panel from '../../../components/neubrutalist/Panel';
-import PanelButton from '../../../components/neubrutalist/PanelButton';
-import UserIcon from '../../../components/user_stack/UserIcon';
+import { useTransactions } from '@/features/transactions/hooks/useTransactions';
+import { useGroupDebugOptions } from '@/features/groups/utils/debuggerFunctions';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
+import { type Group } from '@/features/groups/types';
+import { ROUTES } from '../../routes';
+
+import TransactionCard from '@/features/groups/components/TransactionCard';
+import { Menu, ArrowLeft } from 'lucide-react';
+import Panel from '@/components/neubrutalist/Panel';
+import UserIcon from '@/components/user_stack/UserIcon';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
-import { useTransacations } from '@/features/transactions/hooks/useTransactions';
-import { Transaction } from '@/features/transactions/types';
 
-const TransactionCard = ({
-  transaction,
-  currGroup,
-  userGroupId,
-}: {
-  transaction: Transaction;
-  currGroup: Group;
-  userGroupId: string;
-}) => {
-  const description = transaction.description == '' ? 'No Description' : transaction.description;
-  const paidBy = userGroupId == transaction.paidBy ? 'You' : currGroup.members[transaction.paidBy].displayName;
-
+const BalanceLabel = ({ total }: { total: number }) => {
   return (
-    <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
-      <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
-        <p className="text-base/4">Aug</p>
-        <p className="text-2xl font-bold">25</p>
-      </div>
-      <div className="text-charcoal-800 flex grow flex-col gap-1 text-left">
-        <h3 className="text-leater text-lg/snug font-medium">{description}</h3>
-        <p className="text-sm/snug font-light">
-          {paidBy} paid {formatToDigit(transaction.amount)}
-        </p>
-        <div>
-          <p className="border-shell-300 w-fit rounded-lg border px-1 py-0.5 text-sm/tight font-light">
-            {transaction.splits} splits
-          </p>
-        </div>
-      </div>
-      <div className="flex flex-col items-end">
-        <p className="text-charcoal-600 font-medium">Php 2,000</p>
-        <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
-          You lent
-          <span className="bg-positive-500 h-2 w-2 rounded-full" />
-        </p>
-        <Panel padding="py-0 px-4" bgColor="bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
-          <p className="text-sm font-normal">Details</p>
-        </Panel>
-      </div>
-    </Panel>
+    <h2 className="font-outfit w-fit text-xl font-light">
+      {!total ? (
+        'debts clear'
+      ) : (
+        <>
+          {total > 0 ? 'You are owed' : 'You owe'}
+          <span className={`font-bold`}>&nbsp;Php {formatToDigit(Math.abs(total))}</span>
+        </>
+      )}
+    </h2>
   );
+};
+
+const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
+  if (amt < 0)
+    return (
+      <p className="text-left">
+        You owe {name}&nbsp;
+        <span className="font-outfit text-negative-500 font-bold">Php {formatToDigit(Math.abs(amt))}</span>
+      </p>
+    );
+  else
+    return (
+      <p className="text-left">
+        {name} owes you{' '}
+        <span className="font-outfit text-positive-500 font-bold">Php {formatToDigit(Math.abs(amt))}</span>
+      </p>
+    );
 };
 
 const GroupInfo = ({
@@ -132,38 +115,6 @@ const GroupInfo = ({
   );
 };
 
-const BalanceLabel = ({ total }: { total: number }) => {
-  return (
-    <h2 className="font-outfit w-fit text-xl font-light">
-      {!total ? (
-        'debts clear'
-      ) : (
-        <>
-          {total > 0 ? 'You are owed' : 'You owe'}
-          <span className={`font-bold`}>&nbsp;Php {formatToDigit(Math.abs(total))}</span>
-        </>
-      )}
-    </h2>
-  );
-};
-
-const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
-  if (amt < 0)
-    return (
-      <p className="text-left">
-        You owe {name}&nbsp;
-        <span className="font-outfit text-negative-500 font-bold">Php {formatToDigit(Math.abs(amt))}</span>
-      </p>
-    );
-  else
-    return (
-      <p className="text-left">
-        {name} owes you{' '}
-        <span className="font-outfit text-positive-500 font-bold">Php {formatToDigit(Math.abs(amt))}</span>
-      </p>
-    );
-};
-
 const Group = memo(function Group() {
   const navigate = useNavigate();
 
@@ -171,7 +122,7 @@ const Group = memo(function Group() {
   const { group, userGroupId } = useGroupListener(groupParam);
   const groupData = group?.data();
 
-  const { transactions, loading, getPage, endReached, reload, isEmpty } = useTransacations(groupParam!);
+  const { transactions, loading, getPage, endReached, reload, isEmpty } = useTransactions(groupParam!);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const menuRect = menuRef.current?.getBoundingClientRect();
@@ -195,10 +146,9 @@ const Group = memo(function Group() {
   // Event Listeners
   // -----------------------------------
 
-  const handleAddClicked = useCallback(async () => {
-    console.log('param: ', groupParam);
-    navigate(`${ROUTES.NEW_TRANSACTION}${groupParam && '?g=' + groupParam}`);
-  }, []);
+  // -----------------------------------
+  // Component Render
+  // -----------------------------------
 
   return (
     <>
@@ -210,7 +160,6 @@ const Group = memo(function Group() {
               <h2 className="text-2xl">
                 August <span className="font-bold">2024</span>
               </h2>
-              {/* <p>2 Transactions</p> */}
             </div>
             <div className="flex flex-col gap-2 pb-24">
               {isEmpty ? (
@@ -218,13 +167,15 @@ const Group = memo(function Group() {
               ) : (
                 Object.values(transactions).map((txnArray) =>
                   txnArray.map((txn) => (
-                    <TransactionCard currGroup={group!.data()!} userGroupId={userGroupId!} transaction={txn} />
+                    <TransactionCard
+                      key={txn.id}
+                      currGroup={group!.data()!}
+                      userGroupId={userGroupId!}
+                      transaction={txn}
+                    />
                   )),
                 )
               )}
-              {/* <TransactionCard />
-              <TransactionCard />
-              <TransactionCard /> */}
             </div>
           </section>
         </main>

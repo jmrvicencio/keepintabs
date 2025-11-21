@@ -2,11 +2,11 @@ import { doc, collection, serverTimestamp, runTransaction } from 'firebase/fires
 import { v4 as uuid } from 'uuid';
 
 import { db, collections } from '../../../lib/firebase/firestore';
-import { SerializedTransaction } from '../types';
+import { SerializedTransaction, SplitTotal } from '../types';
 import { Group } from '@/features/groups/types';
 
 const useAddTransaction = (groupId: string, group: Group) => {
-  const addNewTransaction = async (data: SerializedTransaction) => {
+  const addNewTransaction = async (data: SerializedTransaction, splitTotal: SplitTotal) => {
     const id = uuid();
     const groupCollection = collection(db, collections.groups);
     const groupRef = doc(groupCollection, groupId);
@@ -17,19 +17,10 @@ const useAddTransaction = (groupId: string, group: Group) => {
 
     if (!nextBalance[lender]) nextBalance[lender] = {};
 
-    if (data.splitData.type == 'balanced') {
-      const payingMembers = data.splitData.data.payingMembers;
-      const splitAmt = Math.floor(data.amount / payingMembers.length);
+    for (let [lent, amt] of Object.entries(splitTotal)) {
+      if (lent === lender) continue;
 
-      for (let lent of payingMembers) {
-        nextBalance[lender][lent] = (nextBalance[lender][lent] ?? 0) + splitAmt;
-      }
-    } else {
-      const payingMembers = data.splitData.data.totals;
-
-      for (let [lent, amt] of Object.entries(payingMembers)) {
-        nextBalance[lender][lent] = (nextBalance[lender][lent] ?? 0) + amt;
-      }
+      nextBalance[lender][lent] = (nextBalance[lender][lent] ?? 0) + amt;
     }
 
     await runTransaction(db, async (transaction) => {

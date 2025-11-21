@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { doc, collection, DocumentSnapshot, onSnapshot, DocumentReference, Unsubscribe } from 'firebase/firestore';
 import { type Group, Member } from '../types';
-import { db } from '../../../lib/firebase/firestore';
-import { auth } from '../../../lib/firebase/auth';
+import { db } from '@/lib/firebase/firestore';
+import { auth } from '@/lib/firebase/auth';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../../app/routes';
+import { ROUTES } from '@/app/routes';
 
 const useGroupListener = (groupId: string = '') => {
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ const useGroupListener = (groupId: string = '') => {
     return () => {
       console.log('ubsubscribing to snapshot');
       setUnsubCalled(true);
-      unsubscribeToSnapshot;
+      unsubscribeToSnapshot();
     };
   }, []);
 
