@@ -1,6 +1,11 @@
 import { ChangeEvent, useState } from 'react';
 
-const useInputField = (initialString = '') => {
+export interface InputField {
+  value: string;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => any;
+}
+
+const useInputField = (initialString = ''): InputField => {
   const [value, setValue] = useState<string>(initialString);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {

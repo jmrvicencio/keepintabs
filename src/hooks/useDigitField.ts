@@ -3,7 +3,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 export interface DigitField {
   value: string;
   setValue: (val: string) => any;
-  handleChange: (e: ChangeEvent<HTMLInputElement>) => any;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => string | undefined | null;
 }
 
 export const formatValue = (initialVal: string | number): string => {
@@ -32,6 +32,7 @@ const useDigitField = (initialVal: string = '0.00'): DigitField => {
     const formattedVal = formatValue(currentVal);
 
     setValue(formattedVal);
+    return formattedVal;
   };
 
   const _setValue = (val: string) => {

@@ -33,7 +33,7 @@ import { useGroups } from '@/features/groups/hooks/useGroups';
 import { Group, Member } from '@/features/groups/types';
 import { SplitRef, FormRef } from '@/features/transactions/types';
 import useDigitField, { DigitField } from '@/hooks/useDigitField';
-import useInputField from '@/hooks/useInputField';
+import useInputField, { InputField } from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
 import toast from 'react-hot-toast';
@@ -44,6 +44,7 @@ const TransactionForm = forwardRef(
   (
     {
       total: { value: total, setValue: setTotal, handleChange: handleTotalChanged },
+      description: { value: description, handleChange: handleDescriptionChanged },
       currGroup,
       setShowSplitPage,
       paidBy: [paidById, setPaidById],
@@ -53,6 +54,7 @@ const TransactionForm = forwardRef(
       memberPhotoUrls,
     }: {
       total: DigitField;
+      description: InputField;
       currGroup?: DocumentSnapshot<Group>;
       setShowSplitPage: (val: boolean) => any;
       paidBy: [string, (val: string) => any];
@@ -72,10 +74,6 @@ const TransactionForm = forwardRef(
     // ------------------------------
     // States
     // ------------------------------
-
-    // Form States
-    // const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField();
-    const { value: description, handleChange: handleDescriptionChanged } = useInputField('');
 
     // Local States
     const [showPaidBy, setShowPaidby] = useState(false); // used to prevent paidBy popup when memberPhotoUrls has reloaded
@@ -658,6 +656,7 @@ const NewTransaction = ({
   // ------------------------------
 
   const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField(initialTotal);
+  const { value: description, handleChange: handleDescriptionChanged } = useInputField();
   const [date, setDate] = useState(initialDate);
   const [paidBy, setPaidBy] = useState(initialPaidBy);
   const [splitData, setSplitData] = useState<SplitData>(initialSplitData);
@@ -824,6 +823,7 @@ const NewTransaction = ({
             <TransactionForm
               ref={formRef}
               total={{ value: total, setValue: setTotal, handleChange: handleTotalChanged }}
+              description={{ value: description, handleChange: handleDescriptionChanged }}
               setShowSplitPage={setShowSplitPage}
               currGroup={currGroup}
               paidBy={[paidBy, setPaidBy]}
