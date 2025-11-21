@@ -14,16 +14,8 @@ import { formattedStrToNum } from '@/util/helpers';
 import ItemizedSplit from './ItemizedSplit';
 import BalancedSplit from './BalancedSplit';
 
-import { UserIcon } from 'lucide-react';
 import { Group } from '@/features/groups/types';
-import {
-  type SplitType,
-  SplitData,
-  SplitRef,
-  BalancedSplit as BalancedSplitType,
-  ItemizedSplit as ItemizedSplitType,
-} from '@/features/transactions/types';
-import { set } from 'date-fns';
+import { type SplitType, SplitData, SplitRef } from '@/features/transactions/types';
 import { useNewTransactionDebugOptions } from '@/features/groups/utils/debuggerFunctions';
 
 export interface ItemizedEntry {
@@ -98,17 +90,7 @@ const SplitTransactionPage = forwardRef(
     const itemizedTotal = useMemo(() => {
       return (itemizedData ?? []).reduce((acc, item) => Math.floor(acc + item.amount), 0);
     }, [itemizedPrices]);
-    const splitTotalNum = Number(localTotal);
     const groupData = currGroup?.data();
-    const setBalancedDataWrapper = (val: Set<string>) => {
-      const { payingMembers: _, ...cleaned } = balancedData;
-      const nextBalancedData = {
-        payingMembers: val,
-        ...cleaned,
-      };
-
-      setBalancedData(nextBalancedData);
-    };
 
     // ------------------------------
     // Effects
