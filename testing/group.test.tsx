@@ -47,7 +47,7 @@ vi.mock('@/features/transactions/hooks/useTransactions', () => ({
           amount: 1200,
           description: 'test 1',
           paidBy: 'a',
-          date: 110044,
+          date: new Date('2025-10-24').getTime(),
           splits: 4,
           splitData: {
             type: 'balanced',
@@ -60,7 +60,7 @@ vi.mock('@/features/transactions/hooks/useTransactions', () => ({
           amount: 1200,
           description: 'test 2',
           paidBy: 'c',
-          date: 110044,
+          date: new Date('2025-11-24').getTime(),
           splits: 4,
           splitData: {
             type: 'balanced',
@@ -73,7 +73,7 @@ vi.mock('@/features/transactions/hooks/useTransactions', () => ({
           amount: 1200,
           description: 'test 3',
           paidBy: 'a',
-          date: 110044,
+          date: new Date('2025-11-24').getTime(),
           splits: 2,
           splitData: {
             type: 'balanced',
@@ -113,6 +113,7 @@ describe('[Unit] [Group] Group Page', () => {
 
   it('Transactions are rendered properly', async () => {
     expect(screen.getAllByText('You paid 12.00')[0]).toBeInTheDocument();
-    // expect(screen.getAllBy)
+    expect(screen.getByText('November 2025')).toBeInTheDocument();
+    expect(screen.getByText('October 2025')).toBeInTheDocument();
   });
 });

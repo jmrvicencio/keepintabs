@@ -158,7 +158,7 @@ const Group = memo(function Group() {
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3">
             <div className="text-leather-900 my-6 flex w-full flex-row items-baseline justify-between px-3">
               <h2 className="text-2xl">
-                August <span className="font-bold">2024</span>
+                November <span className="font-bold">2024</span>
               </h2>
             </div>
             <div className="flex flex-col gap-2 pb-24">

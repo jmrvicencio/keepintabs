@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Transaction } from '@/features/transactions/types';
 import { Group } from '../types';
 import Panel from '@/components/neubrutalist/Panel';
@@ -16,11 +17,13 @@ const TransactionCard = ({
   userGroupId: string;
 }) => {
   const date = new Date(transaction.date);
-  const splitTotal = getMemberSplitTotals(transaction.amount, transaction.splitData);
+  const splitTotal = useMemo(() => getMemberSplitTotals(transaction.amount, transaction.splitData), [transaction]);
   const description = transaction.description == '' ? 'No Description' : transaction.description;
   const isPaidByUser = userGroupId == transaction.paidBy;
   const paidBy = isPaidByUser ? 'You' : currGroup.members[transaction.paidBy].displayName;
   const shareAmount = (isPaidByUser ? transaction.amount - splitTotal[userGroupId] : splitTotal[userGroupId]) ?? 0;
+  const shareAmountLabel = shareAmount === 0 ? 'No Change' : isPaidByUser ? 'You Lent' : 'You Borrowed';
+  const shareColor = shareAmount === 0 ? '' : isPaidByUser ? 'positive' : 'negative';
 
   return (
     <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
@@ -42,8 +45,10 @@ const TransactionCard = ({
       <div className="flex flex-col items-end">
         <p className="text-charcoal-600 font-medium">Php {formatToDigit(shareAmount)}</p>
         <p className="mb-2 flex flex-row items-center justify-end gap-1 text-sm font-light">
-          {isPaidByUser ? 'You lent' : 'You borrowed'}
-          <span className="bg-positive-500 h-2 w-2 rounded-full" />
+          {shareAmountLabel}
+          <span
+            className={`${shareColor} [.positive]:bg-positive-500 [.negative]:bg-negative-500 h-2 w-2 rounded-full bg-gray-300`}
+          />
         </p>
         <Panel padding="py-0 px-4" bgColor=" cursor-pointer bg-accent-200" rounded="rounded-lg" dropOnClick={true}>
           <p className="text-sm font-normal">Details</p>
