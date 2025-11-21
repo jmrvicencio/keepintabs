@@ -140,7 +140,7 @@ const SplitTransactionPage = forwardRef(
           }
 
           if (errorFound) setItemizedData(nextItemizedData);
-        } else {
+        } else if (splitType == 'balanced') {
           if (balancedData.payingMembers.size == 0) {
             const nextBalancedData = { ...balancedData };
 
@@ -154,23 +154,12 @@ const SplitTransactionPage = forwardRef(
       },
       getData: () => {
         const groupMembers: Set<string> = currGroup ? new Set(Object.keys(currGroup.data()!.members)) : new Set();
-        const totals: Record<string, number> = {};
-
-        for (let member of [...groupMembers]) {
-          totals[member] = itemizedData.reduce(
-            (acc, entry) =>
-              entry.payingMembers.has(member) ? acc + Math.floor(entry.amount / entry.payingMembers.size) : acc,
-            0,
-          );
-          totals[member] += Math.floor(remainder / groupMembers.size);
-        }
 
         const splitData: SplitData =
           splitType == 'itemized'
             ? {
                 type: 'itemized',
                 data: {
-                  totals,
                   remainder: {
                     amount: remainder,
                     payingMembers: groupMembers,

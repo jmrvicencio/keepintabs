@@ -16,7 +16,7 @@ import { auth } from '@/lib/firebase/auth';
 import { format } from 'date-fns';
 import { buttonHandleKeypress } from '@/util/buttonHandleKeypress';
 import { getMemberPhotoUrl, getUserGroupId } from '@/features/groups/utils/memberUtil';
-import { BalancedSplit, ItemizedSplit, SplitData, Transaction } from '@/features/transactions/types';
+import { BalancedSplit, ItemizedSplit, SplitData, SplitTotal, Transaction } from '@/features/transactions/types';
 import { capitalize, formattedStrToNum } from '@/util/helpers';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
@@ -38,6 +38,7 @@ import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
 import toast from 'react-hot-toast';
 import { serializeTransaction } from '@/features/transactions/utils/serializer';
+import { getMemberSplitTotals } from '@/features/transactions/utils/splitUtils';
 
 const TransactionForm = forwardRef(
   (
@@ -48,6 +49,7 @@ const TransactionForm = forwardRef(
       paidBy: [paidById, setPaidById],
       date: [date, setDate],
       splitData,
+      splitTotals,
       memberPhotoUrls,
     }: {
       total: DigitField;
@@ -56,6 +58,7 @@ const TransactionForm = forwardRef(
       paidBy: [string, (val: string) => any];
       date: [number, (val: number) => any];
       splitData: SplitData;
+      splitTotals: SplitTotal;
       memberPhotoUrls: Record<string, string | undefined>;
     },
     ref: ForwardedRef<FormRef>,
@@ -117,10 +120,7 @@ const TransactionForm = forwardRef(
 
     useImperativeHandle(ref, () => ({
       getData: () => {
-        let splits: number;
-
-        if (splitData.type == 'balanced') splits = splitData.data.payingMembers.size;
-        else splits = Object.keys(splitData.data.totals).length;
+        let splits: number = Object.keys(splitTotals).length;
 
         return {
           paidBy: paidById,
@@ -456,10 +456,12 @@ const TransactionForm = forwardRef(
 
 const TransactionBreakdown = ({
   splitData,
+  splitTotals,
   total,
   currGroup,
 }: {
   splitData: SplitData;
+  splitTotals: SplitTotal;
   total: string;
   currGroup: DocumentSnapshot<Group> | undefined;
 }) => {
@@ -490,12 +492,8 @@ const TransactionBreakdown = ({
   );
 
   const personalAmt = useMemo(() => {
-    if (splitData.type == 'balanced') {
-      return formatToDigit(splitData.data.payingMembers.has(filterUid) ? personalAmtNum : 0);
-    } else {
-      return formatToDigit(filterUid in splitData.data.totals ? splitData.data.totals[filterUid] : 0);
-    }
-  }, [total, splitData, filterUid]);
+    return formatToDigit(splitTotals[filterUid] ?? 0);
+  }, [splitTotals, filterUid]);
 
   const options = useMemo(() => {
     const members: Record<string, Member> = currGroup?.data()?.members ?? {};
@@ -579,36 +577,44 @@ const TransactionBreakdown = ({
       </div>
       <div className="flex flex-col gap-2 px-2 text-white">
         <h3 className="w-fit">Breakdown</h3>
-        {splitData.type == 'balanced' ? (
-          <div className="flex justify-between">
-            <p className="text-sm font-extralight">Even Split</p>
-            <p arlia-label="even split" className="w-fit font-light outline-none">
-              {personalAmt}
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {splitData.data.entries.map((entry, i) =>
-              entry.payingMembers.has(filterUid) ? (
-                <div key={i} className="flex justify-between">
-                  <p className="text-sm font-extralight">{entry.description}</p>
-                  <p aria-label={`${entry.description} share`} className="field-sizing-content font-light outline-none">
-                    {formatToDigit(Math.floor(entry.amount / entry.payingMembers.size))}
+        {(splitTotals[filterUid] ?? 0) > 0 ? (
+          splitData.type == 'balanced' ? (
+            <div className="flex justify-between">
+              <p className="text-sm font-extralight">Even Split</p>
+              <p arlia-label="even split" className="w-fit font-light outline-none">
+                {personalAmt}
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {splitData.data.entries.map(
+                (entry, i) =>
+                  entry.payingMembers.has(filterUid) && (
+                    <div key={i} className="flex justify-between">
+                      <p className="text-sm font-extralight">{entry.description}</p>
+                      <p
+                        aria-label={`${entry.description} share`}
+                        className="field-sizing-content font-light outline-none"
+                      >
+                        {formatToDigit(Math.floor(entry.amount / entry.payingMembers.size))}
+                      </p>
+                    </div>
+                  ),
+              )}
+              {splitData.data.remainder.amount > 0 && (
+                <div className="flex justify-between">
+                  <p className="text-sm font-extralight">Remainder</p>
+                  <p aria-label="remainder share" className="field-sizing-content font-light outline-none">
+                    {formatToDigit(
+                      Math.floor(splitData.data.remainder.amount / splitData.data.remainder.payingMembers.size),
+                    )}
                   </p>
                 </div>
-              ) : null,
-            )}
-            {splitData.data.remainder.amount > 0 && (
-              <div className="flex justify-between">
-                <p className="text-sm font-extralight">Remainder</p>
-                <p aria-label="remainder share" className="field-sizing-content font-light outline-none">
-                  {formatToDigit(
-                    Math.floor(splitData.data.remainder.amount / splitData.data.remainder.payingMembers.size),
-                  )}
-                </p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )
+        ) : (
+          <p className="text-small text-left text-sm font-extralight">No Share</p>
         )}
       </div>
     </div>
@@ -648,6 +654,15 @@ const NewTransaction = ({
   const [memberPhotoUrls, setMemberPhotoUrls] = useState<Record<string, string | undefined>>({});
 
   // ------------------------------
+  // Form States
+  // ------------------------------
+
+  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField(initialTotal);
+  const [date, setDate] = useState(initialDate);
+  const [paidBy, setPaidBy] = useState(initialPaidBy);
+  const [splitData, setSplitData] = useState<SplitData>(initialSplitData);
+
+  // ------------------------------
   // Computed Values
   // ------------------------------
 
@@ -663,6 +678,10 @@ const NewTransaction = ({
     const currGroup = groups.find((group) => group.id == currGroupId);
     return currGroup;
   }, [groupId, loading]);
+
+  const splitTotals: SplitTotal = useMemo(() => {
+    return getMemberSplitTotals(formattedStrToNum(total), splitData);
+  }, [splitData, total]);
 
   // ------------------------------
   // Effects
@@ -724,15 +743,6 @@ const NewTransaction = ({
   }, [currGroup]);
 
   // ------------------------------
-  // Form States
-  // ------------------------------
-
-  const { value: total, setValue: setTotal, handleChange: handleTotalChanged } = useDigitField(initialTotal);
-  const [date, setDate] = useState(initialDate);
-  const [paidBy, setPaidBy] = useState(initialPaidBy);
-  const [splitData, setSplitData] = useState<SplitData>(initialSplitData);
-
-  // ------------------------------
   // Event Handlers
   // ------------------------------
 
@@ -749,7 +759,7 @@ const NewTransaction = ({
       try {
         const formData: Transaction = formRef.current!.getData();
         setLoading(true);
-        await addTransaction(serializeTransaction(formData));
+        await addTransaction(serializeTransaction(formData), splitTotals);
       } catch (err) {
         const error: Error = err as Error;
         toast.error(error.message);
@@ -819,9 +829,10 @@ const NewTransaction = ({
               paidBy={[paidBy, setPaidBy]}
               date={[date, setDate]}
               splitData={splitData}
+              splitTotals={splitTotals}
               memberPhotoUrls={memberPhotoUrls}
             />
-            <TransactionBreakdown total={total} splitData={splitData} currGroup={currGroup} />
+            <TransactionBreakdown total={total} splitData={splitData} splitTotals={splitTotals} currGroup={currGroup} />
           </>
         ) : (
           <>
