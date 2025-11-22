@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect } from 'react';
+import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect, Fragment } from 'react';
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getSimplifiedBalance, getTotalFromSimplified, type SimplifiedBalance } from '@/features/groups/utils/balance';
@@ -10,6 +10,7 @@ import { useGroupDebugOptions } from '@/features/groups/utils/debuggerFunctions'
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { type Group } from '@/features/groups/types';
 import { ROUTES } from '../../routes';
+import { format } from 'date-fns';
 
 import TransactionCard from '@/features/groups/components/TransactionCard';
 import { Menu, ArrowLeft } from 'lucide-react';
@@ -155,28 +156,33 @@ const Group = memo(function Group() {
       <div className="relative flex shrink-0 grow flex-col pt-3">
         <main className="flex h-full flex-col items-stretch">
           <GroupInfo userBalance={userBalance} groupData={groupData} userGroupUid={userGroupId} ref={menuRef} />
-          <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3">
-            <div className="text-leather-900 my-6 flex w-full flex-row items-baseline justify-between px-3">
-              <h2 className="text-2xl">
-                November <span className="font-bold">2024</span>
-              </h2>
-            </div>
-            <div className="flex flex-col gap-2 pb-24">
-              {isEmpty ? (
-                <>No Transactions</>
-              ) : (
-                Object.values(transactions).map((txnArray) =>
-                  txnArray.map((txn) => (
-                    <TransactionCard
-                      key={txn.id}
-                      currGroup={group!.data()!}
-                      userGroupId={userGroupId!}
-                      transaction={txn}
-                    />
-                  )),
-                )
-              )}
-            </div>
+          <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3 pb-24">
+            {isEmpty ? (
+              <>No Transactions</>
+            ) : (
+              Object.entries(transactions).map(([month, txns]) => {
+                const date = new Date(month);
+                return (
+                  <Fragment key={month}>
+                    <div className="text-leather-900 my-6 flex w-full flex-row items-baseline justify-between px-3">
+                      <h2 className="text-2xl">
+                        {format(date, 'MMMM')} <span className="font-bold">{format(date, 'yyyy')}</span>
+                      </h2>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {txns.map((txn) => (
+                        <TransactionCard
+                          key={txn.id}
+                          currGroup={group!.data()!}
+                          userGroupId={userGroupId!}
+                          transaction={txn}
+                        />
+                      ))}
+                    </div>
+                  </Fragment>
+                );
+              })
+            )}
           </section>
         </main>
       </div>

@@ -485,7 +485,7 @@ const TransactionBreakdown = ({
   }, [total, splitData]);
 
   const filterName = useMemo(
-    () => currGroup?.data()?.members[filterUid].displayName ?? 'Unknown',
+    () => currGroup?.data()?.members[filterUid]?.displayName ?? 'Unknown',
     [filterUid, currGroup],
   );
 

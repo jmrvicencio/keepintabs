@@ -10,6 +10,7 @@ import {
   CollectionReference,
 } from 'firebase/firestore';
 import { deserializeTransaction } from '../utils/serializer';
+import { format } from 'date-fns';
 
 import { ROUTES } from '@/app/routes';
 import { DocumentSnapshot } from 'firebase/firestore';
@@ -18,16 +19,15 @@ import { collections, db } from '@/lib/firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-type TransactionPages = {
-  [page: number]: (Transaction & { id: string })[];
+type SortedTransactions = {
+  [date: string]: (Transaction & { id: string })[];
 };
 
 const pageLimit = 15;
 
 export const useTransactions = (groupUid: string) => {
   const navigate = useNavigate();
-  const [transactions, setTransactions] = useState<TransactionPages>({});
-  const [page, setPage] = useState(0);
+  const [transactions, setTransactions] = useState<SortedTransactions>({});
   const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [refetch, setRefetch] = useState(false);
@@ -50,10 +50,20 @@ export const useTransactions = (groupUid: string) => {
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        const results: (Transaction & { id: string })[] = snap.docs.map((d) => ({
-          id: d.id,
-          ...deserializeTransaction(d.data()),
-        }));
+        const nextTransactions = { ...transactions };
+        snap.docs.forEach((d) => {
+          const month = format(new Date(d.data().date), 'yyyy-MM');
+
+          nextTransactions[month] = nextTransactions[month] ?? [];
+          nextTransactions[month].push({
+            id: d.id,
+            ...deserializeTransaction(d.data()),
+          });
+        });
+        // const results: (Transaction & { id: string })[] = snap.docs.map((d) => ({
+        //   id: d.id,
+        //   ...deserializeTransaction(d.data()),
+        // }));
 
         if (lastDoc == null && snap.docs.length > 0) setLastDoc(snap.docs.at(-1)!);
         if (snap.docs.length < pageLimit) setEndReached(true);
@@ -62,7 +72,7 @@ export const useTransactions = (groupUid: string) => {
         else setIsEmpty(false);
 
         setLoading(false);
-        setTransactions((prev) => ({ ...prev, 0: results }));
+        setTransactions(nextTransactions);
       },
       (err) => {
         const error = err as Error;
@@ -88,26 +98,30 @@ export const useTransactions = (groupUid: string) => {
    */
   const getPage = async () => {
     if (endReached) return;
-    const transactionCollection = collection(db, collections.groups, groupUid, collections.transactions);
+    const transactionCollection = collection(
+      db,
+      collections.groups,
+      groupUid,
+      collections.transactions,
+    ) as CollectionReference<SerializedTransaction>;
     const q = query(transactionCollection, orderBy('date', 'desc'), limit(pageLimit), startAfter(lastDoc));
-    const nextPage = page + 1;
+    const nextTransactions = { ...transactions };
 
     const snaps = await getDocs(q);
-    const results = snaps.docs.map((d) => ({
-      id: d.id,
-      ...deserializeTransaction(d.data() as SerializedTransaction),
-    }));
-    const nextTransactions = {
-      ...transactions,
-      [nextPage]: results,
-    };
+    snaps.docs.forEach((d) => {
+      const month = format(new Date(d.data().date), 'yyyy-MM');
+
+      nextTransactions[month] = nextTransactions[month] ?? [];
+      nextTransactions[month].push({
+        id: d.id,
+        ...deserializeTransaction(d.data()),
+      });
+    });
 
     setTransactions(nextTransactions);
-    setPage(nextPage);
   };
 
   const reload = () => {
-    setPage(0);
     setLastDoc(null);
     setTransactions({});
     setRefetch((prev) => !prev);
