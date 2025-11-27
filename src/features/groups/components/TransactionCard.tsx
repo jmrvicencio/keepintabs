@@ -27,7 +27,8 @@ const TransactionCard = ({
   const description = transaction.description == '' ? 'No Description' : transaction.description;
   const isPaidByUser = userGroupId == transaction.paidBy;
   const paidBy = isPaidByUser ? 'You' : currGroup.data()!.members[transaction.paidBy].displayName;
-  const shareAmount = (isPaidByUser ? transaction.amount - splitTotal[userGroupId] : splitTotal[userGroupId]) ?? 0;
+  const shareAmount =
+    (isPaidByUser ? transaction.amount - (splitTotal[userGroupId] ?? 0) : splitTotal[userGroupId]) ?? 0;
   const shareAmountLabel = shareAmount === 0 ? 'No Change' : isPaidByUser ? 'You Lent' : 'You Borrowed';
   const shareColor = shareAmount === 0 ? '' : isPaidByUser ? 'positive' : 'negative';
 

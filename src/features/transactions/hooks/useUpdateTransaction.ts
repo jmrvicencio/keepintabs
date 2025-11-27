@@ -7,6 +7,7 @@ import { getMemberSplitTotals } from '../utils/splitUtils';
 const useUpdateTransaction =
   (groupId: string, transactionId: string, group: Group, prevTransaction: Transaction) =>
   async (data: SerializedTransaction, splitTotal: SplitTotal) => {
+    // debugger;
     const groupCollection = collection(db, collections.groups);
     const groupRef = doc(groupCollection, groupId) as DocumentReference<Group>;
     const transactionCollection = collection(groupRef, collections.transactions);
@@ -24,7 +25,7 @@ const useUpdateTransaction =
     for (let [lentTo, amt] of Object.entries(prevSplitTotal)) {
       if (lentTo === prevLender) continue;
 
-      nextBalance[lender][lentTo] = (nextBalance[lender][lentTo] ?? 0) - amt;
+      nextBalance[prevLender][lentTo] = (nextBalance[prevLender][lentTo] ?? 0) - amt;
     }
 
     // Add balance from current transaction
