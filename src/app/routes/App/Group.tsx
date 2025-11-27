@@ -171,12 +171,9 @@ const Group = memo(function Group() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {txns.map((txn) => (
-                        <TransactionCard
-                          key={txn.id}
-                          currGroup={group!.data()!}
-                          userGroupId={userGroupId!}
-                          transaction={txn}
-                        />
+                        <Link to={`${ROUTES.TRANSACTION}/${txn.id}`} key={txn.id}>
+                          <TransactionCard currGroup={group!.data()!} userGroupId={userGroupId!} transaction={txn} />
+                        </Link>
                       ))}
                     </div>
                   </Fragment>
