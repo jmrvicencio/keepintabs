@@ -3,7 +3,13 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { auth } from '@/lib/firebase/auth';
 import { getMemberPhotoUrl, getUserGroupId } from '@/features/groups/utils/memberUtil';
-import { BalancedSplit, SplitData, SplitTotal, Transaction } from '@/features/transactions/types';
+import {
+  BalancedSplit,
+  SerializedTransaction,
+  SplitData,
+  SplitTotal,
+  Transaction,
+} from '@/features/transactions/types';
 import { formattedStrToNum } from '@/util/helpers';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
@@ -25,24 +31,9 @@ import { getMemberSplitTotals } from '@/features/transactions/utils/splitUtils';
 import useFetchTransaction from '@/features/transactions/hooks/useFetchTransaction';
 import useFetchGroup from '@/features/groups/hooks/useFetchGroup';
 import { Group } from '@/features/groups/types';
-import { DocumentSnapshot } from 'firebase/firestore';
+import useUpdateTransaction from '@/features/transactions/hooks/useUpdateTransaction';
 
-const TransactionPage = ({
-  total: initialTotal = '0.00',
-  date: initialDate = Date.now(),
-  paidBy: initialPaidBy = auth.currentUser!.uid,
-  splitData: initialSplitData = {
-    type: 'balanced',
-    data: {
-      payingMembers: new Set(),
-    },
-  },
-}: {
-  total?: string;
-  date?: number;
-  paidBy?: string;
-  splitData?: SplitData;
-}) => {
+const TransactionPage = () => {
   // Declare Refs
   const splitRef = useRef<SplitRef>(null);
   const formRef = useRef<FormRef>(null);
@@ -139,6 +130,7 @@ const TransactionPage = ({
         }
 
         setCurrGroup(groupSnap.data()!);
+        setGroupId(groupSnap.id);
         console.log('setting group', txnData);
       });
     }
@@ -177,9 +169,10 @@ const TransactionPage = ({
   const handleDoneClicked = async () => {
     if (!showSplitPage) {
       try {
-        const formData: Transaction = formRef.current!.getData();
+        const formData: SerializedTransaction = serializeTransaction(formRef.current!.getData());
+        console.log(formData);
         setForceLoading(true);
-        // await addTransaction(serializeTransaction(formData), splitTotals);
+        await updateTransaction(formData, splitTotals);
       } catch (err) {
         const error: Error = err as Error;
         toast.error(error.message);
@@ -205,10 +198,10 @@ const TransactionPage = ({
   // Late Hooks
   // ------------------------------
 
-  // const addTransaction = useMemo(
-  //   () => useAddTransaction(groupId, currGroup?.data() ?? { balance: {}, name: '', members: {}, memberUids: [] }),
-  //   [groupId, currGroup],
-  // );
+  const updateTransaction = useMemo(
+    () => useUpdateTransaction(groupId, transactionParam!, currGroup, txnData),
+    [groupId, transactionParam, currGroup, txnData],
+  );
 
   // ------------------------------
   // Component Render

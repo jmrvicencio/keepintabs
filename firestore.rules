@@ -29,7 +29,7 @@ service cloud.firestore {
     match /groups/{groupId}/transactions/{transactionId} {
       allow read: if isValidUser()
         && isInGroupMembers(groupId);
-      allow create: if isValidUser()
+      allow write: if isValidUser()
         && isInGroupMembers(groupId);
     }
 
