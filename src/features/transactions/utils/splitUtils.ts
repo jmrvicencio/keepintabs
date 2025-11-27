@@ -2,7 +2,8 @@ import { SplitData, SplitTotal } from '../types';
 
 export const getMemberSplitTotals = (total: number, splitData: SplitData) => {
   if (splitData.type == 'balanced') {
-    const evenSplit = Math.floor(total / splitData.data.payingMembers.size);
+    const splitCount = splitData.data.payingMembers.size;
+    const evenSplit = Math.floor(total / splitCount);
     const splitTotal: SplitTotal = {};
 
     for (let member of Array.from(splitData.data.payingMembers)) {

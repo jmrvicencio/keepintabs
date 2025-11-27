@@ -20,7 +20,7 @@ import useDigitField from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
 import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 import toast from 'react-hot-toast';
-import { serializeTransaction } from '@/features/transactions/utils/serializer';
+import { deserializeTransaction, serializeTransaction } from '@/features/transactions/utils/serializer';
 import { getMemberSplitTotals } from '@/features/transactions/utils/splitUtils';
 import useFetchTransaction from '@/features/transactions/hooks/useFetchTransaction';
 import useFetchGroup from '@/features/groups/hooks/useFetchGroup';
@@ -98,6 +98,8 @@ const TransactionPage = ({
     return getMemberSplitTotals(formattedStrToNum(total), splitData);
   }, [splitData, total]);
 
+  console.log(splitTotals);
+
   // ------------------------------
   // Effects
   // ------------------------------
@@ -147,7 +149,7 @@ const TransactionPage = ({
           return;
         }
 
-        const txn = txnSnap.data()!;
+        const txn = deserializeTransaction(txnSnap.data()!);
         setTxnData(txn);
         setTotal(formatToDigit(txn.amount));
         setDescription(txn.description);
