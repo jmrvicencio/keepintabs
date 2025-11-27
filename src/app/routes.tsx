@@ -9,10 +9,15 @@ export const ROUTES = {
   TEST: '/test',
   LANDING: '/',
   NEW_TRANSACTION: '/app/transactions/new',
+  TRANSACTION: '/transactions',
 };
 
 export const getGroupRoute = (groupId: string) => {
   return `${ROUTES.GROUPS}/${groupId}`;
+};
+
+export const getTransactionRoute = (groupId: string, transactionId: string) => {
+  return `${getGroupRoute(groupId)}${ROUTES.TRANSACTION}/${transactionId}`;
 };
 
 const router = createHashRouter([
@@ -48,10 +53,22 @@ const router = createHashRouter([
           },
           {
             path: ':group',
-            lazy: async () => {
-              let Group = await import('./routes/App/Group');
-              return { Component: Group.default };
-            },
+            children: [
+              {
+                index: true,
+                lazy: async () => {
+                  let Group = await import('./routes/App/Group');
+                  return { Component: Group.default };
+                },
+              },
+              {
+                path: 'transactions/:transaction',
+                lazy: async () => {
+                  let Transaction = await import('@/app/routes/App/Transaction');
+                  return { Component: Transaction.default };
+                },
+              },
+            ],
           },
           {
             path: 'new',
@@ -67,20 +84,15 @@ const router = createHashRouter([
         Component: Outlet,
         children: [
           {
+            index: true,
+            element: <Navigate to={ROUTES.NEW_TRANSACTION} replace />,
+          },
+          {
             path: 'new',
             lazy: async () => {
               let NewTransaction = await import('./routes/App/NewTransaction');
               return { Component: NewTransaction.default };
             },
-            children: [
-              {
-                index: true,
-                lazy: async () => {
-                  let NewTransaction = await import('./routes/App/NewTransaction');
-                  return { Component: NewTransaction.default };
-                },
-              },
-            ],
           },
         ],
       },

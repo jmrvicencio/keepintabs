@@ -25,7 +25,7 @@ type SortedTransactions = {
 
 const pageLimit = 15;
 
-export const useTransactions = (groupUid: string) => {
+const useTransactions = (groupUid: string) => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<SortedTransactions>({});
   const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
@@ -136,3 +136,5 @@ export const useTransactions = (groupUid: string) => {
     isEmpty,
   };
 };
+
+export default useTransactions;

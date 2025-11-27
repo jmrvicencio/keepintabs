@@ -49,7 +49,7 @@ const SplitTransactionPage = forwardRef(
     }: {
       splitType: SplitType;
       total: [string, (val: string) => any];
-      currGroup?: DocumentSnapshot<Group, DocumentData>;
+      currGroup?: Group;
       memberPhotoUrls: Record<string, string | undefined>;
       splitData: SplitData;
     },
@@ -79,7 +79,7 @@ const SplitTransactionPage = forwardRef(
     const [balancedData, setBalancedData] = useState<BalancedData>(
       splitData.type == 'balanced'
         ? splitData.data
-        : { payingMembers: new Set([...Object.keys(currGroup?.data()?.members ?? {})]) },
+        : { payingMembers: new Set([...Object.keys(currGroup?.members ?? {})]) },
     );
 
     // ------------------------------
@@ -90,7 +90,7 @@ const SplitTransactionPage = forwardRef(
     const itemizedTotal = useMemo(() => {
       return (itemizedData ?? []).reduce((acc, item) => Math.floor(acc + item.amount), 0);
     }, [itemizedPrices]);
-    const groupData = currGroup?.data();
+    const groupData = currGroup;
 
     // ------------------------------
     // Effects
@@ -153,7 +153,7 @@ const SplitTransactionPage = forwardRef(
         return !errorFound;
       },
       getData: () => {
-        const groupMembers: Set<string> = currGroup ? new Set(Object.keys(currGroup.data()!.members)) : new Set();
+        const groupMembers: Set<string> = currGroup ? new Set(Object.keys(currGroup!.members)) : new Set();
 
         const splitData: SplitData =
           splitType == 'itemized'

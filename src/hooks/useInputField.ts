@@ -2,6 +2,7 @@ import { ChangeEvent, useState } from 'react';
 
 export interface InputField {
   value: string;
+  setValue: (val: string) => any;
   handleChange: (e: ChangeEvent<HTMLInputElement>) => any;
 }
 
@@ -14,6 +15,7 @@ const useInputField = (initialString = ''): InputField => {
 
   return {
     value,
+    setValue,
     handleChange,
   };
 };

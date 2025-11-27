@@ -13,6 +13,7 @@ const useGroupListener = (groupId: string = '') => {
   const [userData, setUserData] = useState<Member | null>(null);
   const [userGroupId, setUserGroupId] = useState<string | undefined>();
   const [unsubCalled, setUnsubCalled] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   let unsubscribeToSnapshot: Unsubscribe;
   useEffect(() => {
@@ -25,8 +26,6 @@ const useGroupListener = (groupId: string = '') => {
         unsubscribeToSnapshot = onSnapshot(
           groupDoc,
           (groupSnap) => {
-            setGroup(groupSnap);
-
             const groupData = groupSnap.data() as Group;
             const memberEntries = Object.entries(groupData.members);
 
@@ -39,6 +38,9 @@ const useGroupListener = (groupId: string = '') => {
                 break;
               }
             }
+
+            setGroup(groupSnap);
+            setLoading(false);
           },
           (error) => {
             unsubscribeToSnapshot();
@@ -61,7 +63,7 @@ const useGroupListener = (groupId: string = '') => {
     };
   }, []);
 
-  return { group, userData, userGroupId };
+  return { group, userData, userGroupId, loading };
 };
 
 export default useGroupListener;

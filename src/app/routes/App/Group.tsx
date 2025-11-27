@@ -5,18 +5,22 @@ import { getSimplifiedBalance, getTotalFromSimplified, type SimplifiedBalance } 
 import { MainContentRefAtom } from '@/store/mainArea';
 import { useAtom } from 'jotai';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
-import { useTransactions } from '@/features/transactions/hooks/useTransactions';
-import { useGroupDebugOptions } from '@/features/groups/utils/debuggerFunctions';
-import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { type Group } from '@/features/groups/types';
 import { ROUTES } from '../../routes';
 import { format } from 'date-fns';
 
+// Custom Components
+import Loading from '@/components/Loading';
 import TransactionCard from '@/features/groups/components/TransactionCard';
-import { Menu, ArrowLeft } from 'lucide-react';
 import Panel from '@/components/neubrutalist/Panel';
 import UserIcon from '@/components/user_stack/UserIcon';
 import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
+import { Menu, ArrowLeft } from 'lucide-react';
+
+// Custom Hooks
+import useTransactions from '@/features/transactions/hooks/useTransactions';
+import { useGroupDebugOptions } from '@/features/groups/utils/debuggerFunctions';
+import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 
 const BalanceLabel = ({ total }: { total: number }) => {
   return (
@@ -120,7 +124,7 @@ const Group = memo(function Group() {
   const navigate = useNavigate();
 
   const { group: groupParam } = useParams();
-  const { group, userGroupId } = useGroupListener(groupParam);
+  const { group, userGroupId, loading: groupLoading } = useGroupListener(groupParam!);
   const groupData = group?.data();
 
   const { transactions, loading, getPage, endReached, reload, isEmpty } = useTransactions(groupParam!);
@@ -151,7 +155,9 @@ const Group = memo(function Group() {
   // Component Render
   // -----------------------------------
 
-  return (
+  return groupLoading ? (
+    <Loading />
+  ) : (
     <>
       <div className="relative flex shrink-0 grow flex-col pt-3">
         <main className="flex h-full flex-col items-stretch">
@@ -171,9 +177,23 @@ const Group = memo(function Group() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {txns.map((txn) => (
-                        <Link to={`${ROUTES.TRANSACTION}/${txn.id}`} key={txn.id}>
-                          <TransactionCard currGroup={group!.data()!} userGroupId={userGroupId!} transaction={txn} />
-                        </Link>
+                        // <Link
+                        //   to={`${ROUTES.TRANSACTION}/${txn.id}`}
+                        //   key={txn.id}
+                        //   state={{
+                        //     groupId: group!.id,
+                        //     groupData: groupData,
+                        //     transaction: txn,
+                        //   }}
+                        // >
+                        <TransactionCard
+                          key={txn.id}
+                          groupId={group!.id}
+                          currGroup={group!}
+                          userGroupId={userGroupId!}
+                          transaction={txn}
+                        />
+                        // </Link>
                       ))}
                     </div>
                   </Fragment>
