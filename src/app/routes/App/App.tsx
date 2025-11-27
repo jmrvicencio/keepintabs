@@ -1,5 +1,5 @@
 import { KeyboardEvent, useState, memo, useEffect, useRef, type MouseEvent, UIEvent } from 'react';
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import { atom, useAtom } from 'jotai';
 
 import { showSidebarAtom } from '../../../components/sidebar/Sidebar';
@@ -44,10 +44,6 @@ function App() {
     }
   };
 
-  const handleFabClicked = (e: MouseEvent) => {
-    navigate(ROUTES.NEW_TRANSACTION, { state: { groupId: groupParam } });
-  };
-
   const Overlay = memo(() => (
     <div onClick={() => setShowSidebar(false)} className="fixed inset-0 z-10 h-full bg-[#2F231D]/80 md:hidden"></div>
   ));
@@ -72,13 +68,14 @@ function App() {
             <Outlet />
           </div>
           {showFab && (
-            <FAB
-              className={`${location.pathname == ROUTES.NEW_TRANSACTION ? 'hidden' : ''} absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden`}
-              onClick={handleFabClicked}
-            >
-              <PlusMemo />
-              Add Transaction
-            </FAB>
+            <Link to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
+              <FAB
+                className={`${location.pathname == ROUTES.NEW_TRANSACTION ? 'hidden' : ''} absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden`}
+              >
+                <PlusMemo />
+                Add Transaction
+              </FAB>
+            </Link>
           )}
         </div>
 

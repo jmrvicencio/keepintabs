@@ -1,5 +1,5 @@
 import { memo, type MouseEvent } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link, Route } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { atom, useAtom, useSetAtom } from 'jotai';
 
@@ -32,10 +32,6 @@ function Sidebar() {
     navigate(ROUTES.LANDING);
   };
 
-  const handleFabClicked = (e: MouseEvent) => {
-    navigate(ROUTES.NEW_TRANSACTION, { state: { groupId: groupParam } });
-  };
-
   const Overlay = memo(() => (
     <div onClick={() => setShowSidebar(false)} className="fixed inset-0 z-10 h-full bg-[#2F231D]/80 md:hidden"></div>
   ));
@@ -58,10 +54,12 @@ function Sidebar() {
         Navigate to Test
       </div>
       <div className="p-4">
-        <FAB className="hidden cursor-pointer md:block" onClick={handleFabClicked}>
-          <Plus />
-          Add Transaction
-        </FAB>
+        <Link to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
+          <FAB className="hidden cursor-pointer md:block">
+            <Plus />
+            Add Transaction
+          </FAB>
+        </Link>
       </div>
     </div>
   );
