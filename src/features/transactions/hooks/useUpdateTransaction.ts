@@ -7,7 +7,6 @@ import { getMemberSplitTotals } from '../utils/splitUtils';
 const useUpdateTransaction =
   (groupId: string, transactionId: string, group: Group, prevTransaction: Transaction) =>
   async (data: SerializedTransaction, splitTotal: SplitTotal) => {
-    // debugger;
     const groupCollection = collection(db, collections.groups);
     const groupRef = doc(groupCollection, groupId) as DocumentReference<Group>;
     const transactionCollection = collection(groupRef, collections.transactions);
@@ -34,8 +33,6 @@ const useUpdateTransaction =
 
       nextBalance[lender][lentTo] = (nextBalance[lender][lentTo] ?? 0) + amt;
     }
-
-    console.log('new balance ', nextBalance);
 
     await runTransaction(db, async (transaction) => {
       transaction.update(transactionRef, { ...data });

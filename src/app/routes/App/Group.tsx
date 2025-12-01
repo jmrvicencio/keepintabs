@@ -143,6 +143,8 @@ const Group = memo(function Group() {
     records: simplifiedBalance,
   };
 
+  console.log(`simplified balance: `, simplifiedBalance);
+
   if (import.meta.env.MODE == 'development') {
     useGroupDebugOptions();
   }
@@ -177,15 +179,6 @@ const Group = memo(function Group() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {txns.map((txn) => (
-                        // <Link
-                        //   to={`${ROUTES.TRANSACTION}/${txn.id}`}
-                        //   key={txn.id}
-                        //   state={{
-                        //     groupId: group!.id,
-                        //     groupData: groupData,
-                        //     transaction: txn,
-                        //   }}
-                        // >
                         <TransactionCard
                           key={txn.id}
                           groupId={group!.id}
@@ -193,7 +186,6 @@ const Group = memo(function Group() {
                           userGroupId={userGroupId!}
                           transaction={txn}
                         />
-                        // </Link>
                       ))}
                     </div>
                   </Fragment>

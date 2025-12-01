@@ -58,8 +58,6 @@ const TransactionPage = () => {
 
   const loading = forceLoading || !txnData || !currGroup;
 
-  console.log('loading', loading);
-
   if (fatalError) throw fatalError;
 
   // ------------------------------
@@ -88,8 +86,6 @@ const TransactionPage = () => {
     if (!splitData) return {};
     return getMemberSplitTotals(formattedStrToNum(total), splitData);
   }, [splitData, total]);
-
-  console.log(splitTotals);
 
   // ------------------------------
   // Effects
@@ -131,7 +127,6 @@ const TransactionPage = () => {
 
         setCurrGroup(groupSnap.data()!);
         setGroupId(groupSnap.id);
-        console.log('setting group', txnData);
       });
     }
     if (!txnData) {
@@ -148,8 +143,6 @@ const TransactionPage = () => {
         setDate(txn.date);
         setPaidBy(txn.paidBy);
         setSplitData(txn.splitData);
-
-        console.log('set txn data', txn);
       });
     }
   }, []);

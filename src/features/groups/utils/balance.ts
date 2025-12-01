@@ -4,7 +4,12 @@ import { clamp } from '../../../lib/helpers';
 type UserGroupUid = string;
 type Borrower = UserGroupUid;
 type Lender = UserGroupUid;
-export type SimplifiedBalance = Record<UserGroupUid, Record<Borrower, number>>;
+// export type SimplifiedBalance = Record<UserGroupUid, Record<Borrower, number>>
+export interface SimplifiedBalance {
+  [Lender: UserGroupUid]: {
+    [borrower: Borrower]: number;
+  };
+}
 
 export function getSimplifiedBalance(group?: Group): SimplifiedBalance {
   if (!group || !group.balance) return {};

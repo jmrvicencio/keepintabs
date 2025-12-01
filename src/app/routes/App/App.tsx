@@ -1,5 +1,5 @@
 import { KeyboardEvent, useState, memo, useEffect, useRef, type MouseEvent, UIEvent } from 'react';
-import { Outlet, useLocation, useNavigate, useParams, Link } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams, Link, Routes } from 'react-router-dom';
 import { atom, useAtom } from 'jotai';
 
 import { showSidebarAtom } from '../../../components/sidebar/Sidebar';
@@ -27,7 +27,11 @@ function App() {
 
   const location = useLocation();
   const PlusMemo = memo(() => <Plus />);
-  const showFab = location.pathname != ROUTES.NEW_GROUP;
+  const txnRegex = new RegExp(`${ROUTES.GROUPS}/[\\d\\w-]+${ROUTES.TRANSACTION}/[\\d\\w-]+`);
+  const showFab =
+    location.pathname != ROUTES.NEW_GROUP &&
+    !txnRegex.test(location.pathname) &&
+    location.pathname != ROUTES.NEW_TRANSACTION;
   const isDev = import.meta.env.MODE == 'development';
 
   useEffect(() => {
