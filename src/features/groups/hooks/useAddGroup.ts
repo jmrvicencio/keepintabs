@@ -1,9 +1,17 @@
-import { doc, updateDoc, deleteField, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  deleteField,
+  setDoc,
+  serverTimestamp,
+  runTransaction,
+  DocumentReference,
+} from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
 import { db, getFirestoreURL } from '../../../lib/firebase/firestore';
 import { User } from 'firebase/auth';
-import { Member } from '../types';
+import { Group, Member } from '../types';
 import { auth } from '../../../lib/firebase/auth';
 
 const useAddGroup = (user: User) => {
@@ -13,15 +21,22 @@ const useAddGroup = (user: User) => {
       const userId = user.uid;
 
       const inviteKey = uuid();
-      const groupsRef = doc(db, `groups/${groupId}`);
+      const groupsRef = doc(db, `groups/${groupId}`) as DocumentReference<Group>;
       const groupMembersRef = doc(db, `groupMembers/${userId}_${groupId}`);
       const groupSettingsRef = doc(db, `groupSettings/${groupId}`);
 
       const nextMembers: Record<string, Member> = {};
+
       for (let member of members) {
+        console.log('members', member);
         const memberUid = uuid();
         nextMembers[memberUid] = member;
       }
+
+      nextMembers[userId] = {
+        displayName: user.displayName ?? 'Unknown',
+        linkedUid: userId,
+      };
 
       await setDoc(groupSettingsRef, {
         inviteKey,
@@ -37,13 +52,10 @@ const useAddGroup = (user: User) => {
         createdAt: serverTimestamp(),
         name: groupName,
         memberUids: [userId],
-        members: {
-          [userId]: {
-            displayName: auth.currentUser?.displayName,
-            linkedUid: userId,
-          },
-          ...nextMembers,
-        },
+        members: nextMembers,
+        balance: {},
+        expenses: {},
+        spent: {},
       });
 
       await updateDoc(groupMembersRef, {

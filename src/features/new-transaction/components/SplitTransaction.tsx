@@ -235,19 +235,8 @@ const SplitTransactionPage = forwardRef(
 
       const formattedVal = formatToDigit(nextVal);
 
+      if (splitType == 'balanced') setLocalTotal(formattedVal);
       setTotalFieldVal(formattedVal);
-
-      // if (splitType == 'itemized') {
-      //   if (nextValNumber >= itemizedTotal) {
-      //     setLocalTotal(formattedVal);
-      //   } else {
-      //     setLocalTotal(formatToDigit(`${itemizedTotal}`));
-      //   }
-      //   const nextRemainder = Math.floor(nextValNumber - itemizedTotal);
-      //   setRemainder(nextRemainder);
-      // } else if (splitType == 'balanced') {
-      //   setLocalTotal(formattedVal);
-      // }
     };
 
     const handleTotalKeyPressed = (e: KeyboardEvent) => {

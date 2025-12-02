@@ -190,7 +190,11 @@ const NewTransaction = ({
   // ------------------------------
 
   const addTransaction = useMemo(
-    () => useAddTransaction(groupId, currGroup?.data() ?? { balance: {}, name: '', members: {}, memberUids: [] }),
+    () =>
+      useAddTransaction(
+        groupId,
+        currGroup?.data() ?? { balance: {}, expenses: {}, spent: {}, name: '', members: {}, memberUids: [] },
+      ),
     [groupId, currGroup],
   );
 

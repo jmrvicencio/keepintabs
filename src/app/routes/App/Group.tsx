@@ -250,7 +250,10 @@ const Group = memo(function Group() {
     records: simplifiedBalance,
   };
 
+  console.log('group data: ', groupData);
+  console.log(`group balance: `, groupData?.balance);
   console.log(`simplified balance: `, simplifiedBalance);
+  console.log(`expenses balance: `, groupData?.expenses);
 
   if (import.meta.env.MODE == 'development') {
     useGroupDebugOptions();

@@ -24,7 +24,6 @@ import TransactionBreakdown from '@/features/transactions/components/Transaction
 import { SplitRef, FormRef } from '@/features/transactions/types';
 import useDigitField from '@/hooks/useDigitField';
 import useInputField from '@/hooks/useInputField';
-import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 import toast from 'react-hot-toast';
 import { deserializeTransaction, serializeTransaction } from '@/features/transactions/utils/serializer';
 import { getMemberSplitTotals } from '@/features/transactions/utils/splitUtils';
