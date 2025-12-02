@@ -12,21 +12,14 @@ const useAddTransaction = (groupId: string, group: Group) => {
     const groupRef = doc(groupCollection, groupId) as DocumentReference<Group>;
     const transactionCollection = collection(groupRef, collections.transactions);
     const transactionRef = doc(transactionCollection, id);
-    const nextBalance = { ...group.balance };
     const nextExpenses = { ...group.expenses };
     const nextSpent = { ...group.spent };
     const lender = data.paidBy;
 
-    if (!nextBalance[lender]) nextBalance[lender] = {};
     nextSpent[lender] = (nextSpent[lender] ?? 0) + data.amount; // Add amt spent by member
 
     for (let [borrower, amt] of Object.entries(splitTotal)) {
       nextExpenses[borrower] = (nextExpenses[borrower] ?? 0) + amt; // Add expense of member
-
-      // Handle Balance (deprecated)
-      if (borrower === lender) continue;
-
-      nextBalance[lender][borrower] = (nextBalance[lender][borrower] ?? 0) + amt;
     }
 
     await runTransaction(db, async (transaction) => {
@@ -35,7 +28,6 @@ const useAddTransaction = (groupId: string, group: Group) => {
         ...data,
       });
       transaction.update(groupRef, {
-        balance: nextBalance,
         expenses: nextExpenses,
         spent: nextSpent,
       });

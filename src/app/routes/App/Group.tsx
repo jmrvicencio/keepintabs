@@ -202,6 +202,7 @@ const GroupInfo = ({
       {userBalance?.total != 0 && userBalance?.total != null && (
         <Panel padding="px-4 py-2">
           {Object.entries(userBalance.records[userGroupUid ?? '']).map(([uid, amt]) => {
+            console.log(amt);
             const name = groupData?.members[uid].displayName ?? 'unkown';
             return <BalanceItem key={uid} name={name} amt={amt} />;
           })}

@@ -83,7 +83,7 @@ const TransactionPage = () => {
 
   const splitTotals: SplitTotal = useMemo(() => {
     if (!splitData) return {};
-    return getMemberSplitTotals(formattedStrToNum(total), splitData);
+    return getMemberSplitTotals(formattedStrToNum(total), splitData, paidBy);
   }, [splitData, total]);
 
   // ------------------------------

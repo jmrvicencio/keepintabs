@@ -23,7 +23,10 @@ const TransactionCard = ({
   userGroupId: string;
 }) => {
   const date = new Date(transaction.date);
-  const splitTotal = useMemo(() => getMemberSplitTotals(transaction.amount, transaction.splitData), [transaction]);
+  const splitTotal = useMemo(
+    () => getMemberSplitTotals(transaction.amount, transaction.splitData, transaction.paidBy),
+    [transaction],
+  );
   const description = transaction.description == '' ? 'No Description' : transaction.description;
   const isPaidByUser = userGroupId == transaction.paidBy;
   const paidBy = isPaidByUser ? 'You' : currGroup.data()!.members[transaction.paidBy].displayName;

@@ -27,16 +27,16 @@ const useAddGroup = (user: User) => {
 
       const nextMembers: Record<string, Member> = {};
 
+      nextMembers[userId] = {
+        displayName: user.displayName ?? 'Unknown',
+        linkedUid: userId,
+      };
+
       for (let member of members) {
         console.log('members', member);
         const memberUid = uuid();
         nextMembers[memberUid] = member;
       }
-
-      nextMembers[userId] = {
-        displayName: user.displayName ?? 'Unknown',
-        linkedUid: userId,
-      };
 
       await setDoc(groupSettingsRef, {
         inviteKey,
@@ -53,7 +53,6 @@ const useAddGroup = (user: User) => {
         name: groupName,
         memberUids: [userId],
         members: nextMembers,
-        balance: {},
         expenses: {},
         spent: {},
       });

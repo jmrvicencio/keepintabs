@@ -48,6 +48,8 @@ export function getSimplifiedBalance(group?: Group): SimplifiedBalance {
     }
   }
 
+  console.log('simplified log. Borrowed: ', borrowed, 'lent: ', lent);
+
   return simplified;
 }
 

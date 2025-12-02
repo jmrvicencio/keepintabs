@@ -84,7 +84,7 @@ const NewTransaction = ({
   }, [groupId, loading]);
 
   const splitTotals: SplitTotal = useMemo(() => {
-    return getMemberSplitTotals(formattedStrToNum(total), splitData);
+    return getMemberSplitTotals(formattedStrToNum(total), splitData, paidBy);
   }, [splitData, total]);
 
   // ------------------------------
@@ -193,7 +193,7 @@ const NewTransaction = ({
     () =>
       useAddTransaction(
         groupId,
-        currGroup?.data() ?? { balance: {}, expenses: {}, spent: {}, name: '', members: {}, memberUids: [] },
+        currGroup?.data() ?? { expenses: {}, spent: {}, name: '', members: {}, memberUids: [] },
       ),
     [groupId, currGroup],
   );
