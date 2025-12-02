@@ -1,7 +1,7 @@
 import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect, Fragment } from 'react';
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
+import { getGroupTotalExpenses, getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
 import { SimplifiedBalance, UserBalance } from '@/features/groups/types';
 import { MainContentRefAtom } from '@/store/mainArea';
 import { useAtom } from 'jotai';
@@ -58,6 +58,43 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
 const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; groupData: Group }) => {
   console.log(userBalance);
   console.log(groupData);
+  const simplifiedBalance = userBalance.records;
+  const totalExpenses = getGroupTotalExpenses(groupData);
+  const members = groupData.members;
+
+  return (
+    <>
+      <div className="bg-wheat-400/30 grid grid-cols-4 items-center justify-items-center px-4 py-2 font-bold">
+        <h2>Name</h2>
+        <h2>Expenses</h2>
+        <h2>Paid</h2>
+        <h2>Balance</h2>
+      </div>
+      {Object.keys(members).map((memberUid, i) => {
+        const balance = getTotalFromSimplified(memberUid, simplifiedBalance);
+        const balanceString = formatToDigit(balance);
+        const hasSpent = memberUid in groupData.balance;
+        const spent = hasSpent ? Object.values(groupData.balance[memberUid]).reduce((acc, curr) => acc + curr, 0) : 0;
+
+        return (
+          <div
+            key={i}
+            className="odd:bg-wheat-400/20 grid w-full grid-cols-4 items-center justify-items-center px-4 py-2"
+          >
+            <p>{members[memberUid].displayName}</p>
+            <p>{formatToDigit(totalExpenses[memberUid])}</p>
+            <p>{formatToDigit(spent)}</p>
+            <p>{balance < 0 ? `(${balanceString.replaceAll('-', '')})` : balanceString}</p>
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
+const PayoutOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; groupData: Group }) => {
+  console.log(userBalance);
+  console.log(groupData);
   const members = groupData.members;
 
   return (
@@ -97,10 +134,10 @@ const GroupInfo = ({
 }) => {
   const { setShowPopup, setPopup } = usePopupOverlay();
 
-  const handleShowDetailedClicked = () => {
-    const overlay: PopupOverlay = {
+  const handleShowBreakdownClicked = () => {
+    const breakdownPopup: PopupOverlay = {
       type: 'popup-overlay',
-      title: 'Payouts',
+      title: 'Breakdown',
       options: {
         padding: {
           x: 0,
@@ -110,7 +147,24 @@ const GroupInfo = ({
       body: <BreakdownOverlay userBalance={userBalance} groupData={groupData} />,
     };
 
-    setPopup(overlay);
+    setPopup(breakdownPopup);
+    setShowPopup(true);
+  };
+
+  const handleShowPayoutsClicked = () => {
+    const payoutsOverlay: PopupOverlay = {
+      type: 'popup-overlay',
+      title: 'Payouts',
+      options: {
+        padding: {
+          x: 0,
+          y: 4,
+        },
+      },
+      body: <PayoutOverlay userBalance={userBalance} groupData={groupData} />,
+    };
+
+    setPopup(payoutsOverlay);
     setShowPopup(true);
   };
 
@@ -162,8 +216,16 @@ const GroupInfo = ({
         </Panel>
       )}
       <p className="text-xs opacity-72">Debts are being simplified</p>
-      <div onClick={handleShowDetailedClicked} className="border-wheat-400 cursor-pointer rounded-xl border px-3 py-1">
-        See full payouts
+      <div className="flex flex-row gap-2">
+        <div
+          onClick={handleShowBreakdownClicked}
+          className="border-wheat-400 cursor-pointer rounded-xl border px-3 py-1"
+        >
+          See Breakdown
+        </div>
+        <div onClick={handleShowPayoutsClicked} className="border-wheat-400 cursor-pointer rounded-xl border px-3 py-1">
+          See Payouts
+        </div>
       </div>
     </section>
   );

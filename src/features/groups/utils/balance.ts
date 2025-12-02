@@ -74,3 +74,20 @@ export function getTotalFromSimplified(
     return acc + curr;
   }, 0);
 }
+
+/**
+ * Gets the total expenses of all users in a group
+ */
+export function getGroupTotalExpenses(group: Group): Record<string, number> {
+  const expenses: Record<string, number> = {};
+
+  if (!group.balance) return expenses;
+
+  for (let lent of Object.values(group.balance)) {
+    for (let [borrower, amt] of Object.entries(lent)) {
+      expenses[borrower] = (expenses[borrower] ?? 0) + amt;
+    }
+  }
+
+  return expenses;
+}
