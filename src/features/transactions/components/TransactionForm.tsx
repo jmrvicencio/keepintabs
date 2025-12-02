@@ -1,4 +1,13 @@
-import { useState, useEffect, forwardRef, useImperativeHandle, type KeyboardEvent, ForwardedRef } from 'react';
+import {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  type KeyboardEvent,
+  ForwardedRef,
+  FocusEvent,
+} from 'react';
 import { type DocumentSnapshot } from 'firebase/firestore';
 import { auth } from '@/lib/firebase/auth';
 import { format } from 'date-fns';
@@ -53,6 +62,7 @@ const TransactionForm = forwardRef(
     // ------------------------------
 
     // Local States
+    const totalInputRef = useRef<HTMLInputElement>(null);
     const [showPaidBy, setShowPaidby] = useState(false); // used to prevent paidBy popup when memberPhotoUrls has reloaded
 
     // ------------------------------
@@ -205,12 +215,25 @@ const TransactionForm = forwardRef(
       setShowPopup(true);
     };
 
+    const handleTotalFocused = (e: FocusEvent<HTMLInputElement>) => {
+      const el = totalInputRef.current;
+      console.log('item focused', el);
+      // const el = e.currentTarget;
+      setTimeout(() => {
+        if (el) {
+          const length = el.value.length;
+          el.setSelectionRange(length, length);
+        }
+      }, 0);
+    };
+
     return (
       <form className="min-w-80 px-2 outline-none">
         <div className="m-auto max-w-120 border border-black bg-white p-6">
           <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
             <input
               id="total"
+              ref={totalInputRef}
               type="text"
               autoComplete="off"
               step="off"
@@ -219,6 +242,8 @@ const TransactionForm = forwardRef(
               className={`peer font-cascadia-code w-full rounded-md border-0 text-center text-4xl font-bold outline-none`}
               maxLength={32}
               onChange={handleTotalChanged}
+              // onFocus={handleTotalFocused}
+              onFocusCapture={handleTotalFocused}
               value={total}
               readOnly={splitData.type == 'itemized'}
               autoFocus

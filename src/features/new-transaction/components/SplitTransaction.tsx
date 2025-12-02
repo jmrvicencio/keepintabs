@@ -7,6 +7,8 @@ import {
   useImperativeHandle,
   type ChangeEvent,
   ForwardedRef,
+  FocusEvent,
+  KeyboardEvent,
 } from 'react';
 import { type DocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
@@ -60,6 +62,7 @@ const SplitTransactionPage = forwardRef(
     // ------------------------------
 
     const isFirstRender = useRef(true);
+    const itemTotalFieldRef = useRef<HTMLInputElement>(null);
     const itemDescRef = useRef<(HTMLTextAreaElement | null)[]>([]);
     const itemPriceRef = useRef<(HTMLInputElement | null)[]>([]);
     const remainderRef = useRef<HTMLInputElement>(null);
@@ -70,6 +73,7 @@ const SplitTransactionPage = forwardRef(
 
     const [splitType, setSplitType] = useState<SplitType>(initialSplitType);
     const [localTotal, setLocalTotal] = useState(total); // Local total to use for the split
+    const [totalFieldVal, setTotalFieldVal] = useState(total);
     const [remainder, setRemainder] = useState(0);
     const [itemizedData, setItemizedData] = useState<ItemizedEntry[]>(
       splitData.type == 'itemized' //
@@ -115,6 +119,7 @@ const SplitTransactionPage = forwardRef(
       if (!isOnlyDigits) return;
 
       setLocalTotal(formatToDigit(nextTotalString));
+      setTotalFieldVal(formatToDigit(nextTotalString));
       setRemainder(nextRemainder);
     }, [itemizedTotal]);
 
@@ -201,6 +206,25 @@ const SplitTransactionPage = forwardRef(
       }
     };
 
+    const handleTotalBlurred = (e: FocusEvent<HTMLInputElement>) => {
+      console.log('field was blurred');
+      let totalField = Number(totalFieldVal.replaceAll(',', '').replaceAll('.', ''));
+
+      if (splitType == 'itemized') {
+        if (totalField >= itemizedTotal) {
+          setLocalTotal(totalFieldVal);
+        } else {
+          // setLocalTotal(formatToDigit(`${itemizedTotal}`));
+          setTotalFieldVal(formatToDigit(itemizedTotal));
+          totalField = itemizedTotal;
+        }
+        const nextRemainder = Math.floor(totalField - itemizedTotal);
+        setRemainder(nextRemainder);
+      } else if (splitType == 'balanced') {
+        setLocalTotal(localTotal);
+      }
+    };
+
     const handleLocalTotalChanged = (e: ChangeEvent<HTMLInputElement>) => {
       let nextVal: string = e.currentTarget.value ?? '';
 
@@ -210,19 +234,34 @@ const SplitTransactionPage = forwardRef(
       if (!isOnlyDigits) return;
 
       const formattedVal = formatToDigit(nextVal);
-      let nextValNumber = Number(formattedVal.replaceAll(',', '').replaceAll('.', ''));
 
-      if (splitType == 'itemized') {
-        if (nextValNumber >= itemizedTotal) {
-          setLocalTotal(formattedVal);
-        } else {
-          setLocalTotal(formatToDigit(`${itemizedTotal}`));
+      setTotalFieldVal(formattedVal);
+
+      // if (splitType == 'itemized') {
+      //   if (nextValNumber >= itemizedTotal) {
+      //     setLocalTotal(formattedVal);
+      //   } else {
+      //     setLocalTotal(formatToDigit(`${itemizedTotal}`));
+      //   }
+      //   const nextRemainder = Math.floor(nextValNumber - itemizedTotal);
+      //   setRemainder(nextRemainder);
+      // } else if (splitType == 'balanced') {
+      //   setLocalTotal(formattedVal);
+      // }
+    };
+
+    const handleTotalKeyPressed = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') itemTotalFieldRef.current?.blur();
+    };
+
+    const handleTotalFocused = (e: FocusEvent<HTMLInputElement>) => {
+      const el = e.currentTarget;
+      setTimeout(() => {
+        if (el) {
+          const length = el.value.length;
+          el.setSelectionRange(length, length);
         }
-        const nextRemainder = Math.floor(nextValNumber - itemizedTotal);
-        setRemainder(nextRemainder);
-      } else if (splitType == 'balanced') {
-        setLocalTotal(formattedVal);
-      }
+      }, 0);
     };
 
     // ------------------------------
@@ -239,6 +278,7 @@ const SplitTransactionPage = forwardRef(
           <div className="border-ink-400 relative flex flex-col border-b border-dashed py-6">
             <input
               id="total"
+              ref={itemTotalFieldRef}
               type="text"
               autoComplete="off"
               step="off"
@@ -247,7 +287,10 @@ const SplitTransactionPage = forwardRef(
               className={`peer font-cascadia-code w-full rounded-md border-0 text-center text-4xl font-bold outline-none`}
               maxLength={32}
               onChange={handleLocalTotalChanged}
-              value={localTotal}
+              onFocus={handleTotalFocused}
+              onBlur={handleTotalBlurred}
+              onKeyDown={handleTotalKeyPressed}
+              value={totalFieldVal}
               autoFocus
             />
             <div className="flex flex-row items-end justify-center">
