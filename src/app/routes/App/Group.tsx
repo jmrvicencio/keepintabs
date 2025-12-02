@@ -1,7 +1,7 @@
 import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect, Fragment } from 'react';
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getGroupTotalExpenses, getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
+import { getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
 import { SimplifiedBalance, UserBalance } from '@/features/groups/types';
 import { MainContentRefAtom } from '@/store/mainArea';
 import { useAtom } from 'jotai';
@@ -56,8 +56,6 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
 };
 
 const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; groupData: Group }) => {
-  const simplifiedBalance = userBalance.records;
-  const totalExpenses = getGroupTotalExpenses(groupData);
   const members = groupData.members;
 
   return (
@@ -69,10 +67,8 @@ const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance
         <h2>Balance</h2>
       </div>
       {Object.keys(members).map((memberUid, i) => {
-        const balance = getTotalFromSimplified(memberUid, simplifiedBalance);
+        const balance = (groupData.spent[memberUid] ?? 0) - (groupData.expenses[memberUid] ?? 0);
         const balanceString = formatToDigit(balance);
-        const hasSpent = memberUid in groupData.balance;
-        const spent = hasSpent ? Object.values(groupData.balance[memberUid]).reduce((acc, curr) => acc + curr, 0) : 0;
 
         return (
           <div
@@ -80,8 +76,8 @@ const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance
             className="odd:bg-wheat-400/20 grid w-full grid-cols-4 items-center justify-items-center px-4 py-2"
           >
             <p>{members[memberUid].displayName}</p>
-            <p>{formatToDigit(totalExpenses[memberUid])}</p>
-            <p>{formatToDigit(spent)}</p>
+            <p>{formatToDigit(groupData.expenses[memberUid] ?? 0)}</p>
+            <p>{formatToDigit(groupData.spent[memberUid] ?? 0)}</p>
             <p>{balance < 0 ? `(${balanceString.replaceAll('-', '')})` : balanceString}</p>
           </div>
         );

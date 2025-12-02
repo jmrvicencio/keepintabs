@@ -3,11 +3,11 @@ export interface Group {
   // NOTE: both users can owe each other. ie. [abc] owes 200 to [efg], but [efg] owes 250 to [abc]
   // balance just gives a general lending record. Balance will be simplified by another function.
   createdAt?: number;
-  balance: {
-    [Lender: MemberUid]: {
-      [Lent: MemberUid]: number;
-    };
-  };
+  // balance: {
+  //   [Lender: MemberUid]: {
+  //     [Lent: MemberUid]: number;
+  //   };
+  // };
   expenses: {
     [member: MemberUid]: number;
   };

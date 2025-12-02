@@ -12,12 +12,9 @@ const useUpdateTransaction =
     const transactionCollection = collection(groupRef, collections.transactions);
     const transactionRef = doc(transactionCollection, transactionId) as DocumentReference<SerializedTransaction>;
 
-    const nextBalance = { ...group.balance };
     const nextExpenses = { ...group.expenses };
     const nextSpent = { ...group.spent };
     const lender = data.paidBy;
-
-    if (!nextBalance[lender]) nextBalance[lender] = {};
 
     // Remove balance from previous transaction
     const prevLender = prevTransaction.paidBy;
@@ -26,10 +23,6 @@ const useUpdateTransaction =
 
     for (let [borrower, amt] of Object.entries(prevSplitTotal)) {
       nextExpenses[borrower] = (nextExpenses[borrower] ?? 0) - amt; // Remove expenses from previous transaction
-
-      if (borrower === prevLender) continue;
-
-      nextBalance[prevLender][borrower] = (nextBalance[prevLender][borrower] ?? 0) - amt;
     }
 
     // Add balance from current transaction
@@ -37,16 +30,11 @@ const useUpdateTransaction =
 
     for (let [borrower, amt] of Object.entries(splitTotal)) {
       nextExpenses[borrower] = (nextExpenses[borrower] ?? 0) + amt;
-
-      if (borrower === lender) continue;
-
-      nextBalance[lender][borrower] = (nextBalance[lender][borrower] ?? 0) + amt;
     }
 
     await runTransaction(db, async (transaction) => {
       transaction.update(transactionRef, { ...data });
       transaction.update(groupRef, {
-        balance: nextBalance,
         expenses: nextExpenses,
         spent: nextSpent,
       });

@@ -6,7 +6,7 @@ type Borrower = UserGroupUid;
 type Lender = UserGroupUid;
 
 export function getSimplifiedBalance(group?: Group): SimplifiedBalance {
-  if (!group || !group.balance) return {};
+  if (!group) return {};
 
   /**
    * Record of all debts owed/lent to a group member, balanced to avoid cyclical debts.
@@ -63,21 +63,4 @@ export function getTotalFromSimplified(
   return Object.values(balance[uid]).reduce((acc, curr) => {
     return acc + curr;
   }, 0);
-}
-
-/**
- * Gets the total expenses of all users in a group
- */
-export function getGroupTotalExpenses(group: Group): Record<string, number> {
-  const expenses: Record<string, number> = {};
-
-  if (!group.balance) return expenses;
-
-  for (let lent of Object.values(group.balance)) {
-    for (let [borrower, amt] of Object.entries(lent)) {
-      expenses[borrower] = (expenses[borrower] ?? 0) + amt;
-    }
-  }
-
-  return expenses;
 }
