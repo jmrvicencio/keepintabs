@@ -22,7 +22,7 @@ const useUpdateTransaction =
     // Remove balance from previous transaction
     const prevLender = prevTransaction.paidBy;
     const prevSplitTotal = getMemberSplitTotals(prevTransaction.amount, prevTransaction.splitData);
-    nextSpent[lender] = (nextSpent[lender] ?? 0) - prevTransaction.amount;
+    nextSpent[prevLender] = (nextSpent[prevLender] ?? 0) - prevTransaction.amount;
 
     for (let [borrower, amt] of Object.entries(prevSplitTotal)) {
       nextExpenses[borrower] = (nextExpenses[borrower] ?? 0) - amt; // Remove expenses from previous transaction

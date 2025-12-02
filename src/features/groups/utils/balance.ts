@@ -4,57 +4,47 @@ import { clamp } from '../../../lib/helpers';
 type UserGroupUid = string;
 type Borrower = UserGroupUid;
 type Lender = UserGroupUid;
-// export type SimplifiedBalance = Record<UserGroupUid, Record<Borrower, number>>
-// export interface SimplifiedBalance {
-//   [Lender: UserGroupUid]: {
-//     [borrower: Borrower]: number;
-//   };
-// }
 
 export function getSimplifiedBalance(group?: Group): SimplifiedBalance {
   if (!group || !group.balance) return {};
 
   /**
-   * Record of total amount each member has borrowed.
-   */
-  const totalBorrowed: Record<Borrower, number> = {};
-  /**
-   * Record of total amount each member has lent.
-   */
-  const totalLent: Record<Lender, number> = {};
-  /**
-   * Record of the simplified balance of all members. Positive if they are
-   * owed money, and negative if they owe others money.
-   */
-  const balanced: Record<UserGroupUid, number> = {};
-  /**
    * Record of all debts owed/lent to a group member, balanced to avoid cyclical debts.
    */
   const simplified: SimplifiedBalance = {};
 
-  // Balance all debts and loans to get the total of how much a user owes/is owed.
-  for (let [lender, borrowers] of Object.entries(group.balance)) {
-    for (let [borrower, value] of Object.entries(borrowers)) {
-      totalBorrowed[borrower] = (totalBorrowed[borrower] ?? 0) + value;
-      totalLent[lender] = (totalLent[lender] ?? 0) + value;
+  /**
+   * Record of the lent balance by all users
+   */
+  const lent: Record<string, number> = {};
 
-      balanced[borrower] = (balanced[borrower] ?? 0) - value;
-      balanced[lender] = (balanced[lender] ?? 0) + value;
-    }
+  /**
+   * Record of the borrowed balance owed by all users.
+   */
+  const borrowed: Record<string, number> = {};
+
+  for (let memberUid of Object.keys(group.members)) {
+    const balance = (group.spent[memberUid] ?? 0) - (group.expenses[memberUid] ?? 0);
+    if (balance > 0) lent[memberUid] = balance;
+    else if (balance < 0) borrowed[memberUid] = -balance;
   }
 
-  for (let member of Object.keys(balanced)) {
-    simplified[member] = simplified[member] ?? {};
-    for (let payee of Object.keys(balanced)) {
-      simplified[payee] = simplified[payee] ?? {};
-      if (member != payee && balanced[member] < 0 && balanced[payee] > 0) {
-        const amt = clamp(-balanced[member], 0, balanced[payee]);
+  for (let lender of Object.keys(lent)) {
+    simplified[lender] = simplified[lender] ?? {};
 
-        simplified[member][payee] = -amt;
-        simplified[payee][member] = amt;
-        balanced[member] += amt;
-        balanced[payee] -= amt;
-      }
+    for (let borrower of Object.keys(borrowed)) {
+      if (lent[lender] < 1) break; // Once Lent amount has exhausted, move on to next lender.
+
+      simplified[borrower] = simplified[borrower] ?? {};
+      const amt = clamp(borrowed[borrower], 0, lent[lender]);
+
+      simplified[lender][borrower] = amt;
+      simplified[borrower][lender] = -amt;
+
+      // Reduce the amt borrowed and lent. This should approach 0
+      // as the balance is being settled into 'Simplified' object.
+      borrowed[borrower] -= amt;
+      lent[lender] -= amt;
     }
   }
 

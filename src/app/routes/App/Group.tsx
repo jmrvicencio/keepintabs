@@ -56,8 +56,6 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
 };
 
 const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; groupData: Group }) => {
-  console.log(userBalance);
-  console.log(groupData);
   const simplifiedBalance = userBalance.records;
   const totalExpenses = getGroupTotalExpenses(groupData);
   const members = groupData.members;
@@ -93,8 +91,6 @@ const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance
 };
 
 const PayoutOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; groupData: Group }) => {
-  console.log(userBalance);
-  console.log(groupData);
   const members = groupData.members;
 
   return (
@@ -251,9 +247,6 @@ const Group = memo(function Group() {
   };
 
   console.log('group data: ', groupData);
-  console.log(`group balance: `, groupData?.balance);
-  console.log(`simplified balance: `, simplifiedBalance);
-  console.log(`expenses balance: `, groupData?.expenses);
 
   if (import.meta.env.MODE == 'development') {
     useGroupDebugOptions();
