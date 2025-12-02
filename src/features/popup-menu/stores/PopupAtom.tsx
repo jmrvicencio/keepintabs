@@ -5,6 +5,12 @@ export interface PopupOverlay {
   type: 'popup-overlay';
   title?: string;
   body: ReactNode;
+  options?: {
+    padding?: {
+      x: number;
+      y: number;
+    };
+  };
   closeCallback?: () => any;
 }
 

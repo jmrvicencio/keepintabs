@@ -1,7 +1,8 @@
 import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect, Fragment } from 'react';
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getSimplifiedBalance, getTotalFromSimplified, type SimplifiedBalance } from '@/features/groups/utils/balance';
+import { getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
+import { SimplifiedBalance, UserBalance } from '@/features/groups/types';
 import { MainContentRefAtom } from '@/store/mainArea';
 import { useAtom } from 'jotai';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
@@ -14,7 +15,7 @@ import Loading from '@/components/Loading';
 import TransactionCard from '@/features/groups/components/TransactionCard';
 import Panel from '@/components/neubrutalist/Panel';
 import UserIcon from '@/components/user_stack/UserIcon';
-import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
+import { PopupMenu, PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
 import { Menu, ArrowLeft } from 'lucide-react';
 
 // Custom Hooks
@@ -30,7 +31,7 @@ const BalanceLabel = ({ total }: { total: number }) => {
       ) : (
         <>
           {total > 0 ? 'You are owed' : 'You owe'}
-          <span className={`font-bold`}>&nbsp;Php {formatToDigit(Math.abs(total))}</span>
+          <span className={`font-outfit font-bold`}>&nbsp;Php {formatToDigit(Math.abs(total))}</span>
         </>
       )}
     </h2>
@@ -54,6 +55,35 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
     );
 };
 
+const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; groupData: Group }) => {
+  console.log(userBalance);
+  console.log(groupData);
+  const members = groupData.members;
+
+  return (
+    <>
+      {Object.entries(userBalance.records).map(([lender, record]) =>
+        Object.entries(record).map(([borrower, amount]) => {
+          if (amount > 0)
+            return (
+              <div
+                key={`${lender}-${borrower}`}
+                className="odd:bg-wheat-400/20 grid w-full grid-cols-[repeat(3,1fr)_2fr] items-center justify-items-center px-4 py-2"
+              >
+                <p className="border-ink-300 h-fit w-fit rounded-lg border px-2">{members[borrower].displayName}</p>
+                <p className="middle align-middle">owes</p>
+                <p className="border-ink-300 h-fit w-fit rounded-lg border px-2">{members[lender].displayName}</p>
+                <p className="font-cascadia-code justify-self-end font-semibold">
+                  {formatToDigit(amount)} <span className="text-sm font-light">php</span>
+                </p>
+              </div>
+            );
+        }),
+      )}
+    </>
+  );
+};
+
 const GroupInfo = ({
   userBalance,
   groupData,
@@ -61,11 +91,28 @@ const GroupInfo = ({
   ref,
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
-  groupData?: Group;
+  groupData: Group;
   userGroupUid: string | undefined;
   ref: RefObject<HTMLDivElement | null>;
 }) => {
   const { setShowPopup, setPopup } = usePopupOverlay();
+
+  const handleShowDetailedClicked = () => {
+    const overlay: PopupOverlay = {
+      type: 'popup-overlay',
+      title: 'Payouts',
+      options: {
+        padding: {
+          x: 0,
+          y: 4,
+        },
+      },
+      body: <BreakdownOverlay userBalance={userBalance} groupData={groupData} />,
+    };
+
+    setPopup(overlay);
+    setShowPopup(true);
+  };
 
   const handleMenuClicked = useCallback(() => {
     const menuPopup: PopupMenu = {
@@ -115,14 +162,14 @@ const GroupInfo = ({
         </Panel>
       )}
       <p className="text-xs opacity-72">Debts are being simplified</p>
-      <div className="border-wheat-400 cursor-pointer rounded-xl border px-3 py-1">See full breakdown</div>
+      <div onClick={handleShowDetailedClicked} className="border-wheat-400 cursor-pointer rounded-xl border px-3 py-1">
+        See full payouts
+      </div>
     </section>
   );
 };
 
 const Group = memo(function Group() {
-  const navigate = useNavigate();
-
   const { group: groupParam } = useParams();
   const { group, userGroupId, loading: groupLoading } = useGroupListener(groupParam!);
   const groupData = group?.data();
@@ -130,8 +177,6 @@ const Group = memo(function Group() {
   const { transactions, loading, getPage, endReached, reload, isEmpty } = useTransactions(groupParam!);
 
   const menuRef = useRef<HTMLDivElement>(null);
-  const menuRect = menuRef.current?.getBoundingClientRect();
-  const [mainContentRef] = useAtom(MainContentRefAtom);
 
   // -----------------------------------
   // Computed Variables
@@ -163,7 +208,7 @@ const Group = memo(function Group() {
     <>
       <div className="relative flex shrink-0 grow flex-col pt-3">
         <main className="flex h-full flex-col items-stretch">
-          <GroupInfo userBalance={userBalance} groupData={groupData} userGroupUid={userGroupId} ref={menuRef} />
+          <GroupInfo userBalance={userBalance} groupData={groupData!} userGroupUid={userGroupId} ref={menuRef} />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3 pb-24">
             {isEmpty ? (
               <>No Transactions</>

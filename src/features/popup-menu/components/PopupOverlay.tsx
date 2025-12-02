@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PopupMenu, showPopupAtom } from '../stores/PopupAtom';
 import { useAtom } from 'jotai';
@@ -87,7 +87,21 @@ const PopupOverlay = () => {
     if (popup.closeCallback) popup.closeCallback();
   };
 
-  // if (showPopup) debugger;
+  const padding = useMemo(() => {
+    const style: { x?: number; y?: number } = {};
+
+    if (popup.type != 'popup-overlay') return style;
+
+    if (popup.options?.padding) {
+      style.x = popup.options.padding.x;
+      style.y = popup.options.padding.y;
+    } else {
+      style.x = 4;
+      style.y = 4;
+    }
+
+    return style;
+  }, [popup]);
 
   return showPopup ? (
     popup.type == 'popup-overlay' ? (
@@ -111,7 +125,13 @@ const PopupOverlay = () => {
               <X />
             </div>
           </div>
-          <div className="p-4">{popup.body}</div>
+          <div
+            style={{
+              padding: `${padding.y! / 4}rem ${padding.x! / 4}rem `,
+            }}
+          >
+            {popup.body}
+          </div>
         </div>
       </div>
     ) : (
