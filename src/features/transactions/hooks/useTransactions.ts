@@ -19,7 +19,7 @@ import { collections, db } from '@/lib/firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-type SortedTransactions = {
+export type SortedTransactions = {
   [date: string]: (Transaction & { id: string })[];
 };
 
