@@ -7,7 +7,7 @@ import { auth } from '../../lib/firebase/auth';
 import { dataFetchedAtom, type DataFetched } from '../../features/groups/stores/dataFetched';
 import { ROUTES } from '../../app/routes';
 import { Plus } from 'lucide-react';
-import FAB from '../FAB';
+import FAB from '@/features/fab/components/FAB';
 
 export const showSidebarAtom = atom(false);
 const writeDataFetchedAtom = atom(null, (_get, set, fetched: boolean) => {

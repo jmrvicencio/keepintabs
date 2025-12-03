@@ -52,7 +52,7 @@ const NewTransaction = ({
   const { setShowFab } = useFab();
 
   // Local States
-  const [groupId, setGroupId] = useState(location.state?.groupId);
+  const [groupId, setGroupId] = useState(location.state?.groupId ?? '');
   const [showSplitPage, setShowSplitPage] = useState(false);
   const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
   // We use a state instead of a computed value here since useMemo can't handle async values

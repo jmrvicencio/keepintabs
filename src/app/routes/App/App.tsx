@@ -9,7 +9,8 @@ import Header from '../../../components/Header';
 import Sidebar from '../../../components/sidebar/Sidebar';
 import Debug from '../../../components/Debug';
 import PopupOverlay from '../../../features/popup-menu/components/PopupOverlay';
-import FAB from '../../../components/FAB';
+import FabOverlay from '@/features/fab/components/FabOverlay';
+import FAB from '@/features/fab/components/FAB';
 
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { MainContentRefAtom } from '../../../store/mainArea';
@@ -28,7 +29,7 @@ function App() {
   const [showDebug, setShowDebug] = useState(false);
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const { group: groupParam } = useParams();
-  const { showFab } = useFab();
+  // const { showFab } = useFab(groupParam);
 
   // Computed Values
 
@@ -85,14 +86,15 @@ function App() {
             <Header />
             <Outlet />
           </div>
-          {showFab && (
+          {/* {showFab && (
             <Link to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
               <FAB className={`absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden`}>
                 <PlusMemo />
                 Add Transaction
               </FAB>
             </Link>
-          )}
+          )} */}
+          <FabOverlay />
         </div>
 
         <div className="absolute inset-0 z-[-1] bg-[url(/bg/bg_pattern.png)] select-none" />
