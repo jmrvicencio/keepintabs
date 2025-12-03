@@ -23,6 +23,7 @@ import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
 import toast from 'react-hot-toast';
 import { serializeTransaction } from '@/features/transactions/utils/serializer';
 import { getMemberSplitTotals } from '@/features/transactions/utils/splitUtils';
+import useFab from '@/features/fab/hooks/useFab';
 
 const NewTransaction = ({
   total: initialTotal = '0.00',
@@ -48,6 +49,7 @@ const NewTransaction = ({
   const { groups, loading, setLoading } = useGroups();
   const location = useLocation();
   const navigate = useNavigate();
+  const { setShowFab } = useFab();
 
   // Local States
   const [groupId, setGroupId] = useState(location.state?.groupId);
@@ -90,6 +92,14 @@ const NewTransaction = ({
   // ------------------------------
   // Effects
   // ------------------------------
+
+  useEffect(() => {
+    setShowFab(false);
+
+    return () => {
+      setShowFab(true);
+    };
+  }, []);
 
   // Get all member photoUrls every time currGroup has updated
   useEffect(() => {

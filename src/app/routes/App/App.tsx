@@ -1,22 +1,26 @@
 import { KeyboardEvent, useState, memo, useEffect, useRef, type MouseEvent, UIEvent } from 'react';
 import { Outlet, useLocation, useNavigate, useParams, Link, Routes } from 'react-router-dom';
 import { atom, useAtom } from 'jotai';
+import { ROUTES } from '../../routes';
 
-import { showSidebarAtom } from '../../../components/sidebar/Sidebar';
+import { Plus } from 'lucide-react';
 import ProtectedRoute from '../../../components/ProtectedRoute';
 import Header from '../../../components/Header';
 import Sidebar from '../../../components/sidebar/Sidebar';
 import Debug from '../../../components/Debug';
 import PopupOverlay from '../../../features/popup-menu/components/PopupOverlay';
 import FAB from '../../../components/FAB';
-import { Plus } from 'lucide-react';
-import { MainContentRefAtom } from '../../../store/mainArea';
-import { ROUTES } from '../../routes';
+
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
+import { MainContentRefAtom } from '../../../store/mainArea';
+import { showSidebarAtom } from '../../../components/sidebar/Sidebar';
+import useFab from '@/features/fab/hooks/useFab';
 
 export const dataFetchedAtom = atom(false);
 
 function App() {
+  // Call Hooks
+
   const { showPopup } = usePopupOverlay();
   const navigate = useNavigate();
   const mainContentRef = useRef<HTMLDivElement>(null);
@@ -24,15 +28,17 @@ function App() {
   const [showDebug, setShowDebug] = useState(false);
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const { group: groupParam } = useParams();
+  const { showFab } = useFab();
+
+  // Computed Values
 
   const location = useLocation();
   const PlusMemo = memo(() => <Plus />);
-  const txnRegex = new RegExp(`${ROUTES.GROUPS}/[\\d\\w-]+${ROUTES.TRANSACTION}/[\\d\\w-]+`);
-  const showFab =
-    location.pathname != ROUTES.NEW_GROUP &&
-    !txnRegex.test(location.pathname) &&
-    location.pathname != ROUTES.NEW_TRANSACTION;
   const isDev = import.meta.env.MODE == 'development';
+
+  // --------------------------
+  // Effects
+  // --------------------------
 
   useEffect(() => {
     setMainContentRef(mainContentRef);
@@ -41,6 +47,10 @@ function App() {
   useEffect(() => {
     setShowSidebar(false);
   }, [location]);
+
+  // --------------------------
+  // Event Listeners
+  // --------------------------
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === '`') {
@@ -51,6 +61,10 @@ function App() {
   const Overlay = memo(() => (
     <div onClick={() => setShowSidebar(false)} className="fixed inset-0 z-10 h-full bg-[#2F231D]/80 md:hidden"></div>
   ));
+
+  // --------------------------
+  // Component Render
+  // --------------------------
 
   return (
     <ProtectedRoute>
@@ -73,9 +87,7 @@ function App() {
           </div>
           {showFab && (
             <Link to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
-              <FAB
-                className={`${location.pathname == ROUTES.NEW_TRANSACTION ? 'hidden' : ''} absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden`}
-              >
+              <FAB className={`absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden`}>
                 <PlusMemo />
                 Add Transaction
               </FAB>

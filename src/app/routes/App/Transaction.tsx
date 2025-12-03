@@ -31,6 +31,7 @@ import useFetchTransaction from '@/features/transactions/hooks/useFetchTransacti
 import useFetchGroup from '@/features/groups/hooks/useFetchGroup';
 import { Group } from '@/features/groups/types';
 import useUpdateTransaction from '@/features/transactions/hooks/useUpdateTransaction';
+import useFab from '@/features/fab/hooks/useFab';
 
 const TransactionPage = () => {
   // Declare Refs
@@ -43,6 +44,7 @@ const TransactionPage = () => {
   const fetchTransaction = useFetchTransaction(groupParam!, transactionParam!);
   const location = useLocation();
   const navigate = useNavigate();
+  const { setShowFab } = useFab();
 
   // Local States
   const [txnData, setTxnData] = useState<Transaction>(location.state?.transaction);
@@ -89,6 +91,14 @@ const TransactionPage = () => {
   // ------------------------------
   // Effects
   // ------------------------------
+
+  useEffect(() => {
+    setShowFab(false);
+
+    return () => {
+      setShowFab(true);
+    };
+  }, []);
 
   // Get all member photoUrls every time currGroup has updated
   useEffect(() => {
