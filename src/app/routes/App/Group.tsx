@@ -24,6 +24,8 @@ import { useGroupDebugOptions } from '@/features/groups/utils/debuggerFunctions'
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import useFab from '@/features/fab/hooks/useFab';
 import FAB from '@/features/fab/components/FAB';
+import useDeleteTransactions from '@/features/transactions/hooks/useDeleteTransactions';
+import { Transaction } from '@/features/transactions/types';
 
 const BalanceLabel = ({ total }: { total: number }) => {
   return (
@@ -94,11 +96,11 @@ const PayoutOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; g
   return (
     <>
       {Object.entries(userBalance.records).map(([lender, record]) =>
-        Object.entries(record).map(([borrower, amount]) => {
+        Object.entries(record).map(([borrower, amount], i) => {
           if (amount > 0)
             return (
               <div
-                key={`${lender}-${borrower}`}
+                key={i}
                 className="odd:bg-wheat-400/20 grid w-full grid-cols-[repeat(3,1fr)_2fr] items-center justify-items-center px-4 py-2"
               >
                 <p className="border-ink-300 h-fit w-fit rounded-lg border px-2">{members[borrower].displayName}</p>
@@ -121,8 +123,8 @@ const SelectionFab = ({
   onDelete: handleDelete = () => {},
 }: {
   selections: {
-    selection: Set<string>;
-    setSelection: (val: Set<string>) => void;
+    selection: Record<string, Transaction>;
+    setSelection: (val: Record<string, Transaction>) => void;
     setIsSelecting: (val: boolean) => void;
   };
   onClose?: () => any;
@@ -133,7 +135,7 @@ const SelectionFab = ({
       <div className="flex flex-row text-black">
         <div className="border-ink-800 flex w-40 flex-row justify-between gap-2 border-r px-4">
           <X className="cursor-pointer" onClick={handleClose} />{' '}
-          <p className="grow text-center">{selection.size} Selected</p>
+          <p className="grow text-center">{Object.keys(selection).length} Selected</p>
         </div>
         <div className="flex cursor-pointer flex-row gap-2 px-8 text-nowrap" onClick={handleDelete}>
           Delete Selected
@@ -148,28 +150,29 @@ const GroupInfo = ({
   groupData,
   userGroupUid,
   selections: { selection, setSelection, setIsSelecting },
+  onDelete,
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
   groupData: Group;
   userGroupUid: string | undefined;
   selections: {
-    selection: Set<string>;
-    setSelection: (val: Set<string>) => void;
+    selection: Record<string, Transaction>;
+    setSelection: (val: Record<string, Transaction>) => void;
     setIsSelecting: (val: boolean) => void;
   };
+  onDelete: () => any;
 }) => {
   // Refernces
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Hooks
   const { setShowPopup, setPopup, resetPopup } = usePopupOverlay();
-  const { setFab, resetFab } = useFab();
+  const { group: groupParam } = useParams();
+  const { setFab, resetFab } = useFab(groupParam);
 
   // Local States
 
   const [customFab, setCustomFab] = useState(false);
-
-  // Computed Variables
 
   // ------------------------
   // Effect
@@ -247,19 +250,17 @@ const GroupInfo = ({
     resetFab();
   };
 
-  const handleDelete = () => {};
-
   // ------------------------
   // Component Renders
   // ------------------------
 
   const MenuMemo = memo(() => <Menu onClick={handleMenuClicked} className="w-8 cursor-pointer" />);
 
-  const SelectionFabMemo = memo(({ selection }: { selection: Set<string> }) => (
+  const SelectionFabMemo = memo(({ selection }: { selection: Record<string, Transaction> }) => (
     <SelectionFab
       selections={{ selection, setSelection, setIsSelecting }}
       onClose={handleSelectionClosed}
-      onDelete={handleDelete}
+      onDelete={onDelete}
     />
   ));
 
@@ -316,16 +317,27 @@ const GroupInfo = ({
 const Group = memo(function Group() {
   const { group: groupParam } = useParams();
   const { group, userGroupId, loading: groupLoading } = useGroupListener(groupParam!);
-  const { transactions, loading, getPage, endReached, reload, isEmpty } = useTransactions(groupParam!);
+  const groupData = group?.data();
+  const {
+    transactions,
+    loading: transactionLoading,
+    getPage,
+    endReached,
+    reload,
+    isEmpty,
+  } = useTransactions(groupParam!);
+  const deleteTransactions = !groupLoading ? useDeleteTransactions(groupParam!, groupData!) : undefined;
+  const { resetFab } = useFab(groupParam);
 
   // Local States
 
-  const [selection, setSelection] = useState<Set<string>>(new Set());
+  const [forceLoading, setForceLoading] = useState(false);
+  const [selection, setSelection] = useState<Record<string, Transaction>>({});
   const [isSelecting, setIsSelecting] = useState(false);
 
   // Computed Variables
 
-  const groupData = group?.data();
+  const loading = forceLoading || groupLoading;
 
   // -----------------------------------
   // Computed Variables
@@ -342,29 +354,44 @@ const Group = memo(function Group() {
   }
 
   // -----------------------------------
+  // Effects
+  // -----------------------------------
+
+  useEffect(() => {
+    setSelection({});
+  }, [isSelecting]);
+
+  // -----------------------------------
   // Event Listeners
   // -----------------------------------
 
-  const transactionSelectionPressed = (id: string) => () => {
+  const transactionSelectionPressed = (id: string, txn: Transaction) => () => {
     if (!isSelecting) return;
 
-    const nextSelections = new Set(selection);
+    const nextSelections = { ...selection };
 
-    if (selection.has(id)) nextSelections.delete(id);
-    else nextSelections.add(id);
+    if (id in selection) delete nextSelections[id];
+    else nextSelections[id] = txn;
 
     setSelection(nextSelections);
   };
 
-  useEffect(() => {
-    setSelection(new Set());
-  }, [isSelecting]);
+  const handleDelete = async () => {
+    if (!deleteTransactions) return;
+
+    setForceLoading(true);
+    setIsSelecting(false);
+    resetFab();
+    await deleteTransactions(selection);
+
+    window.location.reload();
+  };
 
   // -----------------------------------
   // Component Render
   // -----------------------------------
 
-  return groupLoading ? (
+  return loading ? (
     <Loading />
   ) : (
     <>
@@ -375,6 +402,7 @@ const Group = memo(function Group() {
             groupData={groupData!}
             userGroupUid={userGroupId}
             selections={{ selection, setSelection, setIsSelecting }}
+            onDelete={handleDelete}
           />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3 pb-24">
             {isEmpty ? (
@@ -391,13 +419,14 @@ const Group = memo(function Group() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {txns.map((txn) => {
-                        const selected = selection.has(txn.id);
+                        // const selected = selection.has(txn.id);
+                        const selected = txn.id in selection;
 
                         return (
                           <div
                             key={txn.id}
                             className={`${isSelecting && 'selecting'} flex flex-row items-center gap-2 [.selecting]:cursor-pointer`}
-                            onClick={transactionSelectionPressed(txn.id)}
+                            onClick={transactionSelectionPressed(txn.id, txn)}
                           >
                             {isSelecting && (
                               <>

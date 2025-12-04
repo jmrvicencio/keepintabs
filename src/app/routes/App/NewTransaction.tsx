@@ -52,7 +52,7 @@ const NewTransaction = ({
   const { setShowFab } = useFab();
 
   // Local States
-  const [groupId, setGroupId] = useState(location.state?.groupId ?? '');
+  const [groupId, setGroupId] = useState(location.state?.groupId ?? undefined);
   const [showSplitPage, setShowSplitPage] = useState(false);
   const returnRoute = location.state?.groupId ? `${ROUTES.GROUPS}/${groupId}` : ROUTES.APP;
   // We use a state instead of a computed value here since useMemo can't handle async values
@@ -74,7 +74,7 @@ const NewTransaction = ({
 
   const currGroup = useMemo(() => {
     let currGroupId: string = groupId;
-    if (!groupId || loading) return undefined;
+    if (loading) return undefined;
 
     if (!groupId) {
       const firstGroup = groups[0];
@@ -83,7 +83,7 @@ const NewTransaction = ({
 
     const currGroup = groups.find((group) => group.id == currGroupId);
     return currGroup;
-  }, [groupId, loading]);
+  }, [loading]);
 
   const splitTotals: SplitTotal = useMemo(() => {
     return getMemberSplitTotals(formattedStrToNum(total), splitData, paidBy);
