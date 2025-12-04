@@ -32,7 +32,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
         navigate('/');
       }
     });
-  }, [loading]);
+  }, [loading, user]);
 
   if (loading)
     return (

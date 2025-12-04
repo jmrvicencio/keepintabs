@@ -16,12 +16,14 @@ import TransactionCard from '@/features/groups/components/TransactionCard';
 import Panel from '@/components/neubrutalist/Panel';
 import UserIcon from '@/components/user_stack/UserIcon';
 import { PopupMenu, PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
-import { Menu, ArrowLeft } from 'lucide-react';
+import { Menu, ArrowLeft, X } from 'lucide-react';
 
 // Custom Hooks
 import useTransactions from '@/features/transactions/hooks/useTransactions';
 import { useGroupDebugOptions } from '@/features/groups/utils/debuggerFunctions';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
+import useFab from '@/features/fab/hooks/useFab';
+import FAB from '@/features/fab/components/FAB';
 
 const BalanceLabel = ({ total }: { total: number }) => {
   return (
@@ -113,18 +115,66 @@ const PayoutOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; g
   );
 };
 
+const SelectionFab = ({ state }: { state: number }) => {
+  return (
+    <FAB dropOnClick={false} bgColor="bg-accent-200" className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
+      <div className="flex flex-row text-black">
+        <div className="border-ink-800 flex flex-row gap-2 border-r px-4">
+          <X /> {state} Selected
+        </div>
+        <div className="flex flex-row gap-2 px-4">Delete Selected</div>
+      </div>
+    </FAB>
+  );
+};
+
 const GroupInfo = ({
   userBalance,
   groupData,
   userGroupUid,
-  ref,
+  selections: { selections, setSelections, setIsSelecting },
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
   groupData: Group;
   userGroupUid: string | undefined;
-  ref: RefObject<HTMLDivElement | null>;
+  selections: {
+    selections: Set<string>;
+    setSelections: (val: Set<string>) => void;
+    setIsSelecting: (val: boolean) => void;
+  };
 }) => {
-  const { setShowPopup, setPopup } = usePopupOverlay();
+  // Refernces
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Hooks
+  const { setShowPopup, setPopup, resetPopup } = usePopupOverlay();
+  const { setFab, setShowFab } = useFab();
+
+  // Local States
+
+  const [customFab, setCustomFab] = useState(false);
+  const [state, setState] = useState<number>(1);
+
+  // Computed Variables
+
+  const SelectionFabMemo = memo(() => <SelectionFab state={1} />);
+
+  // ------------------------
+  // Effect
+  // ------------------------
+
+  useEffect(() => {
+    if (!customFab) return;
+
+    const nextState = (state ?? 0) + 1;
+    setState(nextState);
+    setIsSelecting(true);
+    setFab(<SelectionFabMemo />);
+  }, []);
+
+  // ------------------------
+  // Event Listeners
+  // ------------------------
 
   const handleShowBreakdownClicked = () => {
     const breakdownPopup: PopupOverlay = {
@@ -163,8 +213,18 @@ const GroupInfo = ({
   const handleMenuClicked = useCallback(() => {
     const menuPopup: PopupMenu = {
       type: 'menu',
-      options: [{ label: 'Delete Group' }],
-      reference: ref,
+      options: [
+        {
+          label: 'Select Items',
+          action: () => {
+            resetPopup();
+            setCustomFab(true);
+            setFab(<SelectionFab state={state} />);
+          },
+        },
+        { label: 'Delete Group' },
+      ],
+      reference: menuRef,
     };
 
     setPopup(menuPopup);
@@ -191,9 +251,9 @@ const GroupInfo = ({
             </div>
           </div>
         </div>
-        <div className="mb-4 flex w-full flex-row items-center justify-between" ref={ref}>
+        <div className="mb-4 flex w-full flex-row items-center justify-between" ref={menuRef}>
           <h1 className="font-gieonto text-left text-4xl font-medium">{groupData?.name}</h1>
-          <div className="p1 border-wheat-400 flex h-8 w-8 items-center justify-center rounded-lg border">
+          <div className="p1 border-wheat-400 bg-wheat-200 flex h-8 w-8 items-center justify-center rounded-lg border">
             <MenuMemo />
           </div>
         </div>
@@ -226,11 +286,18 @@ const GroupInfo = ({
 const Group = memo(function Group() {
   const { group: groupParam } = useParams();
   const { group, userGroupId, loading: groupLoading } = useGroupListener(groupParam!);
-  const groupData = group?.data();
-
   const { transactions, loading, getPage, endReached, reload, isEmpty } = useTransactions(groupParam!);
 
-  const menuRef = useRef<HTMLDivElement>(null);
+  // Local States
+
+  const [selections, setSelections] = useState<Set<string>>(new Set());
+  const [isSelecting, setIsSelecting] = useState(true);
+
+  console.log(isSelecting);
+
+  // Computed Variables
+
+  const groupData = group?.data();
 
   // -----------------------------------
   // Computed Variables
@@ -250,6 +317,18 @@ const Group = memo(function Group() {
   // Event Listeners
   // -----------------------------------
 
+  const transactionSelectionPressed = (id: string) => () => {
+    console.log('item was pressed', isSelecting, id);
+    if (!isSelecting) return;
+
+    const nextSelections = new Set(selections);
+
+    if (selections.has(id)) nextSelections.delete(id);
+    else nextSelections.add(id);
+
+    setSelections(nextSelections);
+  };
+
   // -----------------------------------
   // Component Render
   // -----------------------------------
@@ -260,7 +339,12 @@ const Group = memo(function Group() {
     <>
       <div className="relative flex shrink-0 grow flex-col pt-3">
         <main className="flex h-full flex-col items-stretch">
-          <GroupInfo userBalance={userBalance} groupData={groupData!} userGroupUid={userGroupId} ref={menuRef} />
+          <GroupInfo
+            userBalance={userBalance}
+            groupData={groupData!}
+            userGroupUid={userGroupId}
+            selections={{ selections, setSelections, setIsSelecting }}
+          />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3 pb-24">
             {isEmpty ? (
               <>No Transactions</>
@@ -275,15 +359,27 @@ const Group = memo(function Group() {
                       </h2>
                     </div>
                     <div className="flex flex-col gap-2">
-                      {txns.map((txn) => (
-                        <TransactionCard
-                          key={txn.id}
-                          groupId={group!.id}
-                          currGroup={group!}
-                          userGroupId={userGroupId!}
-                          transaction={txn}
-                        />
-                      ))}
+                      {txns.map((txn) => {
+                        const selected = selections.has(txn.id);
+
+                        return (
+                          <div
+                            key={txn.id}
+                            className={`${isSelecting && 'selecting'} flex flex-row gap-2 [.selecting]:cursor-pointer`}
+                            onClick={transactionSelectionPressed(txn.id)}
+                          >
+                            <input type="checkbox" checked={selected} readOnly />
+                            <TransactionCard
+                              groupId={group!.id}
+                              currGroup={group!}
+                              userGroupId={userGroupId!}
+                              transaction={txn}
+                              disable={isSelecting}
+                              selected={selected}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                   </Fragment>
                 );

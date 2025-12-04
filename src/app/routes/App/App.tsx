@@ -86,14 +86,6 @@ function App() {
             <Header />
             <Outlet />
           </div>
-          {/* {showFab && (
-            <Link to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
-              <FAB className={`absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2 md:hidden`}>
-                <PlusMemo />
-                Add Transaction
-              </FAB>
-            </Link>
-          )} */}
           <FabOverlay />
         </div>
 

@@ -16,11 +16,15 @@ const TransactionCard = ({
   groupId,
   currGroup,
   userGroupId,
+  disable = false,
+  selected = false,
 }: {
   transaction: Transaction & { id: string };
   groupId: string;
   currGroup: DocumentSnapshot<Group>;
   userGroupId: string;
+  disable?: boolean;
+  selected?: boolean;
 }) => {
   const date = new Date(transaction.date);
   const splitTotal = useMemo(
@@ -39,7 +43,9 @@ const TransactionCard = ({
     <Link
       to={getTransactionRoute(groupId, transaction.id)}
       state={{ groupId, groupData: currGroup.data(), transaction }}
+      className={`${disable ? 'disabled' : ''} relative w-full [.disabled]:pointer-events-none`}
     >
+      {selected && <div className="bg-accent-200/20 absolute inset-0 z-5 rounded-2xl" />}
       <Panel className="justfiy-center flex flex-row gap-3" dropOnClick={true}>
         <div className="bg-accent-200 text-ink-800 flex w-10 flex-col justify-center gap-0 rounded-lg">
           <p className="text-base/4">{format(date, 'LLL')}</p>
