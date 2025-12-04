@@ -16,7 +16,7 @@ import TransactionCard from '@/features/groups/components/TransactionCard';
 import Panel from '@/components/neubrutalist/Panel';
 import UserIcon from '@/components/user_stack/UserIcon';
 import { PopupMenu, PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
-import { Menu, ArrowLeft, X } from 'lucide-react';
+import { Menu, ArrowLeft, X, Check } from 'lucide-react';
 
 // Custom Hooks
 import useTransactions from '@/features/transactions/hooks/useTransactions';
@@ -115,12 +115,22 @@ const PayoutOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; g
   );
 };
 
-const SelectionFab = ({ state }: { state: number }) => {
+const SelectionFab = ({
+  selections: { selections: selection, setSelections, setIsSelecting },
+}: {
+  selections: {
+    selections: Set<string>;
+    setSelections: (val: Set<string>) => void;
+    setIsSelecting: (val: boolean) => void;
+  };
+}) => {
+  const handleXClicked = () => {};
+
   return (
     <FAB dropOnClick={false} bgColor="bg-accent-200" className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
       <div className="flex flex-row text-black">
         <div className="border-ink-800 flex flex-row gap-2 border-r px-4">
-          <X /> {state} Selected
+          <X /> {selection.size} Selected
         </div>
         <div className="flex flex-row gap-2 px-4">Delete Selected</div>
       </div>
@@ -132,7 +142,7 @@ const GroupInfo = ({
   userBalance,
   groupData,
   userGroupUid,
-  selections: { selections, setSelections, setIsSelecting },
+  selections: { selections: selection, setSelections, setIsSelecting },
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
   groupData: Group;
@@ -157,7 +167,13 @@ const GroupInfo = ({
 
   // Computed Variables
 
-  const SelectionFabMemo = memo(() => <SelectionFab state={1} />);
+  const SelectionFabMemo = memo(
+    (selections: {
+      selections: Set<string>;
+      setSelections: (val: Set<string>) => void;
+      setIsSelecting: (val: boolean) => void;
+    }) => <SelectionFab selections={selections} />,
+  );
 
   // ------------------------
   // Effect
@@ -219,7 +235,8 @@ const GroupInfo = ({
           action: () => {
             resetPopup();
             setCustomFab(true);
-            setFab(<SelectionFab state={state} />);
+            setIsSelecting(true);
+            setFab(<SelectionFabMemo />);
           },
         },
         { label: 'Delete Group' },
@@ -291,7 +308,7 @@ const Group = memo(function Group() {
   // Local States
 
   const [selections, setSelections] = useState<Set<string>>(new Set());
-  const [isSelecting, setIsSelecting] = useState(true);
+  const [isSelecting, setIsSelecting] = useState(false);
 
   console.log(isSelecting);
 
@@ -329,6 +346,10 @@ const Group = memo(function Group() {
     setSelections(nextSelections);
   };
 
+  useEffect(() => {
+    setSelections(new Set());
+  }, [isSelecting]);
+
   // -----------------------------------
   // Component Render
   // -----------------------------------
@@ -365,10 +386,19 @@ const Group = memo(function Group() {
                         return (
                           <div
                             key={txn.id}
-                            className={`${isSelecting && 'selecting'} flex flex-row gap-2 [.selecting]:cursor-pointer`}
+                            className={`${isSelecting && 'selecting'} flex flex-row items-center gap-2 [.selecting]:cursor-pointer`}
                             onClick={transactionSelectionPressed(txn.id)}
                           >
-                            <input type="checkbox" checked={selected} readOnly />
+                            {isSelecting && (
+                              <>
+                                <input type="checkbox" checked={selected} readOnly className="sr-only" />
+                                <div
+                                  className={`${selected && 'selected'} [.selected]:bg-accent-200 flex aspect-square h-6 w-6 items-center justify-center rounded-full border-[1.5px] border-black`}
+                                >
+                                  {selected && <Check className="w-4" />}
+                                </div>
+                              </>
+                            )}
                             <TransactionCard
                               groupId={group!.id}
                               currGroup={group!}
