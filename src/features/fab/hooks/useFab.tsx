@@ -9,8 +9,11 @@ const useFab = (group?: string) => {
 
   const resetFab = () => {
     setShowFab(true);
+    setFab(<DefaultFab group={group ?? ''} />);
   };
 
+  // Sets the fab to the default state on init and also changes the group it points to
+  // on page changes.
   useEffect(() => {
     if (!group && fab) return;
     setFab(<DefaultFab group={group ?? ''} />);

@@ -16,6 +16,7 @@ import { ROUTES } from '../routes';
 import logo from '/logo-spaced.svg';
 import Button from '../../components/buttons/Button';
 import { db } from '../../lib/firebase/firestore';
+import toast from 'react-hot-toast';
 
 function Home() {
   const navigate = useNavigate();
@@ -47,14 +48,20 @@ function Home() {
         });
       }
 
-      console.log('token: ', token);
-      console.log('user: ', userData);
-      console.log('idP: ', idP);
+      // console.log('token: ', token);
+      // console.log('user: ', userData);
+      // console.log('idP: ', idP);
+
       if (userData.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1' || import.meta.env.VITE_USE_EMULATORS === 'true') {
         navigate(ROUTES.APP);
       }
     } catch (err: any) {
+      const error = err as Error;
       if (err.code === 'auth/cancelled-popup-request') return;
+      if (err.code === 'permission-denied') {
+        toast.error(err.code);
+      }
+
       throw err;
     }
   };

@@ -116,23 +116,28 @@ const PayoutOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; g
 };
 
 const SelectionFab = ({
-  selections: { selections: selection, setSelections, setIsSelecting },
+  selections: { selection, setSelection, setIsSelecting },
+  onClose: handleClose = () => {},
+  onDelete: handleDelete = () => {},
 }: {
   selections: {
-    selections: Set<string>;
-    setSelections: (val: Set<string>) => void;
+    selection: Set<string>;
+    setSelection: (val: Set<string>) => void;
     setIsSelecting: (val: boolean) => void;
   };
+  onClose?: () => any;
+  onDelete?: () => any;
 }) => {
-  const handleXClicked = () => {};
-
   return (
     <FAB dropOnClick={false} bgColor="bg-accent-200" className="absolute bottom-6 left-1/2 z-5 w-fit -translate-x-1/2">
       <div className="flex flex-row text-black">
-        <div className="border-ink-800 flex flex-row gap-2 border-r px-4">
-          <X /> {selection.size} Selected
+        <div className="border-ink-800 flex w-40 flex-row justify-between gap-2 border-r px-4">
+          <X className="cursor-pointer" onClick={handleClose} />{' '}
+          <p className="grow text-center">{selection.size} Selected</p>
         </div>
-        <div className="flex flex-row gap-2 px-4">Delete Selected</div>
+        <div className="flex cursor-pointer flex-row gap-2 px-8 text-nowrap" onClick={handleDelete}>
+          Delete Selected
+        </div>
       </div>
     </FAB>
   );
@@ -142,14 +147,14 @@ const GroupInfo = ({
   userBalance,
   groupData,
   userGroupUid,
-  selections: { selections: selection, setSelections, setIsSelecting },
+  selections: { selection, setSelection, setIsSelecting },
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
   groupData: Group;
   userGroupUid: string | undefined;
   selections: {
-    selections: Set<string>;
-    setSelections: (val: Set<string>) => void;
+    selection: Set<string>;
+    setSelection: (val: Set<string>) => void;
     setIsSelecting: (val: boolean) => void;
   };
 }) => {
@@ -158,22 +163,13 @@ const GroupInfo = ({
 
   // Hooks
   const { setShowPopup, setPopup, resetPopup } = usePopupOverlay();
-  const { setFab, setShowFab } = useFab();
+  const { setFab, resetFab } = useFab();
 
   // Local States
 
   const [customFab, setCustomFab] = useState(false);
-  const [state, setState] = useState<number>(1);
 
   // Computed Variables
-
-  const SelectionFabMemo = memo(
-    (selections: {
-      selections: Set<string>;
-      setSelections: (val: Set<string>) => void;
-      setIsSelecting: (val: boolean) => void;
-    }) => <SelectionFab selections={selections} />,
-  );
 
   // ------------------------
   // Effect
@@ -182,11 +178,8 @@ const GroupInfo = ({
   useEffect(() => {
     if (!customFab) return;
 
-    const nextState = (state ?? 0) + 1;
-    setState(nextState);
-    setIsSelecting(true);
-    setFab(<SelectionFabMemo />);
-  }, []);
+    setFab(<SelectionFabMemo selection={selection} />);
+  }, [selection]);
 
   // ------------------------
   // Event Listeners
@@ -236,7 +229,7 @@ const GroupInfo = ({
             resetPopup();
             setCustomFab(true);
             setIsSelecting(true);
-            setFab(<SelectionFabMemo />);
+            setFab(<SelectionFabMemo selection={selection} />);
           },
         },
         { label: 'Delete Group' },
@@ -248,7 +241,27 @@ const GroupInfo = ({
     setShowPopup(true);
   }, []);
 
+  const handleSelectionClosed = () => {
+    setCustomFab(false);
+    setIsSelecting(false);
+    resetFab();
+  };
+
+  const handleDelete = () => {};
+
+  // ------------------------
+  // Component Renders
+  // ------------------------
+
   const MenuMemo = memo(() => <Menu onClick={handleMenuClicked} className="w-8 cursor-pointer" />);
+
+  const SelectionFabMemo = memo(({ selection }: { selection: Set<string> }) => (
+    <SelectionFab
+      selections={{ selection, setSelection, setIsSelecting }}
+      onClose={handleSelectionClosed}
+      onDelete={handleDelete}
+    />
+  ));
 
   return (
     <section className="border-wheat-400 mx-3 flex grow flex-col items-start gap-2 border-b border-dashed pb-8">
@@ -307,10 +320,8 @@ const Group = memo(function Group() {
 
   // Local States
 
-  const [selections, setSelections] = useState<Set<string>>(new Set());
+  const [selection, setSelection] = useState<Set<string>>(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
-
-  console.log(isSelecting);
 
   // Computed Variables
 
@@ -335,19 +346,18 @@ const Group = memo(function Group() {
   // -----------------------------------
 
   const transactionSelectionPressed = (id: string) => () => {
-    console.log('item was pressed', isSelecting, id);
     if (!isSelecting) return;
 
-    const nextSelections = new Set(selections);
+    const nextSelections = new Set(selection);
 
-    if (selections.has(id)) nextSelections.delete(id);
+    if (selection.has(id)) nextSelections.delete(id);
     else nextSelections.add(id);
 
-    setSelections(nextSelections);
+    setSelection(nextSelections);
   };
 
   useEffect(() => {
-    setSelections(new Set());
+    setSelection(new Set());
   }, [isSelecting]);
 
   // -----------------------------------
@@ -364,7 +374,7 @@ const Group = memo(function Group() {
             userBalance={userBalance}
             groupData={groupData!}
             userGroupUid={userGroupId}
-            selections={{ selections, setSelections, setIsSelecting }}
+            selections={{ selection, setSelection, setIsSelecting }}
           />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3 pb-24">
             {isEmpty ? (
@@ -381,7 +391,7 @@ const Group = memo(function Group() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {txns.map((txn) => {
-                        const selected = selections.has(txn.id);
+                        const selected = selection.has(txn.id);
 
                         return (
                           <div
