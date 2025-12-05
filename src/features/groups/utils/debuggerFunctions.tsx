@@ -80,6 +80,31 @@ export const useDashboardDebugOptions = (...reloadCallbacks: (() => void)[]) => 
   }, []);
 };
 
+const dummyGroup: Group = {
+  name: 'CWDB',
+  memberUids: [],
+  members: {
+    testUser: {
+      displayName: 'Kyle',
+      photoUrl: 'https://i.pinimg.com/1200x/97/47/02/9747029215bbd5677b8114e43b7c9589.jpg',
+    },
+    testIdA: {
+      displayName: 'Julian',
+      photoUrl: 'https://i.pinimg.com/736x/a2/a6/e1/a2a6e13821ad970f0790054db790cff1.jpg',
+    },
+    testIdB: {
+      displayName: 'Marlon',
+      photoUrl: 'https://i.pinimg.com/736x/f8/23/31/f82331683e3c17da6b6498475d3c1888.jpg',
+    },
+    testIdC: {
+      displayName: 'Jayni',
+      photoUrl: 'https://i.pinimg.com/736x/1c/4b/c4/1c4bc411f32787cdef1490f396089225.jpg',
+    },
+  },
+  expenses: {},
+  spent: {},
+};
+
 export const useGroupDebugOptions = () => {
   const { group: groupId } = useParams();
   const { addOption, removeOption } = useDebug();
@@ -89,46 +114,9 @@ export const useGroupDebugOptions = () => {
     const docData = await getDoc(groupDoc);
     const memberUids = docData.data()?.memberUids;
 
-    const data: Group = {
-      name: 'CWDB',
-      memberUids: [...memberUids],
-      members: {
-        testUser: {
-          displayName: 'Kyle',
-          linkedUid: auth.currentUser!.uid,
-          photoUrl: 'https://i.pinimg.com/1200x/97/47/02/9747029215bbd5677b8114e43b7c9589.jpg',
-        },
-        testIdA: {
-          displayName: 'Julian',
-          photoUrl: 'https://i.pinimg.com/736x/a2/a6/e1/a2a6e13821ad970f0790054db790cff1.jpg',
-        },
-        testIdB: {
-          displayName: 'Marlon',
-          photoUrl: 'https://i.pinimg.com/736x/f8/23/31/f82331683e3c17da6b6498475d3c1888.jpg',
-        },
-        testIdC: {
-          displayName: 'Jayni',
-          photoUrl: 'https://i.pinimg.com/736x/1c/4b/c4/1c4bc411f32787cdef1490f396089225.jpg',
-        },
-      },
-      balance: {
-        testUser: {
-          testIdB: 0,
-          testIdA: 0,
-        },
-        testIdB: {
-          testUser: 150,
-          testIdA: 0,
-        },
-        testIdA: {
-          testUser: 200,
-          testIdB: 50,
-        },
-        testIdC: {
-          testIdA: 100,
-        },
-      },
-    };
+    const data = dummyGroup;
+    data.memberUids = [...memberUids];
+    data.members['testUser'].linkedUid = auth.currentUser!.uid;
 
     await updateDoc(groupDoc, { ...data });
   };
