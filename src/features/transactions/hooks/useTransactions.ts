@@ -50,20 +50,23 @@ const useTransactions = (groupUid: string) => {
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        const nextTransactions = { ...transactions };
-        snap.docs.forEach((d) => {
-          const month = format(new Date(d.data().date), 'yyyy-MM');
+        setTransactions((prevTransactions) => {
+          const nextTransactions = { ...prevTransactions };
 
-          nextTransactions[month] = nextTransactions[month] ?? [];
-          nextTransactions[month].push({
-            id: d.id,
-            ...deserializeTransaction(d.data()),
+          snap.docs.forEach((d) => {
+            const month = format(new Date(d.data().date), 'yyyy-MM');
+
+            nextTransactions[month] = nextTransactions[month] ?? [];
+
+            if (nextTransactions[month].some((val) => val.id === d.id)) return;
+            nextTransactions[month].push({
+              id: d.id,
+              ...deserializeTransaction(d.data()),
+            });
           });
+
+          return nextTransactions;
         });
-        // const results: (Transaction & { id: string })[] = snap.docs.map((d) => ({
-        //   id: d.id,
-        //   ...deserializeTransaction(d.data()),
-        // }));
 
         if (lastDoc == null && snap.docs.length > 0) setLastDoc(snap.docs.at(-1)!);
         if (snap.docs.length < pageLimit) setEndReached(true);
@@ -72,7 +75,6 @@ const useTransactions = (groupUid: string) => {
         else setIsEmpty(false);
 
         setLoading(false);
-        setTransactions(nextTransactions);
       },
       (err) => {
         const error = err as Error;
@@ -127,6 +129,19 @@ const useTransactions = (groupUid: string) => {
     setRefetch((prev) => !prev);
   };
 
+  const removeTransactions = (txns: { [id: string]: Transaction }) => {
+    const nextTransactions = { ...transactions };
+
+    for (let [id, txn] of Object.entries(txns)) {
+      const month = format(new Date(txn.date), 'yyyy-MM');
+      const nextMonth = nextTransactions[month].filter((val) => val.id != id);
+
+      nextTransactions[month] = nextMonth;
+    }
+
+    setTransactions(nextTransactions);
+  };
+
   return {
     transactions,
     getPage,
@@ -134,6 +149,7 @@ const useTransactions = (groupUid: string) => {
     loading,
     reload,
     isEmpty,
+    removeTransactions,
   };
 };
 

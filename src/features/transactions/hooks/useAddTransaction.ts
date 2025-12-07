@@ -5,8 +5,9 @@ import { db, collections } from '../../../lib/firebase/firestore';
 import { SerializedTransaction, SplitTotal } from '../types';
 import { Group } from '@/features/groups/types';
 
-const useAddTransaction = (groupId: string, group: Group) => {
-  const addNewTransaction = async (data: SerializedTransaction, splitTotal: SplitTotal) => {
+const useAddTransaction =
+  (groupId: string) =>
+  async (data: SerializedTransaction, splitTotal: SplitTotal, group: Group): Promise<Group> => {
     const id = uuid();
     const groupCollection = collection(db, collections.groups);
     const groupRef = doc(groupCollection, groupId) as DocumentReference<Group>;
@@ -32,9 +33,8 @@ const useAddTransaction = (groupId: string, group: Group) => {
         spent: nextSpent,
       });
     });
-  };
 
-  return addNewTransaction;
-};
+    return { ...group, expenses: nextExpenses, spent: nextSpent };
+  };
 
 export default useAddTransaction;

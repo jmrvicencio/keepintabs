@@ -8,7 +8,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 // -------------------------------------
 
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
-import useTransactions, { SortedTransactions } from '@/features/transactions/hooks/useTransactions';
+import useTransactions from '@/features/transactions/hooks/useTransactions';
 
 vi.mock('@/features/groups/hooks/useGroupListener', () => ({
   default: vi.fn(() => ({

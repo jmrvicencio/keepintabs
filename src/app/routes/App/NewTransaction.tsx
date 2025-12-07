@@ -173,7 +173,7 @@ const NewTransaction = ({
       try {
         const formData: Transaction = formRef.current!.getData();
         setLoading(true);
-        await addTransaction(serializeTransaction(formData), splitTotals);
+        await addTransaction(serializeTransaction(formData), splitTotals, currGroup?.data()!);
       } catch (err) {
         const error: Error = err as Error;
         toast.error(error.message);
@@ -199,14 +199,7 @@ const NewTransaction = ({
   // Late Hooks
   // ------------------------------
 
-  const addTransaction = useMemo(
-    () =>
-      useAddTransaction(
-        groupId,
-        currGroup?.data() ?? { expenses: {}, spent: {}, name: '', members: {}, memberUids: [] },
-      ),
-    [groupId, currGroup],
-  );
+  const addTransaction = useMemo(() => useAddTransaction(groupId), [groupId, currGroup]);
 
   // ------------------------------
   // Component Render

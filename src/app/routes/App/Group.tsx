@@ -150,6 +150,7 @@ const GroupInfo = ({
   groupData,
   userGroupUid,
   selections: { selection, setSelection, setIsSelecting },
+  customFab: { customFab, setCustomFab },
   onDelete,
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
@@ -160,6 +161,7 @@ const GroupInfo = ({
     setSelection: (val: Record<string, Transaction>) => void;
     setIsSelecting: (val: boolean) => void;
   };
+  customFab: { customFab: boolean; setCustomFab: (val: boolean) => any };
   onDelete: () => any;
 }) => {
   // Refernces
@@ -171,8 +173,6 @@ const GroupInfo = ({
   const { setFab, resetFab } = useFab(groupParam);
 
   // Local States
-
-  const [customFab, setCustomFab] = useState(false);
 
   // ------------------------
   // Effect
@@ -325,15 +325,17 @@ const Group = memo(function Group() {
     endReached,
     reload,
     isEmpty,
+    removeTransactions,
   } = useTransactions(groupParam!);
   const deleteTransactions = !groupLoading ? useDeleteTransactions(groupParam!, groupData!) : undefined;
-  const { resetFab } = useFab(groupParam);
+  const { resetFab, setShowFab } = useFab(groupParam);
 
   // Local States
 
   const [forceLoading, setForceLoading] = useState(false);
   const [selection, setSelection] = useState<Record<string, Transaction>>({});
   const [isSelecting, setIsSelecting] = useState(false);
+  const [customFab, setCustomFab] = useState(false);
 
   // Computed Variables
 
@@ -381,10 +383,14 @@ const Group = memo(function Group() {
 
     setForceLoading(true);
     setIsSelecting(false);
-    resetFab();
+    setCustomFab(false);
+    setShowFab(false);
     await deleteTransactions(selection);
 
-    window.location.reload();
+    setForceLoading(false);
+    removeTransactions(selection);
+    resetFab();
+    // setForceLoading(false);
   };
 
   // -----------------------------------
@@ -402,6 +408,7 @@ const Group = memo(function Group() {
             groupData={groupData!}
             userGroupUid={userGroupId}
             selections={{ selection, setSelection, setIsSelecting }}
+            customFab={{ customFab, setCustomFab }}
             onDelete={handleDelete}
           />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3 pb-24">

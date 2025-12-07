@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   doc,
@@ -9,15 +9,19 @@ import {
   setDoc,
   serverTimestamp,
   DocumentSnapshot,
+  DocumentReference,
 } from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
-import { db } from '../../../lib/firebase/firestore';
+import { collections, db } from '../../../lib/firebase/firestore';
 import { auth } from '../../../lib/firebase/auth';
 import { useDebug } from '../../../hooks/useDebug';
 import { Group } from '../types';
-import { SplitType } from '@/features/transactions/types';
+import { SplitType, Transaction } from '@/features/transactions/types';
 import { ItemizedEntry } from '@/features/new-transaction/components/SplitTransaction';
+import useAddTransaction from '@/features/transactions/hooks/useAddTransaction';
+import { getMemberSplitTotals } from '@/features/transactions/utils/splitUtils';
+import { serializeTransaction } from '@/features/transactions/utils/serializer';
 
 export const useDashboardDebugOptions = (...reloadCallbacks: (() => void)[]) => {
   const { addOption, removeOption } = useDebug();
@@ -105,9 +109,24 @@ const dummyGroup: Group = {
   spent: {},
 };
 
+const dummyTransaction: Transaction = {
+  amount: 40000,
+  description: 'dummy transaction',
+  paidBy: 'testUser',
+  splits: 4,
+  date: Date.now(),
+  splitData: {
+    type: 'balanced',
+    data: {
+      payingMembers: new Set(Object.keys(dummyGroup.members)),
+    },
+  },
+};
+
 export const useGroupDebugOptions = () => {
   const { group: groupId } = useParams();
   const { addOption, removeOption } = useDebug();
+  const addTransaction = useAddTransaction(groupId!);
 
   const addDummyData = async () => {
     const groupDoc = doc(db, 'groups', groupId!);
@@ -117,8 +136,17 @@ export const useGroupDebugOptions = () => {
     const data = dummyGroup;
     data.memberUids = [...memberUids];
     data.members['testUser'].linkedUid = auth.currentUser!.uid;
+    const splitTotals = getMemberSplitTotals(
+      dummyTransaction.amount,
+      dummyTransaction.splitData,
+      dummyTransaction.paidBy,
+    );
 
     await updateDoc(groupDoc, { ...data });
+    let nextGroup = { ...data };
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
   };
 
   const clearAllData = async () => {
@@ -129,22 +157,6 @@ export const useGroupDebugOptions = () => {
     });
   };
 
-  const addDebtToMarlon = async () => {
-    const groupDoc = doc(db, 'groups', groupId!);
-
-    await updateDoc(groupDoc, {
-      [`balance.testUser.testIdB`]: increment(-50),
-    });
-  };
-
-  const addLendToMarlon = async () => {
-    const groupDoc = doc(db, 'groups', groupId!);
-
-    await updateDoc(groupDoc, {
-      [`balance.testUser.testIdB`]: increment(50),
-    });
-  };
-
   const viewGroupData = async () => {
     const groupRef = doc(db, 'groups', groupId!);
     const groupDoc = await getDoc(groupRef);
@@ -152,12 +164,28 @@ export const useGroupDebugOptions = () => {
     console.log(groupDoc.data());
   };
 
+  const add5Transactions = async () => {
+    const groupRef = doc(db, collections.groups, groupId!) as DocumentReference<Group>;
+    const groupSnap = await getDoc(groupRef);
+    const splitTotals = getMemberSplitTotals(
+      dummyTransaction.amount,
+      dummyTransaction.splitData,
+      dummyTransaction.paidBy,
+    );
+
+    let nextGroup = groupSnap.data()!;
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+  };
+
   useEffect(() => {
     addOption('Add Dummy Data', addDummyData);
     addOption('Clear All Data', clearAllData);
-    addOption('Add Debt -> Marlon', addDebtToMarlon);
-    addOption('Add Lent -> Marlon', addLendToMarlon);
     addOption('View Group Data', viewGroupData);
+    addOption('Add 5 Transactions', add5Transactions);
 
     return removeOptions;
   }, []);
@@ -165,9 +193,8 @@ export const useGroupDebugOptions = () => {
   function removeOptions() {
     removeOption('Add Dummy Data');
     removeOption('Clear All Data');
-    removeOption('Add Debt -> Marlon');
-    removeOption('Add Lent -> Marlon');
     removeOption('View Group Data');
+    removeOption('Add 5 Transactions');
   }
 
   return removeOptions;

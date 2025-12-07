@@ -3,7 +3,6 @@ import { collections, db } from '@/lib/firebase/firestore';
 import { collection, CollectionReference, doc, DocumentReference, runTransaction } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { SerializedTransaction, SplitData, type Transaction } from '../types';
-import { SortedTransactions } from './useTransactions';
 import { getMemberSplitTotals } from '../utils/splitUtils';
 
 const useDeleteTransactions = (groupId: string, group: Group) => async (transactions: Record<string, Transaction>) => {
