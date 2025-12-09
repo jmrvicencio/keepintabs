@@ -227,6 +227,8 @@ const TransactionForm = forwardRef(
       }, 0);
     };
 
+    console.log(splitData.data);
+
     return (
       <form className="min-w-80 px-2 outline-none">
         <div className="m-auto max-w-120 border border-black bg-white p-6">
@@ -390,7 +392,9 @@ const TransactionForm = forwardRef(
                 {splitData.data.entries.map((entry, i) => (
                   <div key={i} className="flex flex-col">
                     <div className="flex flex-row justify-between">
-                      <p className="text-ink-400 text-left text-sm font-light">{entry.description}</p>
+                      <p className="text-ink-400 text-left text-sm font-light">
+                        {entry.description == '' ? '(No Description)' : entry.description}
+                      </p>
                       <p aria-label={`${entry.description} amount`}>{formatToDigit(entry.amount)}</p>
                     </div>
                     <div className="flex flex-row justify-between">

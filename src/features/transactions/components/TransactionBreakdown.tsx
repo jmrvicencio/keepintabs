@@ -149,7 +149,9 @@ const TransactionBreakdown = ({
                 (entry, i) =>
                   entry.payingMembers.has(filterUid) && (
                     <div key={i} className="flex justify-between">
-                      <p className="text-sm font-extralight">{entry.description}</p>
+                      <p className="text-sm font-extralight">
+                        {entry.description == '' ? '(No Description)' : entry.description}
+                      </p>
                       <p
                         aria-label={`${entry.description} share`}
                         className="field-sizing-content font-light outline-none"
