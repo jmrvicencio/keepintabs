@@ -18,9 +18,39 @@ import { SerializedTransaction, Transaction } from '../types';
 import { collections, db } from '@/lib/firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { id } from 'date-fns/locale';
 
+type TransactionItem = Transaction & { id: string };
 export type SortedTransactions = {
-  [date: string]: (Transaction & { id: string })[];
+  [date: string]: TransactionItem[];
+};
+
+/**
+ * binary search on the given array. returns a tuple: The insertion
+ * index that will retain the array order, and a boolean for if an exact match on the item is found.
+ *
+ * @param arr - The array to be tested
+ * @param target - The item to find
+ */
+const bSearch = (arr: TransactionItem[], target: TransactionItem): [number, boolean] => {
+  let start = 0;
+  let end = arr.length - 1;
+  let curr = Math.floor((start + end) / 2);
+
+  while (start <= end) {
+    curr = Math.floor((start + end) / 2);
+    const item = arr[curr];
+
+    if (item.id === target.id) {
+      return [curr, true];
+    } else if (item.date < target.date) {
+      start = curr + 1;
+    } else {
+      end = curr - 1;
+    }
+  }
+
+  return [curr, false];
 };
 
 const pageLimit = 15;
@@ -54,15 +84,14 @@ const useTransactions = (groupUid: string) => {
           const nextTransactions = { ...prevTransactions };
 
           snap.docs.forEach((d) => {
+            const txn = { id: d.id, ...deserializeTransaction(d.data()!) };
             const month = format(new Date(d.data().date), 'yyyy-MM');
 
             nextTransactions[month] = nextTransactions[month] ?? [];
 
-            if (nextTransactions[month].some((val) => val.id === d.id)) return;
-            nextTransactions[month].push({
-              id: d.id,
-              ...deserializeTransaction(d.data()),
-            });
+            const [insertIndex, isFound] = bSearch(nextTransactions[month], txn);
+            if (isFound) return;
+            nextTransactions[month] = nextTransactions[month].splice(insertIndex, 0, txn);
           });
 
           return nextTransactions;
