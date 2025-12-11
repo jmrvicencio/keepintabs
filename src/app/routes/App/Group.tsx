@@ -385,12 +385,12 @@ const Group = memo(function Group() {
     setIsSelecting(false);
     setCustomFab(false);
     setShowFab(false);
-    await deleteTransactions(selection);
+    await deleteTransactions(selection); // Delete Transaction from Database
 
-    setForceLoading(false);
-    removeTransactions(selection);
-    resetFab();
     // setForceLoading(false);
+    // removeTransactions(selection); // Remove from Transaction Array (view display)
+    // resetFab();
+    window.location.reload();
   };
 
   // -----------------------------------

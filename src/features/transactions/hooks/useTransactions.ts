@@ -26,32 +26,98 @@ export type SortedTransactions = {
 };
 
 /**
- * binary search on the given array. returns a tuple: The insertion
- * index that will retain the array order, and a boolean for if an exact match on the item is found.
+ * performs a binary search on the date parameter of a transactionItem array.
  *
- * @param arr - The array to be tested
- * @param target - The item to find
+ * @param arr array of TransactionItems to search through
+ * @param target target transactionItem
+ * @param {boolean} indexBefore if true, will get the index of the start of the insertion order for the given transaction date.
+ * @returns insertion index based on the item
  */
-const bSearch = (arr: TransactionItem[], target: TransactionItem): [number, boolean] => {
+function bSearch(arr: TransactionItem[], target: TransactionItem, indexBefore: boolean = false): number {
+  if (arr.length === 0) return 0;
+
   let start = 0;
-  let end = arr.length - 1;
-  let curr = Math.floor((start + end) / 2);
+  let end = Math.max(arr.length - 1, 0);
+  let curr;
 
   while (start <= end) {
     curr = Math.floor((start + end) / 2);
     const item = arr[curr];
 
-    if (item.id === target.id) {
-      return [curr, true];
-    } else if (item.date < target.date) {
+    if (start === end && item.date === target.date) {
+      return curr!;
+    } else if ((indexBefore && item.date > target.date) || (!indexBefore && item.date >= target.date)) {
       start = curr + 1;
     } else {
       end = curr - 1;
     }
   }
 
-  return [curr, false];
-};
+  return start === curr! ? curr! : curr! + 1;
+}
+
+[4, 3, 2];
+// 3
+//start: 1
+//end: 1
+//curr: 1
+
+// [3, 2, 1];
+//start:3
+//end:2
+//curr: 2
+
+/**
+ * Searches through an array to find if an item is in the given array, and finds the insertion index to place
+ * a the item into the array to keep the order of the array.
+ *
+ * @param arr array of TransactionItems to search through
+ * @param target Transaction Item to search for.
+ * @returns {[number, boolean]} a tuple of the insertion index for a given target transaction date, and a boolean if
+ * the transaction was found in the array.
+ */
+function findTransaction(arr: TransactionItem[], target: TransactionItem): [number, boolean] {
+  const start = bSearch(arr, target, true);
+  const end = bSearch(arr, target);
+  const itemRange = arr.slice(start, end + 1);
+  const match = itemRange.some((item) => item.id === target.id);
+
+  return [start, match];
+}
+
+// /**
+//  * binary search on the given array. returns a tuple: The insertion
+//  * index that will retain the array order, and a boolean for if an exact match on the item is found.
+//  *
+//  * @param {TransactionItem[]} arr - The array to be tested
+//  * @param {TransactionItem} target - The item to find
+//  */
+// const bSearch = (arr: TransactionItem[], target: TransactionItem): [number, boolean] => {
+//   let start = 0;
+//   let end = Math.max(arr.length - 1, 0);
+//   let curr = Math.floor((start + end) / 2);
+
+//   while (start <= end) {
+//     curr = Math.floor((start + end) / 2);
+//     const item = arr[curr];
+
+//     if (!item) break;
+//     if (item.id === target.id) {
+//       return [curr, true];
+//     } else if (item.date > target.date) {
+//       start = curr + 1;
+//     } else {
+//       end = curr - 1;
+//     }
+//   }
+
+//   return [curr, false];
+// };
+
+// // start : 1
+// // end: 1
+// // curr: 1
+// [3, 2, 2, 2, 2, 1];
 
 const pageLimit = 15;
 
@@ -84,14 +150,15 @@ const useTransactions = (groupUid: string) => {
           const nextTransactions = { ...prevTransactions };
 
           snap.docs.forEach((d) => {
+            // debugger;
             const txn = { id: d.id, ...deserializeTransaction(d.data()!) };
             const month = format(new Date(d.data().date), 'yyyy-MM');
 
             nextTransactions[month] = nextTransactions[month] ?? [];
 
-            const [insertIndex, isFound] = bSearch(nextTransactions[month], txn);
+            const [insertIndex, isFound] = findTransaction(nextTransactions[month], txn);
             if (isFound) return;
-            nextTransactions[month] = nextTransactions[month].splice(insertIndex, 0, txn);
+            nextTransactions[month].splice(insertIndex, 0, txn);
           });
 
           return nextTransactions;

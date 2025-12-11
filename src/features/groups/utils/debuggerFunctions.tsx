@@ -181,11 +181,25 @@ export const useGroupDebugOptions = () => {
     nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
   };
 
+  const add1Transaction = async () => {
+    const groupRef = doc(db, collections.groups, groupId!) as DocumentReference<Group>;
+    const groupSnap = await getDoc(groupRef);
+    const splitTotals = getMemberSplitTotals(
+      dummyTransaction.amount,
+      dummyTransaction.splitData,
+      dummyTransaction.paidBy,
+    );
+
+    let nextGroup = groupSnap.data()!;
+    nextGroup = await addTransaction(serializeTransaction(dummyTransaction), splitTotals, nextGroup);
+  };
+
   useEffect(() => {
     addOption('Add Dummy Data', addDummyData);
     addOption('Clear All Data', clearAllData);
     addOption('View Group Data', viewGroupData);
     addOption('Add 5 Transactions', add5Transactions);
+    addOption('Add 1 Transaction', add1Transaction);
 
     return removeOptions;
   }, []);
@@ -195,6 +209,7 @@ export const useGroupDebugOptions = () => {
     removeOption('Clear All Data');
     removeOption('View Group Data');
     removeOption('Add 5 Transactions');
+    removeOption('Add 1 Transaction');
   }
 
   return removeOptions;
