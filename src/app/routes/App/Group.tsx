@@ -11,7 +11,7 @@ import {
   ChangeEvent,
 } from 'react';
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
 import { SimplifiedBalance, UserBalance } from '@/features/groups/types';
 import { MainContentRefAtom } from '@/store/mainArea';
@@ -26,7 +26,7 @@ import Loading from '@/components/Loading';
 import TransactionCard from '@/features/groups/components/TransactionCard';
 import Panel from '@/components/neubrutalist/Panel';
 import UserIcon from '@/components/user_stack/UserIcon';
-import { PopupMenu, PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
+import { PopupConfirmation, PopupMenu, PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
 import { Menu, ArrowLeft, X, Check } from 'lucide-react';
 
 // Custom Hooks
@@ -198,14 +198,17 @@ const GroupInfo = ({
   groupData,
   userGroupUid,
   updateName,
+  deleteGroup,
   selections: { selection, setSelection, setIsSelecting },
   customFab: { customFab, setCustomFab },
   onDelete,
+  setForceLoading,
 }: {
   userBalance: { total: number; records: SimplifiedBalance };
   groupData: Group;
   userGroupUid: string | undefined;
   updateName: (val: string) => any;
+  deleteGroup: () => any;
   selections: {
     selection: Record<string, Transaction>;
     setSelection: (val: Record<string, Transaction>) => void;
@@ -213,14 +216,17 @@ const GroupInfo = ({
   };
   customFab: { customFab: boolean; setCustomFab: (val: boolean) => any };
   onDelete: () => any;
+  setForceLoading: (val: boolean) => any;
 }) => {
   // Refernces
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Hooks
+  const location = useLocation();
+  const navigate = useNavigate();
   const { setShowPopup, setPopup, resetPopup } = usePopupOverlay();
   const { group: groupParam } = useParams();
-  const { setFab, resetFab } = useFab(groupParam);
+  const { setFab, resetFab, setShowFab } = useFab(groupParam);
 
   // Local States
 
@@ -299,7 +305,25 @@ const GroupInfo = ({
             setFab(<SelectionFabMemo selection={selection} />);
           },
         },
-        { label: 'Delete Group' },
+        {
+          label: 'Leave Group',
+          action: async () => {
+            const confirmationPopup: PopupConfirmation = {
+              type: 'popup-confirmation',
+              title: 'Delete Group',
+              body: `Are you sure you want to delete '${groupData.name}'?`,
+              confirmCallback: async () => {
+                setForceLoading(true);
+                setShowFab(false);
+
+                await deleteGroup();
+                navigate(ROUTES.APP);
+              },
+            };
+
+            setPopup(confirmationPopup);
+          },
+        },
       ],
       reference: menuRef,
     };
@@ -343,7 +367,14 @@ const GroupInfo = ({
               {[...Array(3)].map((_, i) => {
                 const member = Object.values(groupData?.members!)[i];
                 console.log('photo url: ', member?.photoUrl);
-                return <UserIcon imageUrl={member?.photoUrl ?? ''} bgColor="bg-wheat-400" border="border-wheat-200" />;
+                return (
+                  <UserIcon
+                    key={i}
+                    imageUrl={member?.photoUrl ?? ''}
+                    bgColor="bg-wheat-400"
+                    border="border-wheat-200"
+                  />
+                );
               })}
             </div>
           </div>
@@ -382,7 +413,7 @@ const GroupInfo = ({
 
 const Group = memo(function Group() {
   const { group: groupParam } = useParams();
-  const { group, userGroupId, updateName, loading: groupLoading } = useGroupListener(groupParam!);
+  const { group, userGroupId, updateName, deleteGroup, loading: groupLoading } = useGroupListener(groupParam!);
   const groupData = group?.data();
   const {
     transactions,
@@ -474,9 +505,11 @@ const Group = memo(function Group() {
             groupData={groupData!}
             userGroupUid={userGroupId}
             updateName={updateName}
+            deleteGroup={deleteGroup}
             selections={{ selection, setSelection, setIsSelecting }}
             customFab={{ customFab, setCustomFab }}
             onDelete={handleDelete}
+            setForceLoading={setForceLoading}
           />
           <section className="font-outfit flex h-full flex-col rounded-t-3xl px-3 pb-24">
             {isEmpty ? (

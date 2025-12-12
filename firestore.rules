@@ -24,6 +24,8 @@ service cloud.firestore {
         && isInGroupMembers(groupId);
       allow update: if request.auth.uid in resource.data.memberUids
         || request.resource.data.inviteKey == get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey;
+      allow delete: if isValidUser()
+        && request.auth.uid in resource.data.memberUids;
     }
 
     match /groups/{groupId}/transactions/{transactionId} {

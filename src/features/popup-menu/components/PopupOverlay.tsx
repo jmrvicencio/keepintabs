@@ -72,7 +72,7 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
 
 const PopupOverlay = () => {
   const location = useLocation();
-  const { showPopup, setShowPopup, popup } = usePopupOverlay();
+  const { showPopup, setShowPopup, popup, resetPopup } = usePopupOverlay();
 
   useEffect(() => {
     setShowPopup(false);
@@ -83,7 +83,7 @@ const PopupOverlay = () => {
   };
 
   const handleClose = () => {
-    setShowPopup(false);
+    resetPopup();
     if (popup.closeCallback) popup.closeCallback();
   };
 
@@ -131,6 +131,42 @@ const PopupOverlay = () => {
             }}
           >
             {popup.body}
+          </div>
+        </div>
+      </div>
+    ) : popup.type == 'popup-confirmation' ? (
+      <div
+        data-testid="popup-overlay"
+        className="absolute z-40 flex h-dvh w-dvw items-center justify-center bg-black/70 px-2"
+        id="testing"
+        onClick={handleClose}
+      >
+        <div
+          data-testid="popup-menu"
+          className="w-100 rounded-2xl border border-black bg-white"
+          onClick={handlePopupClicked}
+        >
+          <div className="border-ink-300/40 relative flex items-center justify-center border-b p-4 font-semibold">
+            {popup.title}
+          </div>
+          <div className="flex flex-col gap-4 px-8 py-8">
+            <p>{popup.body}</p>
+            <div className="flex flex-row justify-end gap-2">
+              <button type="button" className="cursor-pointer p-2 px-4" onClick={handleClose}>
+                Cancel
+              </button>
+              <Panel
+                className="cursor-pointer"
+                padding="py-1 px-4"
+                bgColor="bg-accent-200"
+                onClick={() => {
+                  if (popup.confirmCallback) popup.confirmCallback();
+                  handleClose();
+                }}
+              >
+                Yes
+              </Panel>
+            </div>
           </div>
         </div>
       </div>

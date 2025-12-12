@@ -7,8 +7,15 @@ import { Link } from 'react-router-dom';
 import { getGroupRoute } from '../../../app/routes';
 import Panel from '../../../components/neubrutalist/Panel';
 import { ChevronDown } from 'lucide-react';
+import { getSimplifiedBalance, getTotalFromSimplified } from '../utils/balance';
+import { getUserGroupId } from '../utils/memberUtil';
+import { auth } from '@/lib/firebase/auth';
+import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 
 const GroupCard = memo(function TabGroup({ id, group }: { id: string; group: Group }) {
+  const simplifiedBalance = getSimplifiedBalance(group);
+  const userGroupId = getUserGroupId(auth.currentUser!.uid, group);
+  const total = getTotalFromSimplified(userGroupId, simplifiedBalance);
   const navigate = useNavigate();
 
   const memberCount = Object.keys(group.members).length;
@@ -23,21 +30,17 @@ const GroupCard = memo(function TabGroup({ id, group }: { id: string; group: Gro
         <div className="flex w-full flex-col">
           <div className="flex flex-row items-center justify-between px-2 text-base/tight font-medium">
             <h3 className="font-medium">{group.name}</h3>
-            <p>Php 4,260.00</p>
-            {/* <div className="border-charcoal-600 flex flex-row items-center rounded-full border-1 p-1 pl-2">
-              <p className="font-noto-sans mr-2 align-top text-base/4">1</p>
-              <UserIcon />
-              <UserIcon />
-              <UserIcon />
-            </div> */}
+            <p>{formatToDigit(total)}</p>
           </div>
           <div className="flex w-full flex-row justify-between gap-2 rounded-lg text-sm">
             <div>
               <div className="flex flex-row items-center gap-1">
                 <div className="flex flex-row items-center rounded-full">
-                  <UserIcon />
-                  <UserIcon />
-                  <UserIcon />
+                  {[...Array(3)].map((_, i) => {
+                    const member = Object.values(group?.members)?.[i] ?? undefined;
+
+                    return <UserIcon key={i} imageUrl={member?.photoUrl ?? ''} />;
+                  })}
                 </div>
                 <p>{memberCountLabel}</p>
               </div>

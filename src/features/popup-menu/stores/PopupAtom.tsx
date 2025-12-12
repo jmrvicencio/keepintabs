@@ -14,6 +14,14 @@ export interface PopupOverlay {
   closeCallback?: () => any;
 }
 
+export interface PopupConfirmation {
+  type: 'popup-confirmation';
+  title?: string;
+  body?: string;
+  confirmCallback?: () => any;
+  closeCallback?: () => any;
+}
+
 export interface PopupMenu {
   type: 'menu';
   reference?: RefObject<HTMLElement | null>;
@@ -34,6 +42,6 @@ const popup: PopupOverlay | PopupMenu = {
   ),
 };
 
-export const popupAtom = atom<PopupOverlay | PopupMenu>(popup);
+export const popupAtom = atom<PopupOverlay | PopupMenu | PopupConfirmation>(popup);
 
 export const showPopupAtom = atom<boolean>(false);

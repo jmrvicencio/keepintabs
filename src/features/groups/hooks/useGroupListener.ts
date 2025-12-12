@@ -7,6 +7,7 @@ import {
   DocumentReference,
   Unsubscribe,
   updateDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { type Group, Member } from '../types';
 import { collections, db } from '@/lib/firebase/firestore';
@@ -35,6 +36,8 @@ const useGroupListener = (groupId: string = '') => {
           groupDoc,
           (groupSnap) => {
             const groupData = groupSnap.data() as Group;
+            if (!groupData) return;
+
             const memberEntries = Object.entries(groupData.members);
 
             for (const [memberGroupId, val] of memberEntries) {
@@ -79,7 +82,23 @@ const useGroupListener = (groupId: string = '') => {
     });
   };
 
-  return { group, userData, updateName, userGroupId, loading };
+  const deleteGroup = async () => {
+    const groupRef = doc(db, collections.groups, groupId);
+    const groupSnap = { ...group?.data() };
+    const nextMemberUids = new Set(groupSnap.memberUids ?? []);
+
+    nextMemberUids.delete(auth.currentUser!.uid);
+
+    if (nextMemberUids.size === 0) {
+      await deleteDoc(groupRef);
+    } else {
+      await updateDoc(groupRef, {
+        memberUids: nextMemberUids,
+      });
+    }
+  };
+
+  return { group, userData, updateName, userGroupId, deleteGroup, loading };
 };
 
 export default useGroupListener;

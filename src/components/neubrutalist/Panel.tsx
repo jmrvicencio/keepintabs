@@ -8,6 +8,7 @@ const Panel = ({
   rounded,
   wallColor,
   dropOnClick = false,
+  hideWalls = false,
   className = '',
   inactive = false,
   margin,
@@ -20,6 +21,7 @@ const Panel = ({
   className?: string;
   wallColor?: string;
   dropOnClick?: boolean;
+  hideWalls?: boolean;
   inactive?: boolean;
   margin?: string;
 }) => {
@@ -70,12 +72,12 @@ const Panel = ({
     >
       <div
         {...(handleClick != null && { role: 'button' })}
-        className={`${inactive && 'inactive'} ${pressed && 'pressed'} ${bgColor || 'bg-white'} ${padding || 'p-2'} ${className} ${rounded || 'rounded-2xl'} border-ink-800 relative z-1 border-1 transition-transform [.pressed]:translate-0.5`}
+        className={`${inactive && 'inactive'} ${pressed && 'pressed'} ${bgColor || 'bg-white'} ${padding || 'p-2'} ${className} ${rounded || 'rounded-2xl'} ${hideWalls && 'hide-walls'} border-ink-800 relative z-1 border transition-transform [.hide-walls]:border-0 [.pressed]:translate-0.5`}
       >
         {children}
       </div>
       <div
-        className={`${rounded || 'rounded-2xl'} ${wallColor || 'bg-ink-800'} border-ink-800 absolute inset-x-0.5 inset-y-0.5 right-0 bottom-0 z-0 border-1`}
+        className={`${rounded || 'rounded-2xl'} ${wallColor || 'bg-ink-800'} ${hideWalls && 'hide-walls'} border-ink-800 absolute inset-x-0.5 inset-y-0.5 right-0 bottom-0 z-0 border [.hide-walls]:border-0`}
       />
     </div>
   );
