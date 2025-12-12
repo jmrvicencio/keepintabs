@@ -1,4 +1,15 @@
-import { useState, memo, useCallback, useRef, ReactNode, RefObject, useMemo, useEffect, Fragment } from 'react';
+import {
+  useState,
+  memo,
+  useCallback,
+  useRef,
+  ReactNode,
+  RefObject,
+  useMemo,
+  useEffect,
+  Fragment,
+  ChangeEvent,
+} from 'react';
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
@@ -145,10 +156,48 @@ const SelectionFab = ({
   );
 };
 
+const RenameOverlay = ({
+  initialGroupName,
+  updateName,
+  onSubmit: handleSubmit,
+}: {
+  initialGroupName: string;
+  updateName: (val: string) => any;
+  onSubmit: () => any;
+}) => {
+  const [groupName, setGroupName] = useState(initialGroupName);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const nextGroupName = e.currentTarget.value;
+    setGroupName(nextGroupName);
+  };
+
+  const handlePreSubmit = () => {
+    updateName(groupName);
+    handleSubmit();
+  };
+
+  return (
+    <form className="flex w-full flex-col items-center gap-2 py-8" onSubmit={handlePreSubmit}>
+      <input
+        className="border-charcoal-300 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border bg-white px-2 py-1 focus:outline-2"
+        type="text"
+        value={groupName}
+        onChange={handleChange}
+        autoFocus
+      />
+      <Panel bgColor="bg-accent-200 [.inactive]:bg-ink-300" padding="px-2 py-0.5" onClick={handlePreSubmit}>
+        Submit
+      </Panel>
+    </form>
+  );
+};
+
 const GroupInfo = ({
   userBalance,
   groupData,
   userGroupUid,
+  updateName,
   selections: { selection, setSelection, setIsSelecting },
   customFab: { customFab, setCustomFab },
   onDelete,
@@ -156,6 +205,7 @@ const GroupInfo = ({
   userBalance: { total: number; records: SimplifiedBalance };
   groupData: Group;
   userGroupUid: string | undefined;
+  updateName: (val: string) => any;
   selections: {
     selection: Record<string, Transaction>;
     setSelection: (val: Record<string, Transaction>) => void;
@@ -223,9 +273,23 @@ const GroupInfo = ({
   };
 
   const handleMenuClicked = useCallback(() => {
+    const handleRenameSubmit = () => {};
+
+    const renamePopup: PopupOverlay = {
+      type: 'popup-overlay',
+      title: 'Rename Group',
+      body: <RenameOverlay initialGroupName={groupData.name} onSubmit={() => resetPopup()} updateName={updateName} />,
+    };
+
     const menuPopup: PopupMenu = {
       type: 'menu',
       options: [
+        {
+          label: 'Rename Group',
+          action: () => {
+            setPopup(renamePopup);
+          },
+        },
         {
           label: 'Select Items',
           action: () => {
@@ -316,7 +380,7 @@ const GroupInfo = ({
 
 const Group = memo(function Group() {
   const { group: groupParam } = useParams();
-  const { group, userGroupId, loading: groupLoading } = useGroupListener(groupParam!);
+  const { group, userGroupId, updateName, loading: groupLoading } = useGroupListener(groupParam!);
   const groupData = group?.data();
   const {
     transactions,
@@ -407,6 +471,7 @@ const Group = memo(function Group() {
             userBalance={userBalance}
             groupData={groupData!}
             userGroupUid={userGroupId}
+            updateName={updateName}
             selections={{ selection, setSelection, setIsSelecting }}
             customFab={{ customFab, setCustomFab }}
             onDelete={handleDelete}

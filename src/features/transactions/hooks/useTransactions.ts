@@ -56,17 +56,6 @@ function bSearch(arr: TransactionItem[], target: TransactionItem, indexBefore: b
   return start === curr! ? curr! : curr! + 1;
 }
 
-[4, 3, 2];
-// 3
-//start: 1
-//end: 1
-//curr: 1
-
-// [3, 2, 1];
-//start:3
-//end:2
-//curr: 2
-
 /**
  * Searches through an array to find if an item is in the given array, and finds the insertion index to place
  * a the item into the array to keep the order of the array.
@@ -150,7 +139,6 @@ const useTransactions = (groupUid: string) => {
           const nextTransactions = { ...prevTransactions };
 
           snap.docs.forEach((d) => {
-            // debugger;
             const txn = { id: d.id, ...deserializeTransaction(d.data()!) };
             const month = format(new Date(d.data().date), 'yyyy-MM');
 

@@ -1,5 +1,5 @@
 export {};
 
 declare global {
-  type;
+  type State<T> = [T, (nextVal: T) => any];
 }

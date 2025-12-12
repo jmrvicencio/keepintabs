@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
-import { doc, collection, DocumentSnapshot, onSnapshot, DocumentReference, Unsubscribe } from 'firebase/firestore';
+import {
+  doc,
+  collection,
+  DocumentSnapshot,
+  onSnapshot,
+  DocumentReference,
+  Unsubscribe,
+  updateDoc,
+} from 'firebase/firestore';
 import { type Group, Member } from '../types';
-import { db } from '@/lib/firebase/firestore';
+import { collections, db } from '@/lib/firebase/firestore';
 import { auth } from '@/lib/firebase/auth';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -63,7 +71,15 @@ const useGroupListener = (groupId: string = '') => {
     };
   }, []);
 
-  return { group, userData, userGroupId, loading };
+  const updateName = (nextName: string) => {
+    const groupRef = doc(db, collections.groups, groupId) as DocumentReference<Group>;
+
+    updateDoc(groupRef, {
+      name: nextName,
+    });
+  };
+
+  return { group, userData, updateName, userGroupId, loading };
 };
 
 export default useGroupListener;

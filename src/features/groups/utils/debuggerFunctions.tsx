@@ -5,11 +5,16 @@ import {
   updateDoc,
   getDoc,
   deleteField,
+  deleteDoc,
   increment,
   setDoc,
   serverTimestamp,
   DocumentSnapshot,
   DocumentReference,
+  getDocs,
+  query,
+  collection,
+  runTransaction,
 } from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
@@ -150,10 +155,22 @@ export const useGroupDebugOptions = () => {
   };
 
   const clearAllData = async () => {
-    const groupDoc = doc(db, 'groups', groupId!);
+    const groupRef = doc(db, 'groups', groupId!);
+    const transactionCollection = collection(groupRef, collections.transactions);
+    const q = query(transactionCollection);
 
-    await updateDoc(groupDoc, {
-      balance: deleteField(),
+    const transactions = await getDocs(q);
+
+    await runTransaction(db, async (transaction) => {
+      transactions.docs.forEach((d) => {
+        const transactionRef = doc(transactionCollection, d.id);
+        transaction.delete(transactionRef);
+      });
+
+      await transaction.update(groupRef, {
+        expenses: [],
+        spent: [],
+      });
     });
   };
 
