@@ -25,6 +25,8 @@ export type SortedTransactions = {
   [date: string]: TransactionItem[];
 };
 
+const pageLimit = 15;
+
 /**
  * performs a binary search on the date parameter of a transactionItem array.
  *
@@ -65,50 +67,19 @@ function bSearch(arr: TransactionItem[], target: TransactionItem, indexBefore: b
  * @returns {[number, boolean]} a tuple of the insertion index for a given target transaction date, and a boolean if
  * the transaction was found in the array.
  */
-function findTransaction(arr: TransactionItem[], target: TransactionItem): [number, boolean] {
+function findTransaction(arr: TransactionItem[], target: TransactionItem): [number, number] {
   const start = bSearch(arr, target, true);
   const end = bSearch(arr, target);
   const itemRange = arr.slice(start, end + 1);
-  const match = itemRange.some((item) => item.id === target.id);
+  let match = -1;
+
+  itemRange.forEach((item, i) => {
+    if (match >= 0) return;
+    else if (item.id === target.id) match = start + i;
+  });
 
   return [start, match];
 }
-
-// /**
-//  * binary search on the given array. returns a tuple: The insertion
-//  * index that will retain the array order, and a boolean for if an exact match on the item is found.
-//  *
-//  * @param {TransactionItem[]} arr - The array to be tested
-//  * @param {TransactionItem} target - The item to find
-//  */
-// const bSearch = (arr: TransactionItem[], target: TransactionItem): [number, boolean] => {
-//   let start = 0;
-//   let end = Math.max(arr.length - 1, 0);
-//   let curr = Math.floor((start + end) / 2);
-
-//   while (start <= end) {
-//     curr = Math.floor((start + end) / 2);
-//     const item = arr[curr];
-
-//     if (!item) break;
-//     if (item.id === target.id) {
-//       return [curr, true];
-//     } else if (item.date > target.date) {
-//       start = curr + 1;
-//     } else {
-//       end = curr - 1;
-//     }
-//   }
-
-//   return [curr, false];
-// };
-
-// // start : 1
-// // end: 1
-// // curr: 1
-// [3, 2, 2, 2, 2, 1];
-
-const pageLimit = 15;
 
 const useTransactions = (groupUid: string) => {
   const navigate = useNavigate();
@@ -144,8 +115,12 @@ const useTransactions = (groupUid: string) => {
 
             nextTransactions[month] = nextTransactions[month] ?? [];
 
-            const [insertIndex, isFound] = findTransaction(nextTransactions[month], txn);
-            if (isFound) return;
+            const [insertIndex, matchIndex] = findTransaction(nextTransactions[month], txn);
+
+            if (matchIndex > -1) {
+              nextTransactions[month][matchIndex] = txn;
+              return;
+            }
             nextTransactions[month].splice(insertIndex, 0, txn);
           });
 
