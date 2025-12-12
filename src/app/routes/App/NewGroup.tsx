@@ -8,6 +8,8 @@ import { auth } from '../../../lib/firebase/auth';
 import useAddGroup from '@/features/groups/hooks/useAddGroup';
 import Loading from '../../../components/Loading';
 import Panel from '../../../components/neubrutalist/Panel';
+import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
+import { PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
 
 const NewGroup = () => {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ const NewGroup = () => {
       return;
     }
     setSubmitting(true);
+    debugger;
     await addGroup(groupName, members);
     navigate(ROUTES.APP);
   };
@@ -201,6 +204,40 @@ const NewGroup = () => {
   );
 };
 
+const PhotoUrlOverlay = ({
+  initialPhotoUrl,
+  updatePhotoUrl,
+}: {
+  initialPhotoUrl: string;
+  updatePhotoUrl: (val: string) => any;
+}) => {
+  const [photoUrl, setGroupName] = useState(initialPhotoUrl);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const nextGroupName = e.currentTarget.value;
+    setGroupName(nextGroupName);
+  };
+
+  const handlePreSubmit = () => {
+    updatePhotoUrl(photoUrl);
+  };
+
+  return (
+    <form className="flex w-full flex-col items-center gap-2 py-4" onSubmit={handlePreSubmit}>
+      <input
+        className="border-charcoal-300 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border bg-white px-2 py-1 focus:outline-2"
+        type="text"
+        value={photoUrl}
+        onChange={handleChange}
+        autoFocus
+      />
+      <Panel bgColor="bg-accent-200 [.inactive]:bg-ink-300" padding="px-2 py-0.5" onClick={handlePreSubmit}>
+        Submit
+      </Panel>
+    </form>
+  );
+};
+
 const AddedUser = ({
   id,
   member,
@@ -214,9 +251,15 @@ const AddedUser = ({
   setMembers: (state: any) => void;
   findMembers: (email: string, id: number) => Member[];
 }) => {
+  // Hooks
+  const { setPopup, setShowPopup, resetPopup } = usePopupOverlay();
+
+  // Local States
+
   const [editName, setEditName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
   const [input, setInput] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const emailInputRef = useRef<HTMLInputElement>(null);
 
   const handleBlur = () => {
@@ -268,9 +311,47 @@ const AddedUser = ({
     setInput(e.target.value);
   };
 
+  const handleUpdateImageUrl = (val: string) => {
+    setImageUrl(val);
+    resetPopup();
+
+    setMembers((prev: Member[]) => {
+      const nextMembers = [...prev];
+      const nextMember = { ...nextMembers[id] };
+      nextMembers[id] = nextMember;
+
+      if (val == '') {
+        delete nextMember.photoUrl;
+      } else {
+        nextMember.photoUrl = val;
+      }
+
+      return nextMembers;
+    });
+  };
+
+  const handleImageClicked = () => {
+    const ImageUrlPopup: PopupOverlay = {
+      type: 'popup-overlay',
+      title: 'Update Photo Url',
+      body: <PhotoUrlOverlay initialPhotoUrl={imageUrl} updatePhotoUrl={handleUpdateImageUrl} />,
+    };
+
+    setPopup(ImageUrlPopup);
+    setShowPopup(true);
+  };
+
   return (
     <div className="border-ink-800 flex flex-row items-center gap-3 not-first:mt-2 not-first:border-t not-first:pt-4">
-      <UserRound className="h-5 w-5" />
+      <div
+        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-cover"
+        onClick={handleImageClicked}
+        style={{
+          backgroundImage: `url('${imageUrl}')`,
+        }}
+      >
+        {imageUrl == '' && <UserRound className="h-6 w-6 stroke-[1.5px]" />}
+      </div>
       <div className="flex grow flex-col">
         {editName ? (
           <form onSubmit={handleSubmit}>

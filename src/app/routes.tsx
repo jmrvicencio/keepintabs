@@ -62,6 +62,13 @@ const router = createHashRouter([
                 },
               },
               {
+                path: 'members',
+                lazy: async () => {
+                  let Members = await import('@/app/routes/App/Members');
+                  return { Component: Members.default };
+                },
+              },
+              {
                 path: 'transactions/:transaction',
                 lazy: async () => {
                   let Transaction = await import('@/app/routes/App/Transaction');

@@ -363,7 +363,7 @@ const GroupInfo = ({
           </Link>
           <div className="border-wheat-400 bg-wheat-200 flex flex-row items-center gap-2 rounded-full border px-2 py-1">
             <p className="ml-1">{Object.keys(groupData?.members ?? {}).length}</p>
-            <div className="flex flex-row">
+            <div className="flex cursor-pointer flex-row">
               {[...Array(3)].map((_, i) => {
                 const member = Object.values(groupData?.members!)[i];
                 console.log('photo url: ', member?.photoUrl);
