@@ -58,11 +58,11 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
         ...styleY,
         right: screen.right - (ref?.right ?? 0),
       }}
-      className="absolute flex min-w-40 flex-col gap-2 rounded-sm bg-white p-4"
+      className="absolute flex min-w-50 flex-col rounded-sm bg-white p-4 py-2"
       onClick={handlePopupClicked}
     >
       {popup.options.map((option, i) => (
-        <div {...buttonRole(option.action)} key={i} className="cursor-pointer">
+        <div {...buttonRole(option.action)} key={i} className="border-ink-300/40 cursor-pointer py-3 not-last:border-b">
           {option.label}
         </div>
       ))}
