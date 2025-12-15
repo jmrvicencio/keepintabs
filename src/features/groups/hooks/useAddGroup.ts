@@ -61,7 +61,7 @@ const useAddGroup = (user: User) => {
         inviteKey: deleteField(),
       });
 
-      return;
+      return [groupId, inviteKey];
     } catch (err) {
       throw err;
     }

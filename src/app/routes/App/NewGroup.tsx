@@ -10,17 +10,24 @@ import Loading from '../../../components/Loading';
 import Panel from '../../../components/neubrutalist/Panel';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
+import useSendInvite from '@/features/notifications/hooks/useSendInvite';
 
 const NewGroup = () => {
+  // Refs
+  const formRef = useRef<HTMLFormElement>(null);
+  const addEmailRef = useRef<HTMLInputElement>(null);
+
+  // Hooks
   const navigate = useNavigate();
+  const sendInvite = useSendInvite();
+
+  // Local States
   const [groupName, setGroupName] = useState('');
   const [nameError, setNameError] = useState(false);
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
-  const addEmailRef = useRef<HTMLInputElement>(null);
   const addGroup = useAddGroup(auth.currentUser!);
 
   const handleDoneClicked = async () => {
@@ -32,8 +39,14 @@ const NewGroup = () => {
       return;
     }
     setSubmitting(true);
-    debugger;
-    await addGroup(groupName, members);
+
+    const [groupId, inviteKey] = await addGroup(groupName, members);
+    await Promise.all(
+      members.map((member) => {
+        if (member?.email) return sendInvite(member.email, groupId, inviteKey);
+      }),
+    );
+
     navigate(ROUTES.APP);
   };
 

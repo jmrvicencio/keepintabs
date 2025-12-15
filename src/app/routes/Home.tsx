@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { auth, provider } from '../../lib/firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { User as UserData } from '@/features/users/types';
 
 import { ROUTES } from '../routes';
 import logo from '/logo-spaced.svg';
@@ -39,13 +40,16 @@ function Home() {
       const userData = result.user;
       const idP = getAdditionalUserInfo(result);
 
+      const user: UserData = {
+        username: userData.displayName!,
+        email: userData.email!,
+        photoUrl: userData.photoURL!,
+      };
+
       const userDoc = doc(db, 'users', userData.uid);
       const userSnap = await getDoc(userDoc);
       if (!userSnap.exists()) {
-        await setDoc(userDoc, {
-          username: userData.displayName,
-          photoUrl: userData.photoURL,
-        });
+        await setDoc(userDoc, user);
       }
 
       // console.log('token: ', token);

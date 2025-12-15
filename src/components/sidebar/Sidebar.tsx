@@ -24,6 +24,8 @@ function Sidebar() {
   const navigate = useNavigate();
   const { notifications } = useNotifications();
 
+  console.log('notifications: ', notifications);
+
   // State
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
