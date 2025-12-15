@@ -6,8 +6,9 @@ import { atom, useAtom, useSetAtom } from 'jotai';
 import { auth } from '../../lib/firebase/auth';
 import { dataFetchedAtom, type DataFetched } from '../../features/groups/stores/dataFetched';
 import { ROUTES } from '../../app/routes';
-import { Plus } from 'lucide-react';
+import { Plus, Mail } from 'lucide-react';
 import FAB from '@/features/fab/components/FAB';
+import useNotifications from '@/features/notifications/hooks/useNotifications';
 
 export const showSidebarAtom = atom(false);
 const writeDataFetchedAtom = atom(null, (_get, set, fetched: boolean) => {
@@ -19,11 +20,18 @@ const writeDataFetchedAtom = atom(null, (_get, set, fetched: boolean) => {
 });
 
 function Sidebar() {
+  // Hooks
   const navigate = useNavigate();
+  const { notifications } = useNotifications();
+
+  // State
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
   const setDataFetched = useSetAtom(writeDataFetchedAtom);
   const { group: groupParam } = useParams();
+
+  // Computed Values
+  const hasNotifs = (notifications?.size ?? 0) > 0;
 
   const handleSignoutClick = () => {
     auth.signOut();
@@ -55,7 +63,9 @@ function Sidebar() {
       </div>
       <div className="flex cursor-pointer flex-row items-center gap-2 p-4">
         <div className="relative h-5 w-5">
-          <div className="bg-accent-600 absolute top-0 right-0 h-2 w-2 translate-x-0.5 -translate-y-0.5 rounded-full" />
+          {hasNotifs && (
+            <div className="bg-accent-600 absolute top-0 right-0 h-2 w-2 translate-x-0.5 -translate-y-0.5 rounded-full" />
+          )}
           <Mail className="h-full w-full stroke-2" />
         </div>
         Invites

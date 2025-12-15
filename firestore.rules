@@ -17,6 +17,11 @@ service cloud.firestore {
         && (request.resource.data.photoUrl is string || request.resource.data.photoUrl == null);
     }
 
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, update: if request.auth.uid == userId;
+      allow create: if isValidUser();
+    }
+
     match /groups/{groupId} {
       allow read: if isValidUser()
         && request.auth.uid in resource.data.memberUids;
