@@ -53,6 +53,13 @@ function Sidebar() {
       >
         Navigate to Test
       </div>
+      <div className="flex cursor-pointer flex-row items-center gap-2 p-4">
+        <div className="relative h-5 w-5">
+          <div className="bg-accent-600 absolute top-0 right-0 h-2 w-2 translate-x-0.5 -translate-y-0.5 rounded-full" />
+          <Mail className="h-full w-full stroke-2" />
+        </div>
+        Invites
+      </div>
       <div className="p-4">
         <Link to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
           <FAB className="hidden cursor-pointer md:block">
