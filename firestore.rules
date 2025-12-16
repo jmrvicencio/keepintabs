@@ -7,12 +7,12 @@ service cloud.firestore {
       allow read: if isValidUser();
       allow create: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['username', 'photoUrl'])
+        && request.resource.data.keys().hasOnly(['username', 'photoUrl', 'email'])
         && request.resource.data.username is string
         && (request.resource.data.photoUrl is string || request.resource.data.photoUrl == null);
       allow update: if isValidUser()
         && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['username', 'photoUrl'])
+        && request.resource.data.keys().hasOnly(['username', 'photoUrl', 'email'])
         && request.resource.data.username is string
         && (request.resource.data.photoUrl is string || request.resource.data.photoUrl == null);
     }
