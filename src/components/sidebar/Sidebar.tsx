@@ -2,9 +2,9 @@ import { memo, type MouseEvent } from 'react';
 import { useNavigate, useParams, Link, Route } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { atom, useAtom, useSetAtom } from 'jotai';
-
 import { auth } from '../../lib/firebase/auth';
 import { dataFetchedAtom, type DataFetched } from '../../features/groups/stores/dataFetched';
+import { showSidebarFabAtom } from '@/store/sidebar';
 import { ROUTES } from '../../app/routes';
 import { Plus, Mail } from 'lucide-react';
 import FAB from '@/features/fab/components/FAB';
@@ -28,6 +28,7 @@ function Sidebar() {
 
   // State
   const [showSidebar, setShowSidebar] = useAtom(showSidebarAtom);
+  const [showAddTransaction, _] = useAtom(showSidebarFabAtom);
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
   const setDataFetched = useSetAtom(writeDataFetchedAtom);
   const { group: groupParam } = useParams();
@@ -50,10 +51,11 @@ function Sidebar() {
     <div
       className={`${showSidebarClass} bg-wheat-200 top-0 z-20 w-[0dvw] max-w-4/5 shrink-0 transition-[width] duration-300 ease-in-out md:sticky md:h-fit md:w-64 md:pt-12 not-md:[.show-sidebar]:w-72`}
     >
-      <div className="flex w-[60dvw] flex-row items-center justify-baseline gap-2 p-4" onClick={handleSignoutClick}>
+      <div>{auth.currentUser!.displayName}</div>
+      {/* <div className="flex w-[60dvw] flex-row items-center justify-baseline gap-2 p-4" onClick={handleSignoutClick}>
         <LogOut className="h-4 w-4" />
         Sign Out
-      </div>
+      </div> */}
       <div
         className="flex w-[60dvw] flex-row items-center justify-baseline gap-2 p-4"
         onClick={() => {
@@ -74,10 +76,12 @@ function Sidebar() {
       </div>
       <div className="p-4">
         <Link to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
-          <FAB className="hidden cursor-pointer md:block">
-            <Plus />
-            Add Transaction
-          </FAB>
+          {showAddTransaction && (
+            <FAB className="hidden cursor-pointer md:block">
+              <Plus />
+              Add Transaction
+            </FAB>
+          )}
         </Link>
       </div>
     </div>

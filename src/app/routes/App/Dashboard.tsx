@@ -9,12 +9,17 @@ import { ROUTES } from '../../routes';
 import GroupCard from '../../../features/groups/components/GroupCard';
 import Panel from '../../../components/neubrutalist/Panel';
 import emptyImg from '/img/empty.svg';
+import { useAtom } from 'jotai';
+import { showSidebarFabAtom } from '@/store/sidebar';
 
 const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
 
   const { groups, loading, reload } = useGroups();
   const { addOption, removeOption } = useDebug();
+
+  // State
+  const [_, setShowSidebarFab] = useAtom(showSidebarFabAtom);
 
   useDashboardDebugOptions(reload);
 
@@ -32,6 +37,14 @@ const Dashboard = memo(function Dashboard() {
       removeOption(newOption.text);
     };
   }, []);
+
+  useEffect(() => {
+    if (groups.length > 0) {
+      setShowSidebarFab(true);
+    } else {
+      setShowSidebarFab(false);
+    }
+  }, [groups]);
 
   const PlusIcon = memo(({ className = 'w-4' }: { className?: string }) => <Plus className={className} />);
 
