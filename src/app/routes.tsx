@@ -10,6 +10,7 @@ export const ROUTES = {
   LANDING: '/',
   NEW_TRANSACTION: '/app/transactions/new',
   TRANSACTION: '/transactions',
+  NOTIFICATION: '/app/notifications',
 };
 
 export const getGroupRoute = (groupId: string) => {

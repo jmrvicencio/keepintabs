@@ -11,12 +11,14 @@ import Panel from '../../../components/neubrutalist/Panel';
 import emptyImg from '/img/empty.svg';
 import { useAtom } from 'jotai';
 import { showSidebarFabAtom } from '@/store/sidebar';
+import useFab from '@/features/fab/hooks/useFab';
 
 const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
 
   const { groups, loading, reload } = useGroups();
   const { addOption, removeOption } = useDebug();
+  const { setShowFab } = useFab();
 
   // State
   const [_, setShowSidebarFab] = useAtom(showSidebarFabAtom);
@@ -40,8 +42,10 @@ const Dashboard = memo(function Dashboard() {
 
   useEffect(() => {
     if (groups.length > 0) {
+      setShowFab(true);
       setShowSidebarFab(true);
     } else {
+      setShowFab(false);
       setShowSidebarFab(false);
     }
   }, [groups]);

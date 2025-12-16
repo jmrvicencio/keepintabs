@@ -9,7 +9,7 @@ import useAddGroup from '@/features/groups/hooks/useAddGroup';
 import Loading from '../../../components/Loading';
 import Panel from '../../../components/neubrutalist/Panel';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
-import { PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
+import { PopupOverlay } from '@/features/popup-menu/types';
 import useSendInvite from '@/features/notifications/hooks/useSendInvite';
 
 const NewGroup = () => {

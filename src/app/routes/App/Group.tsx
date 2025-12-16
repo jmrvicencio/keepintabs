@@ -26,7 +26,7 @@ import Loading from '@/components/Loading';
 import TransactionCard from '@/features/groups/components/TransactionCard';
 import Panel from '@/components/neubrutalist/Panel';
 import UserIcon from '@/components/user_stack/UserIcon';
-import { PopupConfirmation, PopupMenu, PopupOverlay } from '@/features/popup-menu/stores/PopupAtom';
+import { PopupConfirmation, PopupMenu, PopupOverlay } from '@/features/popup-menu/types';
 import { Menu, ArrowLeft, X, Check } from 'lucide-react';
 
 // Custom Hooks

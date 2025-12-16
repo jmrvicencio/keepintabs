@@ -34,7 +34,6 @@ function Home() {
   const handleGoogleClicked = async (e: MouseEvent) => {
     try {
       const result = await signInWithPopup(auth, provider);
-      debugger;
 
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const token = credential?.accessToken;

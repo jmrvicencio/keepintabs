@@ -1,11 +1,12 @@
 import { useAtom } from 'jotai';
-import { showPopupAtom, popupAtom, type PopupOverlay, PopupMenu, PopupConfirmation } from '../stores/PopupAtom';
+import { showPopupAtom, popupAtom } from '../stores/PopupAtom';
+import { Popup } from '../types';
 
 export const usePopupOverlay = () => {
   const [showPopup, setShowPopup] = useAtom(showPopupAtom);
-  const [popup, setPopup] = useAtom<PopupOverlay | PopupMenu | PopupConfirmation>(popupAtom);
+  const [popup, setPopup] = useAtom<Popup>(popupAtom);
 
-  function callPopup(popup: PopupOverlay | PopupMenu | PopupConfirmation) {
+  function callPopup(popup: Popup) {
     setPopup(popup);
     setShowPopup(true);
   }

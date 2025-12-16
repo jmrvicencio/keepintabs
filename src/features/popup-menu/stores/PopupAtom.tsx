@@ -1,38 +1,8 @@
 import { atom } from 'jotai';
 import { ReactNode, type RefObject } from 'react';
+import { Popup } from '../types';
 
-export interface PopupOverlay {
-  type: 'popup-overlay';
-  title?: string;
-  body: ReactNode;
-  options?: {
-    padding?: {
-      x: number;
-      y: number;
-    };
-  };
-  closeCallback?: () => any;
-}
-
-export interface PopupConfirmation {
-  type: 'popup-confirmation';
-  title?: string;
-  body?: string;
-  confirmCallback?: () => any;
-  closeCallback?: () => any;
-}
-
-export interface PopupMenu {
-  type: 'menu';
-  reference?: RefObject<HTMLElement | null>;
-  options: {
-    label: string;
-    action?: () => any;
-  }[];
-  closeCallback?: () => any;
-}
-
-const popup: PopupOverlay | PopupMenu = {
+const popup: Popup = {
   type: 'popup-overlay',
   title: 'Popup Title',
   body: (
@@ -42,6 +12,6 @@ const popup: PopupOverlay | PopupMenu = {
   ),
 };
 
-export const popupAtom = atom<PopupOverlay | PopupMenu | PopupConfirmation>(popup);
+export const popupAtom = atom<Popup>(popup);
 
 export const showPopupAtom = atom<boolean>(false);
