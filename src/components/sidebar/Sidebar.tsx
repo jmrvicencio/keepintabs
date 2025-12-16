@@ -39,7 +39,7 @@ function Sidebar() {
 
   // Computed Values
   const showSidebarClass = showSidebar ? 'show-sidebar' : '';
-  const hasNotifs = (notifications?.size ?? 0) > 0;
+  const hasNotifs = notifications?.docs.some((notif) => !notif.data().seen) ?? false;
 
   // -----------------
   // Event Handlers
@@ -77,7 +77,7 @@ function Sidebar() {
 
   return (
     <div
-      className={`${showSidebarClass} bg-wheat-200 top-0 z-20 w-[0dvw] max-w-4/5 shrink-0 pt-4 transition-[width] duration-300 ease-in-out md:sticky md:h-fit md:w-64 md:pt-12 not-md:[.show-sidebar]:w-72`}
+      className={`${showSidebarClass} bg-wheat-200 top-0 z-20 w-0 max-w-4/5 shrink-0 pt-4 transition-[width] duration-300 ease-in-out md:sticky md:h-fit md:w-64 md:pt-12 not-md:[.show-sidebar]:w-72`}
     >
       <div className="relative px-2">
         <div

@@ -1,6 +1,6 @@
 export type Notification = NotificationInvite;
 
-interface NotificationInvite {
+export interface NotificationInvite {
   type: 'invite';
   inviteKey: string;
   seen: boolean;

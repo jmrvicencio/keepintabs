@@ -45,6 +45,13 @@ const router = createHashRouter([
         },
       },
       {
+        path: 'notifications',
+        lazy: async () => {
+          let Notifications = await import('./routes/App/Notifications');
+          return { Component: Notifications.default };
+        },
+      },
+      {
         path: 'groups',
         Component: Outlet,
         children: [

@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import { Notification } from '../types';
 import { collections, db } from '@/lib/firebase/firestore';
 import { auth } from '@/lib/firebase/auth';
+import { notificationsAtom } from '../store/notifications';
+import { useAtom } from 'jotai';
 import toast from 'react-hot-toast';
 
 const useNotifications = () => {
-  const [notifications, setNotifications] = useState<QuerySnapshot<Notification>>();
+  const [notifications, setNotifications] = useAtom(notificationsAtom);
 
   useEffect(() => {
     const notificationCollection = collection(
