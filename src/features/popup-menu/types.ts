@@ -1,4 +1,5 @@
-import { ExoticComponent, ReactNode, RefObject } from 'react';
+import { ExoticComponent, ReactNode, RefObject, FC } from 'react';
+import { LucideProps } from 'lucide-react';
 
 export type Popup = PopupOverlay | PopupMenu | PopupConfirmation;
 
@@ -28,7 +29,7 @@ export interface PopupMenu {
   reference?: RefObject<HTMLElement | null>;
   options: {
     label: string;
-    icon: ExoticComponent;
+    icon?: FC<LucideProps>;
     action?: () => any;
   }[];
   closeCallback?: () => any;

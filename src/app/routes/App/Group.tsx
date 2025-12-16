@@ -27,7 +27,7 @@ import TransactionCard from '@/features/groups/components/TransactionCard';
 import Panel from '@/components/neubrutalist/Panel';
 import UserIcon from '@/components/user_stack/UserIcon';
 import { PopupConfirmation, PopupMenu, PopupOverlay } from '@/features/popup-menu/types';
-import { Menu, ArrowLeft, X, Check } from 'lucide-react';
+import { Menu, ArrowLeft, X, Check, Pencil, MousePointer2, ArrowLeftFromLine } from 'lucide-react';
 
 // Custom Hooks
 import useTransactions from '@/features/transactions/hooks/useTransactions';
@@ -292,12 +292,14 @@ const GroupInfo = ({
       options: [
         {
           label: 'Rename Group',
+          icon: Pencil,
           action: () => {
             setPopup(renamePopup);
           },
         },
         {
           label: 'Select Items',
+          icon: MousePointer2,
           action: () => {
             resetPopup();
             setCustomFab(true);
@@ -307,6 +309,7 @@ const GroupInfo = ({
         },
         {
           label: 'Leave Group',
+          icon: ArrowLeftFromLine,
           action: async () => {
             const confirmationPopup: PopupConfirmation = {
               type: 'popup-confirmation',

@@ -1,6 +1,6 @@
 import { MouseEvent, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { PopupMenu, showPopupAtom } from '../stores/PopupAtom';
+import { PopupMenu } from '../types';
 import { useAtom } from 'jotai';
 import { buttonHandleKeypress, buttonRole } from '@/util/buttonHandleKeypress';
 
@@ -58,11 +58,18 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
         ...styleY,
         right: screen.right - (ref?.right ?? 0),
       }}
-      className="absolute flex min-w-50 flex-col rounded-sm bg-white p-4 py-2"
+      className="absolute flex min-w-60 flex-col rounded-sm bg-white py-2"
       onClick={handlePopupClicked}
     >
       {popup.options.map((option, i) => (
-        <div {...buttonRole(option.action)} key={i} className="border-ink-300/40 cursor-pointer py-3 not-last:border-b">
+        <div
+          {...buttonRole(option.action)}
+          key={i}
+          className="border-ink-300/40 hover:bg-wheat-400/25 relative cursor-pointer px-4 py-3 transition-colors not-last:border-b"
+        >
+          {option.icon && (
+            <option.icon className="stroke-ink-800/85 absolute top-1/2 left-4 aspect-square w-4 -translate-y-1/2" />
+          )}
           {option.label}
         </div>
       ))}
