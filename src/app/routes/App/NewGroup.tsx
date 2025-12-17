@@ -43,7 +43,7 @@ const NewGroup = () => {
     const [groupId, inviteKey] = await addGroup(groupName, members);
     await Promise.all(
       members.map((member) => {
-        if (member?.email) return sendInvite(member.email, groupId, inviteKey);
+        if (member?.email) return sendInvite(member.email, groupName, groupId, inviteKey);
       }),
     );
 

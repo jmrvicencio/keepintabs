@@ -12,8 +12,9 @@ import {
 } from 'firebase/firestore';
 import { Notification } from '../types';
 import { User } from '@/features/users/types';
+import { auth } from '@/lib/firebase/auth';
 
-const useSendInvite = () => async (email: string, groupId: string, inviteKey: string) => {
+const useSendInvite = () => async (email: string, groupName: string, groupId: string, inviteKey: string) => {
   // Check if user is valid
   const userCollection = collection(db, collections.users) as CollectionReference<User>;
   const q = query(userCollection, where('email', '==', email));
@@ -27,8 +28,10 @@ const useSendInvite = () => async (email: string, groupId: string, inviteKey: st
 
   const notifData: Notification = {
     type: 'invite',
-    inviteKey,
+    invitedBy: auth.currentUser!.uid,
     groupId,
+    groupName,
+    inviteKey,
     seen: false,
   };
 
