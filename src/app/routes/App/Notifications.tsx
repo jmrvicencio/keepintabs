@@ -1,27 +1,35 @@
 import { useState } from 'react';
 import Panel from '@/components/neubrutalist/Panel';
-import { Link } from 'react-router-dom';
-import { ROUTES } from '@/app/routes';
+import { Link, useNavigate } from 'react-router-dom';
+import { getGroupRoute, ROUTES } from '@/app/routes';
 import { ArrowLeft } from 'lucide-react';
 import useNotifications from '@/features/notifications/hooks/useNotifications';
 import useGetNotifications from '@/features/notifications/hooks/useGetNotifications';
 import { useEffect, useMemo } from 'react';
 import { DocumentData, QuerySnapshot } from 'firebase/firestore';
 import { NotificationInvite } from '@/features/notifications/types';
-import { Group } from '@/features/groups/types';
 import useGetUser from '@/features/users/hooks/useGetUser';
 import { User } from '@/features/users/types';
+import useJoinGroup from '@/features/groups/hooks/useJoinGroup';
+import useDeleteNotification from '@/features/notifications/hooks/deleteNotification';
+import Loading from '@/components/Loading';
+import toast from 'react-hot-toast';
 
 const Notifications = () => {
   // Hooks
+  const navigate = useNavigate();
   const getUser = useGetUser();
   const { notifications, seenNotif } = useGetNotifications();
+  const joinGroup = useJoinGroup();
+  const deleteNotif = useDeleteNotification();
 
   // Local States
   const [notifs, setNotifs] = useState<QuerySnapshot<NotificationInvite, DocumentData>>();
   const [users, setUsers] = useState<Record<string, User>>({});
+  const [forceLoading, setForceLoading] = useState<boolean>(false);
 
-  console.log('users', users);
+  // Computed Values
+  const isLoading = forceLoading;
 
   // ------------------
   // Effects
@@ -58,9 +66,29 @@ const Notifications = () => {
     seenNotifs();
   }, [notifs]);
 
+  // ------------------
+  // Event Listeners
+  // ------------------
+
+  const handleAcceptInvite = (notifId: string, groupId: string, inviteKey: string) => async () => {
+    try {
+      setForceLoading(true);
+      await joinGroup(groupId, inviteKey);
+      await deleteNotif(notifId);
+
+      navigate(getGroupRoute(groupId));
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message);
+      throw err;
+    }
+  };
+
   console.log(notifs?.docs.map((notif) => notif.data()));
 
-  return (
+  return isLoading ? (
+    <Loading />
+  ) : (
     <>
       <section className="border-wheat-400 rounde border-wheat-400d-lg mx-3 flex grow flex-col items-start gap-2 border-b border-dashed pt-6">
         <div className="w-full">
@@ -80,14 +108,22 @@ const Notifications = () => {
           const notif = notifSnap.data();
 
           return (
-            <div key={i} className="border-wheat-400 flex w-full flex-col rounded-2xl border bg-white p-2">
-              <p className="py-2">
+            <div
+              key={i}
+              className={`${notif.seen && 'seen'} border-wheat-400 flex w-full flex-col rounded-2xl border bg-white p-2 [.seen]:bg-white/25`}
+            >
+              <p className="py-4">
                 {users?.[notif.invitedBy]?.username ?? 'unkown'} invited you to join{' '}
                 <span className="font-semibold">{notif.groupName}</span> - {notif.seen ? 'seen' : 'unseen'}
               </p>
               <div className="flex w-full flex-row justify-stretch gap-4 px-2">
                 <div className="bg-wheat-200 border-wheat-400 grow cursor-pointer rounded-lg border p-2">Ignore</div>
-                <div className="bg-accent-200 grow cursor-pointer rounded-lg p-2">Accept</div>
+                <div
+                  className="bg-accent-200 grow cursor-pointer rounded-lg p-2"
+                  onClick={handleAcceptInvite(notifSnap.id, notif.groupId, notif.inviteKey)}
+                >
+                  Accept
+                </div>
               </div>
             </div>
           );

@@ -107,7 +107,11 @@ function Sidebar() {
         </div>
       </Link>
       <div className="p-4">
-        <Link className="pointer-events-none select-none" to={ROUTES.NEW_TRANSACTION} state={{ groupId: groupParam }}>
+        <Link
+          className={`${!showAddTransaction && 'lock'} [.lock]:pointer-events-none [.lock]:select-none`}
+          to={ROUTES.NEW_TRANSACTION}
+          state={{ groupId: groupParam }}
+        >
           <FAB locked={!showAddTransaction} className="hidden cursor-pointer md:block">
             <Plus />
             Add Transaction

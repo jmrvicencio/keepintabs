@@ -16,8 +16,14 @@ export interface Group {
   };
   name: string;
   memberUids: string[];
+  invitedUids?: Set<string>;
   members: Record<MemberUid, Member>;
 }
+
+export type SerializedGroup = ReplaceSetWithArray<Group>;
+
+type ReplaceSetWithArray<T> =
+  T extends Set<infer U> ? U[] : T extends Object ? { [K in keyof T]: ReplaceSetWithArray<T[K]> } : T;
 
 type Lender = MemberUid; // Member who lent the money
 type Lent = Record<string, number>; // Members they lent to and the amounts lent

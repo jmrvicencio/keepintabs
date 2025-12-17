@@ -20,14 +20,18 @@ service cloud.firestore {
     match /users/{userId}/notifications/{notificationId} {
       allow read, update: if request.auth.uid == userId;
       allow create: if isValidUser();
+      allow delete: if request.auth.uid == userId;
     }
 
     match /groups/{groupId} {
       allow read: if isValidUser()
-        && request.auth.uid in resource.data.memberUids;
+        && (
+          request.auth.uid in resource.data.memberUids
+          || isInGroupMembers(groupId)
+        );
       allow create: if isValidUser()
         && isInGroupMembers(groupId);
-      allow update: if request.auth.uid in resource.data.memberUids
+      allow update: if isInGroupMembers(groupId)
         || request.resource.data.inviteKey == get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey;
       allow delete: if isValidUser()
         && request.auth.uid in resource.data.memberUids;
@@ -51,7 +55,7 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.userId
         && docId == request.resource.data.userId + "_" + request.resource.data.groupId
         && get(/databases/$(database)/documents/groupSettings/$(request.resource.data.groupId)).data.inviteKey == request.resource.data.inviteKey;
-      allow update: if request.auth.uid == resource.data.userId;
+      allow update: if request.auth.uid == resource.data.userId
     }
 
     // Custom Functions
