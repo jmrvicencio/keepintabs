@@ -9,16 +9,17 @@ import {
   updateDoc,
   deleteDoc,
 } from 'firebase/firestore';
-import { type Group, Member } from '../types';
+import { type Group, SerializedGroup, Member } from '../types';
 import { collections, db } from '@/lib/firebase/firestore';
 import { auth } from '@/lib/firebase/auth';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
+import { deserializeGroup } from '../utils/serializer';
 
 const useGroupListener = (groupId: string = '') => {
   const navigate = useNavigate();
-  const [group, setGroup] = useState<DocumentSnapshot<Group> | null>(null);
+  const [group, setGroup] = useState<DocumentSnapshot<SerializedGroup> | null>(null);
   const [userData, setUserData] = useState<Member | null>(null);
   const [userGroupId, setUserGroupId] = useState<string | undefined>();
   const [unsubCalled, setUnsubCalled] = useState(false);
@@ -27,7 +28,7 @@ const useGroupListener = (groupId: string = '') => {
   let unsubscribeToSnapshot: Unsubscribe;
   useEffect(() => {
     const getDocs = async () => {
-      const groupDoc = doc(db, 'groups', groupId) as DocumentReference<Group>;
+      const groupDoc = doc(db, 'groups', groupId) as DocumentReference<SerializedGroup>;
       if (unsubCalled) return;
 
       try {
@@ -35,7 +36,7 @@ const useGroupListener = (groupId: string = '') => {
         unsubscribeToSnapshot = onSnapshot(
           groupDoc,
           (groupSnap) => {
-            const groupData = groupSnap.data() as Group;
+            const groupData: Group = deserializeGroup(groupSnap.data() as SerializedGroup);
             if (!groupData) return;
 
             const memberEntries = Object.entries(groupData.members);

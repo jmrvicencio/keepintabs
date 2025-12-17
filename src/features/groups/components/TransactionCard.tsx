@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Transaction } from '@/features/transactions/types';
-import { Group } from '../types';
+import { Group, SerializedGroup } from '../types';
 import Panel from '@/components/neubrutalist/Panel';
 import { ROUTES, getTransactionRoute } from '@/app/routes';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
@@ -21,7 +21,7 @@ const TransactionCard = ({
 }: {
   transaction: Transaction & { id: string };
   groupId: string;
-  currGroup: DocumentSnapshot<Group>;
+  currGroup: DocumentSnapshot<SerializedGroup>;
   userGroupId: string;
   disable?: boolean;
   selected?: boolean;

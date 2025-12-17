@@ -13,7 +13,7 @@ import {
 import useGroupListener from '@/features/groups/hooks/useGroupListener';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { getSimplifiedBalance, getTotalFromSimplified } from '@/features/groups/utils/balance';
-import { SimplifiedBalance, UserBalance } from '@/features/groups/types';
+import { SerializedGroup, SimplifiedBalance, UserBalance } from '@/features/groups/types';
 import { MainContentRefAtom } from '@/store/mainArea';
 import { useAtom } from 'jotai';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
@@ -37,6 +37,8 @@ import useFab from '@/features/fab/hooks/useFab';
 import FAB from '@/features/fab/components/FAB';
 import useDeleteTransactions from '@/features/transactions/hooks/useDeleteTransactions';
 import { Transaction } from '@/features/transactions/types';
+import { deserializeGroup } from '@/features/groups/utils/serializer';
+import { auth } from '@/lib/firebase/auth';
 
 const BalanceLabel = ({ total }: { total: number }) => {
   return (
@@ -417,7 +419,7 @@ const GroupInfo = ({
 const Group = memo(function Group() {
   const { group: groupParam } = useParams();
   const { group, userGroupId, updateName, deleteGroup, loading: groupLoading } = useGroupListener(groupParam!);
-  const groupData = group?.data();
+  const groupData = deserializeGroup(group?.data() as SerializedGroup);
   const {
     transactions,
     loading: transactionLoading,
@@ -439,13 +441,14 @@ const Group = memo(function Group() {
 
   // Computed Variables
 
+  const isPending = groupData.invitedUids?.has(auth.currentUser!.uid) ?? false;
   const loading = forceLoading || groupLoading;
 
   // -----------------------------------
   // Computed Variables
   // -----------------------------------
 
-  const simplifiedBalance = useMemo(() => getSimplifiedBalance(group?.data()), [group]);
+  const simplifiedBalance = useMemo(() => getSimplifiedBalance(groupData), [group]);
   const userBalance = {
     total: getTotalFromSimplified(userGroupId, simplifiedBalance),
     records: simplifiedBalance,
@@ -499,6 +502,8 @@ const Group = memo(function Group() {
 
   return loading ? (
     <Loading />
+  ) : !isPending ? (
+    <>Missing Details to Join</>
   ) : (
     <>
       <div className="relative flex shrink-0 grow flex-col pt-3">
