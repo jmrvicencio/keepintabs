@@ -441,7 +441,7 @@ const Group = memo(function Group() {
 
   // Computed Variables
 
-  const isPending = groupData.invitedUids?.has(auth.currentUser!.uid) ?? false;
+  const isPending = groupData?.invitedUids?.has(auth.currentUser!.uid) ?? false;
   const loading = forceLoading || groupLoading;
 
   // -----------------------------------
