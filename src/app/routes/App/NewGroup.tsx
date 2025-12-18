@@ -40,11 +40,10 @@ const NewGroup = () => {
     }
     setSubmitting(true);
 
-    debugger;
-    const [groupId, inviteKey] = await addGroup(groupName, members);
+    const { groupId, inviteKey, group: groupData } = await addGroup(groupName, members);
     await Promise.all(
-      members.map((member) => {
-        if (member?.email) return sendInvite(member.email, groupName, groupId, inviteKey);
+      Object.entries(groupData.members).map(([uid, member]) => {
+        if (member?.email) return sendInvite(uid, member.email, groupName, groupId, inviteKey);
       }),
     );
 

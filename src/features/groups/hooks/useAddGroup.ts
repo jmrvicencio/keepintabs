@@ -31,8 +31,6 @@ const useAddGroup = (user: User) => {
       const adminKey = uuid();
       const groupsCollection = collection(db, collections.groups) as CollectionReference<SerializedGroup>;
       const groupRef = doc(groupsCollection, groupId) as DocumentReference<SerializedGroup>;
-      // const groupMembersRef = doc(db, `groupMembers/${userId}_${groupId}`);
-      // const groupMembersRef = doc(groupsCollection, collections.members, userId) as DocumentReference<GroupMembers>;
       const groupMembersRef = doc(groupRef, collections.members, userId) as DocumentReference<GroupMember>;
       const inviteKeyRef = doc(groupRef, collections.settings, 'inviteKey');
       const adminKeyRef = doc(groupRef, collections.settings, 'adminKey');
@@ -50,6 +48,14 @@ const useAddGroup = (user: User) => {
         nextMembers[memberUid] = member;
       }
 
+      const group: SerializedGroup = {
+        name: groupName,
+        memberUids: [userId],
+        members: nextMembers,
+        expenses: {},
+        spent: {},
+      };
+
       // Create Doc Rules
       await Promise.all([
         setDoc(inviteKeyRef, {
@@ -66,12 +72,8 @@ const useAddGroup = (user: User) => {
 
       // Create Group
       await setDoc(groupRef, {
+        ...group,
         createdAt: serverTimestamp(),
-        name: groupName,
-        memberUids: [userId],
-        members: nextMembers,
-        expenses: {},
-        spent: {},
       });
 
       // Remove InviteKey from memberDoc
@@ -79,7 +81,7 @@ const useAddGroup = (user: User) => {
         inviteKey: deleteField(),
       });
 
-      return [groupId, inviteKey];
+      return { groupId, inviteKey, group };
     } catch (err) {
       throw err;
     }

@@ -39,6 +39,7 @@ import useDeleteTransactions from '@/features/transactions/hooks/useDeleteTransa
 import { Transaction } from '@/features/transactions/types';
 import { deserializeGroup } from '@/features/groups/utils/serializer';
 import { auth } from '@/lib/firebase/auth';
+import JoinGroup from '@/features/groups/components/JoinGroup';
 
 const BalanceLabel = ({ total }: { total: number }) => {
   return (
@@ -490,9 +491,6 @@ const Group = memo(function Group() {
     setShowFab(false);
     await deleteTransactions(selection); // Delete Transaction from Database
 
-    // setForceLoading(false);
-    // removeTransactions(selection); // Remove from Transaction Array (view display)
-    // resetFab();
     window.location.reload();
   };
 
@@ -503,7 +501,7 @@ const Group = memo(function Group() {
   return loading ? (
     <Loading />
   ) : isPending ? (
-    <>Missing Details to Join</>
+    <JoinGroup groupData={groupData} />
   ) : (
     <>
       <div className="relative flex shrink-0 grow flex-col pt-3">
@@ -534,7 +532,6 @@ const Group = memo(function Group() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {txns.map((txn) => {
-                        // const selected = selection.has(txn.id);
                         const selected = txn.id in selection;
 
                         return (

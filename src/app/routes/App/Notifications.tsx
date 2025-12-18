@@ -7,7 +7,7 @@ import useNotifications from '@/features/notifications/hooks/useNotifications';
 import useGetNotifications from '@/features/notifications/hooks/useGetNotifications';
 import { useEffect, useMemo } from 'react';
 import { DocumentData, QuerySnapshot } from 'firebase/firestore';
-import { NotificationInvite } from '@/features/notifications/types';
+import { Notification, NotificationInvite } from '@/features/notifications/types';
 import useGetUser from '@/features/users/hooks/useGetUser';
 import { User } from '@/features/users/types';
 import useJoinGroup from '@/features/groups/hooks/useJoinGroup';
@@ -70,13 +70,13 @@ const Notifications = () => {
   // Event Listeners
   // ------------------
 
-  const handleAcceptInvite = (notifId: string, groupId: string, inviteKey: string) => async () => {
+  const handleAcceptInvite = (notifId: string, notif: Notification) => async () => {
     try {
       setForceLoading(true);
-      await joinGroup(groupId, inviteKey);
+      await joinGroup(notif.groupId, notif.memberUid, notif.inviteKey);
       await deleteNotif(notifId);
 
-      navigate(getGroupRoute(groupId));
+      navigate(getGroupRoute(notif.groupId));
     } catch (err) {
       const error = err as Error;
       toast.error(error.message);
@@ -120,7 +120,7 @@ const Notifications = () => {
                 <div className="bg-wheat-200 border-wheat-400 grow cursor-pointer rounded-lg border p-2">Ignore</div>
                 <div
                   className="bg-accent-200 grow cursor-pointer rounded-lg p-2"
-                  onClick={handleAcceptInvite(notifSnap.id, notif.groupId, notif.inviteKey)}
+                  onClick={handleAcceptInvite(notifSnap.id, notif)}
                 >
                   Accept
                 </div>
