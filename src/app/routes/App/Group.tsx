@@ -372,7 +372,6 @@ const GroupInfo = ({
             <div className="flex cursor-pointer flex-row">
               {[...Array(3)].map((_, i) => {
                 const member = Object.values(groupData?.members!)[i];
-                console.log('photo url: ', member?.photoUrl);
                 return (
                   <UserIcon
                     key={i}
