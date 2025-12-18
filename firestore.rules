@@ -35,6 +35,23 @@ service cloud.firestore {
         || request.resource.data.inviteKey == get(/databases/$(database)/documents/groupSettings/$(groupId)).data.inviteKey;
       allow delete: if isValidUser()
         && request.auth.uid in resource.data.memberUids;
+
+      match /settings/{settingId} {
+        allow create: if isValidUser()
+          && (
+            request.resource.data.keys().hasAll(['inviteKey'])
+            || request.resource.data.keys().hasAll(['adminKey'])
+          );
+      }
+
+      match /members/{docId} {
+        allow create: if isValidUser()
+          && request.auth.uid == docId
+          && hasInviteKey(groupId);
+        allow update: if isValidUser()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inviteKey'])
+          && !request.resource.data.keys().hasAny(['inviteKey']);
+      }
     }
 
     match /groups/{groupId}/transactions/{transactionId} {
@@ -45,7 +62,7 @@ service cloud.firestore {
     }
 
     match /groupSettings/{groupId} {
-      allow read: if exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId))
+      allow read: if isInGroupMembers(groupId);
       allow create: if isValidUser() && request.resource.data.keys().hasAll(['inviteKey']);
     }
 
@@ -60,7 +77,11 @@ service cloud.firestore {
 
     // Custom Functions
     function isInGroupMembers(groupId){
-      return exists(/databases/$(database)/documents/groupMembers/$(request.auth.uid + "_" + groupId));
+      return exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid));
+    }
+
+    function hasInviteKey(groupId){
+      return request.resource.data.inviteKey == get(/databases/$(database)/documents/groups/$(groupId)/settings/inviteKey).data.inviteKey;
     }
 
     function isValidUser(){

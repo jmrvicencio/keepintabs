@@ -6,13 +6,20 @@ import {
   serverTimestamp,
   runTransaction,
   DocumentReference,
+  collection,
+  CollectionReference,
 } from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 
-import { db, getFirestoreURL } from '../../../lib/firebase/firestore';
+import { collections, db, getFirestoreURL } from '../../../lib/firebase/firestore';
 import { User } from 'firebase/auth';
-import { Group, Member } from '../types';
+import { Group, Member, SerializedGroup } from '../types';
 import { auth } from '../../../lib/firebase/auth';
+
+interface GroupMember {
+  admin: boolean;
+  inviteKey?: string;
+}
 
 const useAddGroup = (user: User) => {
   const addNewGroup = async (groupName: string, members: Member[]) => {
@@ -21,9 +28,14 @@ const useAddGroup = (user: User) => {
       const userId = user.uid;
 
       const inviteKey = uuid();
-      const groupsRef = doc(db, `groups/${groupId}`) as DocumentReference<Group>;
-      const groupMembersRef = doc(db, `groupMembers/${userId}_${groupId}`);
-      const groupSettingsRef = doc(db, `groupSettings/${groupId}`);
+      const adminKey = uuid();
+      const groupsCollection = collection(db, collections.groups) as CollectionReference<SerializedGroup>;
+      const groupRef = doc(groupsCollection, groupId) as DocumentReference<SerializedGroup>;
+      // const groupMembersRef = doc(db, `groupMembers/${userId}_${groupId}`);
+      // const groupMembersRef = doc(groupsCollection, collections.members, userId) as DocumentReference<GroupMembers>;
+      const groupMembersRef = doc(groupRef, collections.members, userId) as DocumentReference<GroupMember>;
+      const inviteKeyRef = doc(groupRef, collections.settings, 'inviteKey');
+      const adminKeyRef = doc(groupRef, collections.settings, 'adminKey');
 
       const nextMembers: Record<string, Member> = {};
 
@@ -38,17 +50,22 @@ const useAddGroup = (user: User) => {
         nextMembers[memberUid] = member;
       }
 
-      await setDoc(groupSettingsRef, {
-        inviteKey,
-      });
+      // Create Doc Rules
+      await Promise.all([
+        setDoc(inviteKeyRef, {
+          inviteKey,
+        }),
+        setDoc(adminKeyRef, {
+          adminKey,
+        }),
+        setDoc(groupMembersRef, {
+          admin: true,
+          inviteKey,
+        }),
+      ]);
 
-      await setDoc(groupMembersRef, {
-        userId,
-        groupId,
-        inviteKey,
-      });
-
-      setDoc(groupsRef, {
+      // Create Group
+      await setDoc(groupRef, {
         createdAt: serverTimestamp(),
         name: groupName,
         memberUids: [userId],
@@ -57,6 +74,7 @@ const useAddGroup = (user: User) => {
         spent: {},
       });
 
+      // Remove InviteKey from memberDoc
       await updateDoc(groupMembersRef, {
         inviteKey: deleteField(),
       });

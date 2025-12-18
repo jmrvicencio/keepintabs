@@ -11,7 +11,8 @@ export const collections = {
   transactions: 'transactions',
   users: 'users',
   notifications: 'notifications',
-  members: 'groupMembers',
+  members: 'members',
+  settings: 'settings',
 };
 
 export const db = initializeFirestore(app, {

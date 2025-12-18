@@ -40,6 +40,7 @@ const NewGroup = () => {
     }
     setSubmitting(true);
 
+    debugger;
     const [groupId, inviteKey] = await addGroup(groupName, members);
     await Promise.all(
       members.map((member) => {

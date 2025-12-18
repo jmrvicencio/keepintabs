@@ -26,7 +26,7 @@ const useJoinGroup = () => async (groupId: string, inviteKey: string) => {
     nextMemberUids.push(userId);
     nextInvitedUids.push(userId);
 
-    await updateDoc(groupRef, {
+    updateDoc(groupRef, {
       memberUids: nextMemberUids,
       invitedUids: nextInvitedUids,
     });

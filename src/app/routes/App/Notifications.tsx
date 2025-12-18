@@ -73,6 +73,7 @@ const Notifications = () => {
   const handleAcceptInvite = (notifId: string, groupId: string, inviteKey: string) => async () => {
     try {
       setForceLoading(true);
+      debugger;
       await joinGroup(groupId, inviteKey);
       await deleteNotif(notifId);
 
