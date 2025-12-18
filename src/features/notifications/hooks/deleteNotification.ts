@@ -14,7 +14,7 @@ const useDeleteNotification = () => async (notifId: string) => {
     ) as CollectionReference<Notification>;
     const notifRef = doc(notifCollection, notifId);
 
-    await deleteDoc(notifRef);
+    deleteDoc(notifRef);
   } catch (err) {
     const error = err as Error;
     toast.error(error.message);

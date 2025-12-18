@@ -8,19 +8,18 @@ import { auth } from '@/lib/firebase/auth';
 const useJoinGroup = () => async (groupId: string, inviteKey: string) => {
   try {
     const userId = auth.currentUser!.uid;
-    const groupMembersCollection = collection(db, collections.members);
-    const groupMembersRef = doc(groupMembersCollection, `${userId}_${groupId}`);
     const groupCollection = collection(db, collections.groups) as CollectionReference<SerializedGroup>;
     const groupRef = doc(groupCollection, groupId);
+    const groupMembersRef = doc(groupRef, collections.members, userId);
 
     await setDoc(groupMembersRef, {
-      groupId,
-      userId,
-      inviteKey,
+      admin: false,
+      inviteKey: inviteKey,
     });
 
     const groupSnap = await getDoc(groupRef);
     if (!groupSnap.exists()) throw new Error('Group not found');
+
     const nextInvitedUids = groupSnap.data().invitedUids ?? [];
     const nextMemberUids = groupSnap.data().memberUids;
     nextMemberUids.push(userId);

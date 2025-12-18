@@ -52,27 +52,13 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inviteKey'])
           && !request.resource.data.keys().hasAny(['inviteKey']);
       }
-    }
 
-    match /groups/{groupId}/transactions/{transactionId} {
-      allow read: if isValidUser()
-        && isInGroupMembers(groupId);
-      allow write: if isValidUser()
-        && isInGroupMembers(groupId);
-    }
-
-    match /groupSettings/{groupId} {
-      allow read: if isInGroupMembers(groupId);
-      allow create: if isValidUser() && request.resource.data.keys().hasAll(['inviteKey']);
-    }
-
-    match /groupMembers/{docId} {
-      allow read: if isValidUser() && request.auth.uid == resource.data.userId;
-      allow create: if isValidUser()
-        && request.auth.uid == request.resource.data.userId
-        && docId == request.resource.data.userId + "_" + request.resource.data.groupId
-        && get(/databases/$(database)/documents/groupSettings/$(request.resource.data.groupId)).data.inviteKey == request.resource.data.inviteKey;
-      allow update: if request.auth.uid == resource.data.userId
+      match /transactions/{transactionId} {
+        allow read: if isValidUser()
+          && isInGroupMembers(groupId);
+        allow write: if isValidUser()
+          && isInGroupMembers(groupId);
+      }
     }
 
     // Custom Functions

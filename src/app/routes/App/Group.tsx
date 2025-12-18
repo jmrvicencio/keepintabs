@@ -502,7 +502,7 @@ const Group = memo(function Group() {
 
   return loading ? (
     <Loading />
-  ) : !isPending ? (
+  ) : isPending ? (
     <>Missing Details to Join</>
   ) : (
     <>
