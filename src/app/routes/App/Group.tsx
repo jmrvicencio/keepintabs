@@ -18,7 +18,7 @@ import { MainContentRefAtom } from '@/store/mainArea';
 import { useAtom } from 'jotai';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
 import { type Group } from '@/features/groups/types';
-import { ROUTES } from '../../routes';
+import { getGroupMembersRoute, ROUTES } from '../../routes';
 import { format } from 'date-fns';
 
 // Custom Components
@@ -317,7 +317,7 @@ const GroupInfo = ({
             const confirmationPopup: PopupConfirmation = {
               type: 'popup-confirmation',
               title: 'Delete Group',
-              body: `Are you sure you want to delete '${groupData.name}'?`,
+              body: `Are you sure you want to leave '${groupData.name}'?`,
               confirmCallback: async () => {
                 setForceLoading(true);
                 setShowFab(false);
@@ -367,22 +367,24 @@ const GroupInfo = ({
               <ArrowLeft className="text-ink-800" />
             </Panel>
           </Link>
-          <div className="border-wheat-400 bg-wheat-200 flex flex-row items-center gap-2 rounded-full border px-2 py-1">
-            <p className="ml-1">{Object.keys(groupData?.members ?? {}).length}</p>
-            <div className="flex cursor-pointer flex-row">
-              {[...Array(3)].map((_, i) => {
-                const member = Object.values(groupData?.members!)[i];
-                return (
-                  <UserIcon
-                    key={i}
-                    imageUrl={member?.photoUrl ?? ''}
-                    bgColor="bg-wheat-400"
-                    border="border-wheat-200"
-                  />
-                );
-              })}
+          <Link to={getGroupMembersRoute(groupParam!)}>
+            <div className="border-wheat-400 bg-wheat-200 flex cursor-pointer flex-row items-center gap-2 rounded-full border px-2 py-1">
+              <p className="ml-1">{Object.keys(groupData?.members ?? {}).length}</p>
+              <div className="flex flex-row">
+                {[...Array(3)].map((_, i) => {
+                  const member = Object.values(groupData?.members!)[i];
+                  return (
+                    <UserIcon
+                      key={i}
+                      imageUrl={member?.photoUrl ?? ''}
+                      bgColor="bg-wheat-400"
+                      border="border-wheat-200"
+                    />
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className="mb-4 flex w-full flex-row items-center justify-between" ref={menuRef}>
           <h1 className="font-gieonto text-left text-4xl font-medium">{groupData?.name}</h1>

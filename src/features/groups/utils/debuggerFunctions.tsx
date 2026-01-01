@@ -140,7 +140,11 @@ export const useGroupDebugOptions = () => {
 
     const data = dummyGroup;
     data.memberUids = [...memberUids];
-    data.members['testUser'].linkedUid = auth.currentUser!.uid;
+    data.members['testUser'] = {
+      ...data.members['testUser'],
+      linkedUid: auth.currentUser!.uid,
+      email: auth.currentUser!.email!,
+    };
     const splitTotals = getMemberSplitTotals(
       dummyTransaction.amount,
       dummyTransaction.splitData,

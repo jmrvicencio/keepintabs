@@ -5,6 +5,7 @@ import Test from './routes/Test';
 export const ROUTES = {
   APP: '/app',
   GROUPS: '/app/groups',
+  MEMBERS: '/members',
   NEW_GROUP: '/app/groups/new',
   TEST: '/test',
   LANDING: '/',
@@ -19,6 +20,10 @@ export const getGroupRoute = (groupId: string) => {
 
 export const getTransactionRoute = (groupId: string, transactionId: string) => {
   return `${getGroupRoute(groupId)}${ROUTES.TRANSACTION}/${transactionId}`;
+};
+
+export const getGroupMembersRoute = (groupId: string) => {
+  return `${getGroupRoute(groupId)}${ROUTES.MEMBERS}`;
 };
 
 const router = createHashRouter([
