@@ -1,12 +1,31 @@
-# React + Vite
+# 💸 Keepin Tabs
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![preview](public/readme/preview.jpg)
 
-Currently, two official plugins are available:
+A debt bill splitting app designed to keep track of all members
+overall debts to simplify splitting the bill and avoiding cyclical repayments!
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Overview
 
-## Expanding the ESLint configuration
+This project is a fully responsive website that keeps track of transactions
+and splits the bill according to how much each member spent, or equally among all members.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠 Tech Stack
+
+- React
+- TypeScript
+- Firebase
+- Firestore
+- Tailwind CSS
+
+## 🎨 Features
+
+- 🗠 Debt Simplification Rebalancing
+- 😎 Group Tracking
+- ✔️ Simple Transaction Adding
+- 📱 Fully responsive design (mobile-first)
+- ✨ Neu-Brutalist Style
+
+## 📄 License
+
+This project is for personal use.
