@@ -10,7 +10,10 @@ function Button({
   const clickHandler = () => {};
 
   return (
-    <button className="cursor-pointer rounded-lg bg-blue-400 px-4 py-2 text-white" onClick={handleClick}>
+    <button
+      className="bg-accent-600 cursor-pointer rounded-lg border-2 border-black px-4 py-2 text-white"
+      onClick={handleClick}
+    >
       {children}
     </button>
   );

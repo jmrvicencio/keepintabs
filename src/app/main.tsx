@@ -7,6 +7,8 @@ import { Toaster } from 'react-hot-toast';
 import router from './routes';
 import Loading from '../components/Loading';
 import './index.css';
+import { Provider } from 'jotai';
+import { myStore } from '@/store/store';
 
 const queryClient = new QueryClient();
 
@@ -15,7 +17,9 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <Suspense fallback={<Loading />}>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <Provider store={myStore}>
+            <RouterProvider router={router} />
+          </Provider>
           <Toaster />
         </QueryClientProvider>
       </Suspense>

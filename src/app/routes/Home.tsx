@@ -12,12 +12,17 @@ import {
 import { auth, provider } from '../../lib/firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { User as UserData } from '@/features/users/types';
-
-import { ROUTES } from '../routes';
-import logo from '/logo-spaced.svg';
-import Button from '../../components/buttons/Button';
-import { db } from '../../lib/firebase/firestore';
 import toast from 'react-hot-toast';
+import { ROUTES } from '../routes';
+import { db } from '../../lib/firebase/firestore';
+
+import Button from '../../components/buttons/Button';
+import logo from '/logo-spaced.svg';
+import bg from '/home/pattern.svg';
+import patternImg from '/home/pattern.png';
+import sampleImg from '/home/sample.png';
+import logoImg from '/home/logo.svg';
+import PanelButton from '@/components/neubrutalist/PanelButton';
 
 function Home() {
   const navigate = useNavigate();
@@ -81,19 +86,40 @@ function Home() {
   console.log(user);
 
   return (
-    <div className="bg-olive font-outfit text-cream flex h-dvh flex-col items-center justify-center border border-black">
-      <div className="flex-rows flex items-center">
-        <img src={logo} className="h-8" />
-        <p className="font-outfit text-lg">Keepin' Tabs</p>
+    <div
+      className="font-outfit text-charcoal-700 bg-accent-190 flex h-dvh flex-col items-center justify-center bg-center bg-repeat"
+      style={{ backgroundImage: `url('${patternImg}')` }}
+    >
+      <div className="flex flex-row gap-12">
+        <img src={sampleImg} className="w-72" />
+        <div className="flex h-full max-w-140 flex-col items-center justify-center text-left text-2xl">
+          <div className="flex items-center gap-4">
+            <img src={logoImg} />
+            <h1 className="text-7xl font-extrabold">Keepin' Tabs</h1>
+          </div>
+          <p className="mt-8">
+            Keepin’ Tabs is a simple, friendly web app that helps you track debts and payments when splitting the cost
+            of dinners, coffee runs, movie nights, and more with friends, co‑workers, roommates, or anyone you share
+            expenses with.
+          </p>
+          <p className="mt-8">
+            It makes bill‑splitting easier than dusting off that old (but admittedly reliable) spreadsheet.
+          </p>
+          <div className="mt-12">
+            {!user ? (
+              <PanelButton onClick={handleGoogleClicked} bgColor="bg-accent-600" className="text-center text-white">
+                Sign in with Google
+              </PanelButton>
+            ) : (
+              // <Button onClick={handleGoogleClicked}>Sign in with Google</Button>
+              <>
+                <p>{user.displayName}</p>
+                <Button onClick={handleSignOut}>Sign Out</Button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
-      {!user ? (
-        <Button onClick={handleGoogleClicked}>Sign in with Google</Button>
-      ) : (
-        <>
-          <p>{user.displayName}</p>
-          <Button onClick={handleSignOut}>Sign Out</Button>
-        </>
-      )}
     </div>
   );
 }
