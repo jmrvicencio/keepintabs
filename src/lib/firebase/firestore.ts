@@ -13,6 +13,7 @@ export const collections = {
   notifications: 'notifications',
   members: 'members',
   settings: 'settings',
+  inviteKeys: 'inviteKeys',
 };
 
 export const db = initializeFirestore(app, {

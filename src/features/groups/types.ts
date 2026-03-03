@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Group {
   // A record of the total amt that [lender] owes to [lent]
   // NOTE: both users can owe each other. ie. [abc] owes 200 to [efg], but [efg] owes 250 to [abc]
@@ -16,6 +18,7 @@ export interface Group {
   };
   name: string;
   memberUids: string[];
+  adminUids: string[];
   invitedUids?: Set<string>;
   members: Record<MemberUid, Member>;
 }
@@ -46,4 +49,10 @@ export interface SimplifiedBalance {
 export interface UserBalance {
   total: number;
   records: SimplifiedBalance;
+}
+
+export interface InviteKey {
+  inviteKey: string;
+  valid: boolean;
+  expires?: Timestamp | 'none';
 }

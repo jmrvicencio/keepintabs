@@ -15,6 +15,8 @@ import { Notification } from '../types';
 import { User } from '@/features/users/types';
 import { auth } from '@/lib/firebase/auth';
 import toast from 'react-hot-toast';
+import { v4 as uuid } from 'uuid';
+import { InviteKey } from '@/features/groups/types';
 
 const useSendInvite =
   () => async (memberUid: string, email: string, groupName: string, groupId: string, inviteKey?: string) => {
@@ -25,16 +27,19 @@ const useSendInvite =
       const userSnap = await getDocs(q);
 
       if (userSnap.size == 0) return;
+
+      // Create an invite key if one is not provided yet
       if (!inviteKey) {
+        const inviteId = uuid();
         const groupCollection = collection(db, collections.groups);
         const groupRef = doc(groupCollection, groupId);
-        const groupSettingsRef = doc(groupRef, collections.settings, 'inviteKey') as DocumentReference<{
-          inviteKey: string;
-        }>;
-        const groupSettingsSnap = await getDoc(groupSettingsRef);
-        const groupSettings = groupSettingsSnap.data();
+        const inviteRef = doc(groupRef, collections.inviteKeys, inviteId) as DocumentReference<InviteKey>;
 
-        inviteKey = groupSettings?.inviteKey ?? 'a';
+        inviteKey = inviteId;
+        await setDoc(inviteRef, {
+          inviteKey,
+          valid: true,
+        });
       }
 
       const userId = userSnap.docs[0].id;
