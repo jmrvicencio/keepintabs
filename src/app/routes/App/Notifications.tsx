@@ -14,6 +14,7 @@ import useJoinGroup from '@/features/groups/hooks/useJoinGroup';
 import useDeleteNotification from '@/features/notifications/hooks/deleteNotification';
 import Loading from '@/components/Loading';
 import toast from 'react-hot-toast';
+import { tryWrap } from '@/util/helpers';
 
 const Notifications = () => {
   // Hooks
@@ -84,6 +85,12 @@ const Notifications = () => {
     }
   };
 
+  const handleIgnoreInvite = (notifId: string, notif: Notification) => () => {
+    tryWrap(async () => {
+      deleteNotif(notifId);
+    });
+  };
+
   console.log(notifs?.docs.map((notif) => notif.data()));
 
   return isLoading ? (
@@ -117,7 +124,12 @@ const Notifications = () => {
                 <span className="font-semibold">{notif.groupName}</span> - {notif.seen ? 'seen' : 'unseen'}
               </p>
               <div className="flex w-full flex-row justify-stretch gap-4 px-2">
-                <div className="bg-wheat-200 border-wheat-400 grow cursor-pointer rounded-lg border p-2">Ignore</div>
+                <div
+                  className="bg-wheat-200 border-wheat-400 grow cursor-pointer rounded-lg border p-2"
+                  onClick={handleIgnoreInvite(notifSnap.id, notif)}
+                >
+                  Ignore
+                </div>
                 <div
                   className="bg-accent-200 grow cursor-pointer rounded-lg p-2"
                   onClick={handleAcceptInvite(notifSnap.id, notif)}

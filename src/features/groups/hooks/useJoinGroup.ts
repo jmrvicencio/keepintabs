@@ -6,10 +6,11 @@ import {
   doc,
   DocumentReference,
   getDoc,
+  runTransaction,
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { SerializedGroup } from '../types';
+import { InviteKey, SerializedGroup } from '../types';
 import toast from 'react-hot-toast';
 import { deserializeGroup } from '../utils/serializer';
 import { auth } from '@/lib/firebase/auth';
@@ -20,6 +21,7 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
     const groupCollection = collection(db, collections.groups) as CollectionReference<SerializedGroup>;
     const groupRef = doc(groupCollection, groupId) as DocumentReference<SerializedGroup>;
     const groupMembersRef = doc(groupRef, collections.members, userId);
+    const inviteKeyRef = doc(groupRef, collections.inviteKeys, inviteKey) as DocumentReference<InviteKey>;
 
     await setDoc(groupMembersRef, {
       admin: false,
@@ -28,14 +30,13 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
 
     const groupSnap = await getDoc(groupRef);
     if (!groupSnap.exists()) throw new Error('Group not found');
+    const groupData = groupSnap.data();
 
     // const nextInvitedUids = groupSnap.data().invitedUids ?? [];
-    const nextMemberUids = groupSnap.data().memberUids;
-    const nextMembers = groupSnap.data().members;
+    const nextMemberUids = [...groupData.memberUids];
+    const nextMembers = { ...groupData.members };
 
     nextMembers[memberUid].linkedUid = userId;
-
-    // nextInvitedUids.push(userId);
     nextMemberUids.push(userId);
 
     updateDoc(groupRef, {
@@ -43,9 +44,25 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
       members: nextMembers,
     });
 
-    await updateDoc(groupMembersRef, {
-      inviteKey: deleteField(),
+    // remove inviteKey after joining the group
+    await runTransaction(db, async (transaction) => {
+      await transaction.update(groupRef, {
+        memberUids: nextMemberUids,
+        members: nextMembers,
+      });
+
+      await transaction.update(groupMembersRef, {
+        inviteKey: deleteField(),
+      });
+
+      await transaction.update(inviteKeyRef, {
+        valid: false,
+      });
     });
+
+    // await updateDoc(groupMembersRef, {
+    //   inviteKey: deleteField(),
+    // });
 
     return;
   } catch (err) {

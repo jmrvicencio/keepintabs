@@ -31,6 +31,7 @@ service cloud.firestore {
         );
       allow create: if isValidUser();
       allow update: if isInGroupMembers(groupId)
+        // Make sure that adminUids are not changed
         && request.resource.data.adminUids == resource.data.adminUids;
       allow delete: if isValidUser()
         && request.auth.uid in resource.data.memberUids;
@@ -104,7 +105,13 @@ service cloud.firestore {
     }
 
     function hasInviteKey(groupId){
-      return request.resource.data.inviteKey == get(/databases/$(database)/documents/groups/$(groupId)/settings/inviteKey).data.inviteKey;
+      // return request.resource.data.inviteKey == get(/databases/$(database)/documents/groups/$(groupId)/settings/inviteKey).data.inviteKey;
+      let inviteKey = request.resource.data.inviteKey;
+      let invite = get(/databases/$(database)/documents/groups/$(groupId)/inviteKeys/$(inviteKey));
+
+      return exists(/databases/$(database)/documents/groups/$(groupId)/inviteKeys/$(inviteKey))
+        && invite.data.valid
+        && request.resource.data.inviteKey == invite.data.inviteKey;
     }
 
     function isValidUser(){
