@@ -1,5 +1,5 @@
 import { useState, useEffect, type MouseEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Routes, useNavigate } from 'react-router-dom';
 import './Home.css';
 import {
   getAdditionalUserInfo,
@@ -13,7 +13,7 @@ import { auth, provider } from '../../lib/firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { User as UserData } from '@/features/users/types';
 import toast from 'react-hot-toast';
-import { ROUTES } from '../routes';
+import router, { ROUTES } from '../routes';
 import { db } from '../../lib/firebase/firestore';
 
 import Button from '../../components/buttons/Button';
@@ -83,20 +83,26 @@ function Home() {
       .catch((error) => new Error(error));
   };
 
+  const handleRedirect = () => {
+    navigate(ROUTES.APP);
+  };
+
   console.log(user);
 
   return (
     <div
-      className="font-outfit text-charcoal-700 bg-accent-190 flex h-dvh flex-col items-center justify-center bg-center bg-repeat"
+      className="font-outfit text-charcoal-700 bg-accent-190 flex min-h-dvh flex-col items-center justify-center bg-center bg-repeat"
       style={{ backgroundImage: `url('${patternImg}')` }}
     >
-      <div className="flex flex-row gap-12">
-        <img src={sampleImg} className="w-72" />
-        <div className="flex h-full max-w-140 flex-col items-center justify-center text-left text-2xl">
+      <div className="flex flex-row gap-12 px-8 py-12 md:py-0">
+        <img src={sampleImg} className="hidden w-72 md:block" />
+        <div className="flex h-full max-w-140 flex-col items-center justify-center text-left text-xl md:text-2xl">
           <div className="flex items-center gap-4">
-            <img src={logoImg} />
-            <h1 className="text-7xl font-extrabold">Keepin' Tabs</h1>
+            <img src={logoImg} className="w-10 md:w-17" />
+            <h1 className="text-4xl font-extrabold md:text-7xl">Keepin' Tabs</h1>
           </div>
+
+          <img src={sampleImg} className="mt-12 block w-50 md:hidden" />
           <p className="mt-8">
             Keepin’ Tabs is a simple, friendly web app that helps you track debts and payments when splitting the cost
             of dinners, coffee runs, movie nights, and more with friends, co‑workers, roommates, or anyone you share
@@ -114,7 +120,20 @@ function Home() {
               // <Button onClick={handleGoogleClicked}>Sign in with Google</Button>
               <>
                 <p>{user.displayName}</p>
-                <Button onClick={handleSignOut}>Sign Out</Button>
+                <PanelButton
+                  onClick={handleRedirect}
+                  bgColor="bg-accent-200"
+                  className="text-charcoal-900 mt-2 cursor-pointer text-center"
+                >
+                  Go to App
+                </PanelButton>
+                <PanelButton
+                  onClick={handleSignOut}
+                  bgColor="bg-accent-600"
+                  className="mt-2 cursor-pointer text-center text-white"
+                >
+                  Sign Out
+                </PanelButton>
               </>
             )}
           </div>

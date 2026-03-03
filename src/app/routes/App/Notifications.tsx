@@ -90,7 +90,7 @@ const Notifications = () => {
     <Loading />
   ) : (
     <>
-      <section className="border-wheat-400 rounde border-wheat-400d-lg mx-3 flex grow flex-col items-start gap-2 border-b border-dashed pt-6">
+      <section className="border-wheat-400 border-wheat-400d-lg mx-3 flex flex-col items-start gap-2 border-b border-dashed pt-6">
         <div className="w-full">
           <div className="text-ink-800 pointer-cursor mb-4 flex flex-row items-center justify-between gap-2 text-lg font-normal">
             <Link to={ROUTES.APP} className="flex flex-row items-center gap-4 font-semibold">
