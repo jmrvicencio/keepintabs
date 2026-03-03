@@ -56,3 +56,9 @@ export interface InviteKey {
   valid: boolean;
   expires?: Timestamp | 'none';
 }
+
+export interface GroupMember {
+  admin: boolean;
+  groupUid: string;
+  inviteKey?: string;
+}

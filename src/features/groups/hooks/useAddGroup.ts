@@ -14,13 +14,8 @@ import { v4 as uuid } from 'uuid';
 
 import { collections, db, getFirestoreURL } from '../../../lib/firebase/firestore';
 import { User } from 'firebase/auth';
-import { Group, Member, SerializedGroup, InviteKey } from '../types';
+import { Group, Member, SerializedGroup, InviteKey, GroupMember } from '../types';
 import { auth } from '../../../lib/firebase/auth';
-
-interface GroupMember {
-  admin: boolean;
-  inviteKey?: string;
-}
 
 const useAddGroup = (user: User) => {
   const addNewGroup = async (groupName: string, members: Member[]) => {
@@ -36,6 +31,7 @@ const useAddGroup = (user: User) => {
 
       nextMembers[userId] = {
         displayName: user.displayName ?? 'Unknown',
+        email: user.email!,
         linkedUid: userId,
       };
 
@@ -63,6 +59,7 @@ const useAddGroup = (user: User) => {
       // Create Group Member Doc
       await setDoc(groupMembersRef, {
         admin: true,
+        groupUid: userId,
       });
 
       // Remove InviteKey from memberDoc

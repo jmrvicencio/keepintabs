@@ -34,7 +34,7 @@ service cloud.firestore {
         // Make sure that adminUids are not changed
         && request.resource.data.adminUids == resource.data.adminUids;
       allow delete: if isValidUser()
-        && request.auth.uid in resource.data.memberUids;
+        && resource.data.memberUids.size() == 1;
 
       match /settings/{settingId} {
         allow read, write: if false;
@@ -59,7 +59,6 @@ service cloud.firestore {
           && isInGroupMembers(groupId)
           && request.resource.data.valid == false;
         allow delete: if isValidUser()
-          && isGroupAdmin(groupId);
       }
 
       match /members/{docId} {
@@ -80,7 +79,7 @@ service cloud.firestore {
         allow delete: if isValidUser()
           && (
             isGroupAdmin(groupId)
-            || request.auth.id == docId
+            || request.auth.uid == docId
           );
       }
 

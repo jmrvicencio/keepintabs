@@ -40,6 +40,8 @@ import { Transaction } from '@/features/transactions/types';
 import { deserializeGroup } from '@/features/groups/utils/serializer';
 import { auth } from '@/lib/firebase/auth';
 import JoinGroup from '@/features/groups/components/JoinGroup';
+import { FirebaseError } from 'firebase/app';
+import toast from 'react-hot-toast';
 
 const BalanceLabel = ({ total }: { total: number }) => {
   return (
@@ -316,13 +318,21 @@ const GroupInfo = ({
           action: async () => {
             const confirmationPopup: PopupConfirmation = {
               type: 'popup-confirmation',
-              title: 'Delete Group',
+              title: 'Leave Group',
               body: `Are you sure you want to leave '${groupData.name}'?`,
               confirmCallback: async () => {
                 setForceLoading(true);
                 setShowFab(false);
 
-                await deleteGroup();
+                try {
+                  await deleteGroup();
+                } catch (err) {
+                  const error = err as FirebaseError;
+                  toast.error(error.message);
+                  throw error;
+                } finally {
+                  setForceLoading(false);
+                }
                 navigate(ROUTES.APP);
               },
             };

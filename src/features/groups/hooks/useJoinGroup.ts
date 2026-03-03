@@ -10,7 +10,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { InviteKey, SerializedGroup } from '../types';
+import { GroupMember, InviteKey, SerializedGroup } from '../types';
 import toast from 'react-hot-toast';
 import { deserializeGroup } from '../utils/serializer';
 import { auth } from '@/lib/firebase/auth';
@@ -20,11 +20,12 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
     const userId = auth.currentUser!.uid;
     const groupCollection = collection(db, collections.groups) as CollectionReference<SerializedGroup>;
     const groupRef = doc(groupCollection, groupId) as DocumentReference<SerializedGroup>;
-    const groupMembersRef = doc(groupRef, collections.members, userId);
+    const groupMembersRef = doc(groupRef, collections.members, userId) as DocumentReference<GroupMember>;
     const inviteKeyRef = doc(groupRef, collections.inviteKeys, inviteKey) as DocumentReference<InviteKey>;
 
     await setDoc(groupMembersRef, {
       admin: false,
+      groupUid: memberUid,
       inviteKey: inviteKey,
     });
 
@@ -55,9 +56,10 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
         inviteKey: deleteField(),
       });
 
-      await transaction.update(inviteKeyRef, {
-        valid: false,
-      });
+      // await transaction.update(inviteKeyRef, {
+      //   valid: false,
+      // });
+      await transaction.delete(inviteKeyRef);
     });
 
     // await updateDoc(groupMembersRef, {

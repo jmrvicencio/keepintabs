@@ -8,6 +8,8 @@ import {
   Unsubscribe,
   updateDoc,
   deleteDoc,
+  runTransaction,
+  deleteField,
 } from 'firebase/firestore';
 import { type Group, SerializedGroup, Member } from '../types';
 import { collections, db } from '@/lib/firebase/firestore';
@@ -16,6 +18,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
 import { deserializeGroup } from '../utils/serializer';
+import Members from '@/app/routes/App/Members';
 
 const useGroupListener = (groupId: string = '') => {
   const navigate = useNavigate();
@@ -36,7 +39,7 @@ const useGroupListener = (groupId: string = '') => {
         unsubscribeToSnapshot = onSnapshot(
           groupDoc,
           (groupSnap) => {
-            const groupData: Group = deserializeGroup(groupSnap.data() as SerializedGroup);
+            const groupData: Group = deserializeGroup(groupSnap.data() as SerializedGroup)!;
             if (!groupData) return;
 
             const memberEntries = Object.entries(groupData.members);
@@ -87,14 +90,34 @@ const useGroupListener = (groupId: string = '') => {
     const groupRef = doc(db, collections.groups, groupId);
     const groupSnap = { ...group?.data() };
     const nextMemberUids = new Set(groupSnap.memberUids ?? []);
+    const memberRef = doc(groupRef, collections.members, auth.currentUser!.uid);
 
     nextMemberUids.delete(auth.currentUser!.uid);
 
+    console.log('uid size', nextMemberUids.size);
     if (nextMemberUids.size === 0) {
-      await deleteDoc(groupRef);
+      await runTransaction(db, async (txn) => {
+        await txn.delete(groupRef);
+        await txn.delete(memberRef);
+      });
     } else {
-      await updateDoc(groupRef, {
-        memberUids: nextMemberUids,
+      // Remove linkedUid and email from members
+      // delete uid from membersUid
+      // delete member document from members collection
+      const nextGroup = { ...groupSnap };
+      const nextMembers = { ...nextGroup.members };
+
+      const member = Object.entries(nextMembers).find(([key, val]) => val.linkedUid == auth.currentUser!.uid);
+      const [memberId] = member ?? [''];
+      delete nextMembers[memberId].linkedUid;
+      delete nextMembers[memberId].email;
+
+      nextGroup.members = nextMembers;
+      nextGroup.memberUids = [...nextMemberUids];
+
+      await runTransaction(db, async (txn) => {
+        await txn.set(groupRef, nextGroup);
+        await txn.delete(memberRef);
       });
     }
   };
