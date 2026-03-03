@@ -29,6 +29,9 @@ export interface GroupData {
   unsubscribe?: () => void;
 }
 
+/***
+ * Returns an array of all the groups a user has joined
+ */
 export const useGroups = (dataFetchedAtom = storeDataFetchedAtom) => {
   const [groups, setGroups] = useState<DocumentSnapshot<Group>[]>([]);
   const [loading, setLoading] = useState(true);

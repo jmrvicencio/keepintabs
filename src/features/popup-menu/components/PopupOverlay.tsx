@@ -156,7 +156,7 @@ const PopupOverlay = () => {
           <div className="border-ink-300/40 relative flex items-center justify-center border-b p-4 font-semibold">
             {popup.title}
           </div>
-          <div className="flex flex-col gap-4 px-8 py-8">
+          <div className="flex flex-col gap-4 px-8 py-4">
             <p>{popup.body}</p>
             <div className="flex flex-row justify-end gap-2">
               <button type="button" className="cursor-pointer p-2 px-4" onClick={handleClose}>

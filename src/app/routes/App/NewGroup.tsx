@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState, KeyboardEvent, useRef } from 'react';
+import { ChangeEvent, FormEvent, useState, KeyboardEvent, useRef, useEffect, useLayoutEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { ChevronLeft, X, UserRound } from 'lucide-react';
@@ -11,6 +11,7 @@ import Panel from '../../../components/neubrutalist/Panel';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { PopupOverlay } from '@/features/popup-menu/types';
 import useSendInvite from '@/features/notifications/hooks/useSendInvite';
+import useFab from '@/features/fab/hooks/useFab';
 
 const NewGroup = () => {
   // Refs
@@ -20,6 +21,7 @@ const NewGroup = () => {
   // Hooks
   const navigate = useNavigate();
   const sendInvite = useSendInvite();
+  const { setShowFab, resetFab } = useFab();
 
   // Local States
   const [groupName, setGroupName] = useState('');
@@ -29,6 +31,13 @@ const NewGroup = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const addGroup = useAddGroup(auth.currentUser!);
+
+  useLayoutEffect(() => {
+    setShowFab(false);
+    console.log('hide fab');
+
+    return () => resetFab();
+  }, []);
 
   const handleDoneClicked = async () => {
     if (groupName == '') {

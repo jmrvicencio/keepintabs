@@ -42,6 +42,11 @@ service cloud.firestore {
             request.resource.data.keys().hasAll(['inviteKey'])
             || request.resource.data.keys().hasAll(['adminKey'])
           );
+        allow read: if isValidUser()
+          && (
+            settingId == 'inviteKey'
+            && isInGroupMembers(groupId)
+          );
       }
 
       match /members/{docId} {

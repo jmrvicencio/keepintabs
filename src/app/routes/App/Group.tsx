@@ -181,7 +181,7 @@ const RenameOverlay = ({
   };
 
   return (
-    <form className="flex w-full flex-col items-center gap-2 py-8" onSubmit={handlePreSubmit}>
+    <form className="flex w-full flex-col items-center gap-4 py-2" onSubmit={handlePreSubmit}>
       <input
         className="border-charcoal-300 focus:outline-accent-400/60 [.error]:placeholder:text-error w-full rounded-md border bg-white px-2 py-1 focus:outline-2"
         type="text"
@@ -189,7 +189,7 @@ const RenameOverlay = ({
         onChange={handleChange}
         autoFocus
       />
-      <Panel bgColor="bg-accent-200 [.inactive]:bg-ink-300" padding="px-2 py-0.5" onClick={handlePreSubmit}>
+      <Panel bgColor="bg-accent-200 [.inactive]:bg-ink-300" padding="px-4 py-1" onClick={handlePreSubmit}>
         Submit
       </Panel>
     </form>

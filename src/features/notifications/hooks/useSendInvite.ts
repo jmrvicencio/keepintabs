@@ -9,6 +9,7 @@ import {
   getDoc,
   getDocs,
   serverTimestamp,
+  DocumentReference,
 } from 'firebase/firestore';
 import { Notification } from '../types';
 import { User } from '@/features/users/types';
@@ -16,7 +17,7 @@ import { auth } from '@/lib/firebase/auth';
 import toast from 'react-hot-toast';
 
 const useSendInvite =
-  () => async (memberUid: string, email: string, groupName: string, groupId: string, inviteKey: string) => {
+  () => async (memberUid: string, email: string, groupName: string, groupId: string, inviteKey?: string) => {
     try {
       // Check if user is valid
       const userCollection = collection(db, collections.users) as CollectionReference<User>;
@@ -24,6 +25,17 @@ const useSendInvite =
       const userSnap = await getDocs(q);
 
       if (userSnap.size == 0) return;
+      if (!inviteKey) {
+        const groupCollection = collection(db, collections.groups);
+        const groupRef = doc(groupCollection, groupId);
+        const groupSettingsRef = doc(groupRef, collections.settings, 'inviteKey') as DocumentReference<{
+          inviteKey: string;
+        }>;
+        const groupSettingsSnap = await getDoc(groupSettingsRef);
+        const groupSettings = groupSettingsSnap.data();
+
+        inviteKey = groupSettings?.inviteKey ?? 'a';
+      }
 
       const userId = userSnap.docs[0].id;
       const notifCollection = collection(db, collections.users, userId, collections.notifications);

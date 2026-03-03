@@ -41,7 +41,6 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
     updateDoc(groupRef, {
       memberUids: nextMemberUids,
       members: nextMembers,
-      // invitedUids: nextInvitedUids,
     });
 
     await updateDoc(groupMembersRef, {
