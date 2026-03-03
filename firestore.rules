@@ -111,7 +111,8 @@ service cloud.firestore {
 
       return exists(/databases/$(database)/documents/groups/$(groupId)/inviteKeys/$(inviteKey))
         && invite.data.valid
-        && request.resource.data.inviteKey == invite.data.inviteKey;
+        && request.resource.data.inviteKey == invite.data.inviteKey
+        && invite.data.expires > request.time;
     }
 
     function isValidUser(){

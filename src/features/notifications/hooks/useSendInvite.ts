@@ -10,6 +10,7 @@ import {
   getDocs,
   serverTimestamp,
   DocumentReference,
+  Timestamp,
 } from 'firebase/firestore';
 import { Notification } from '../types';
 import { User } from '@/features/users/types';
@@ -34,11 +35,14 @@ const useSendInvite =
         const groupCollection = collection(db, collections.groups);
         const groupRef = doc(groupCollection, groupId);
         const inviteRef = doc(groupRef, collections.inviteKeys, inviteId) as DocumentReference<InviteKey>;
+        const date = new Date();
+        date.setMonth(date.getMonth() + 1);
 
         inviteKey = inviteId;
         await setDoc(inviteRef, {
           inviteKey,
           valid: true,
+          expires: Timestamp.fromDate(date),
         });
       }
 

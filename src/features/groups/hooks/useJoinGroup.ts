@@ -67,7 +67,7 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
     return;
   } catch (err) {
     const error = err as Error;
-    toast.error(error.message);
+    // toast.error(error.message);
     throw err;
   }
 };

@@ -15,6 +15,7 @@ import useDeleteNotification from '@/features/notifications/hooks/deleteNotifica
 import Loading from '@/components/Loading';
 import toast from 'react-hot-toast';
 import { tryWrap } from '@/util/helpers';
+import { FirebaseError } from 'firebase/app';
 
 const Notifications = () => {
   // Hooks
@@ -78,10 +79,18 @@ const Notifications = () => {
       await deleteNotif(notifId);
 
       navigate(getGroupRoute(notif.groupId));
-    } catch (err) {
-      const error = err as Error;
-      toast.error(error.message);
-      throw err;
+    } catch (err: any) {
+      const error = err as FirebaseError;
+
+      if (error.code == 'permission-denied') {
+        toast.error('Your invite has expired');
+        await deleteNotif(notifId);
+      } else {
+        toast.error(error.message);
+        throw err;
+      }
+    } finally {
+      setForceLoading(false);
     }
   };
 
