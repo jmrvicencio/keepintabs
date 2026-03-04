@@ -61,18 +61,21 @@ const Menu = ({ popup }: { popup: PopupMenu }) => {
       className="absolute flex min-w-60 flex-col rounded-sm bg-white py-2"
       onClick={handlePopupClicked}
     >
-      {popup.options.map((option, i) => (
-        <div
-          {...buttonRole(option.action)}
-          key={i}
-          className="border-ink-300/40 hover:bg-wheat-400/25 relative cursor-pointer px-4 py-3 transition-colors not-last:border-b"
-        >
-          {option.icon && (
-            <option.icon className="stroke-ink-800/85 absolute top-1/2 left-4 aspect-square w-4 -translate-y-1/2" />
-          )}
-          {option.label}
-        </div>
-      ))}
+      {popup.options.map(
+        (option, i) =>
+          option.ignore || (
+            <div
+              {...buttonRole(option.action)}
+              key={i}
+              className="border-ink-300/40 hover:bg-wheat-400/25 relative cursor-pointer px-4 py-3 transition-colors not-last:border-b"
+            >
+              {option.icon && (
+                <option.icon className="stroke-ink-800/85 absolute top-1/2 left-4 aspect-square w-4 -translate-y-1/2" />
+              )}
+              {option.label}
+            </div>
+          ),
+      )}
     </div>
   );
 };
@@ -157,11 +160,13 @@ const PopupOverlay = () => {
             {popup.title}
           </div>
           <div className="flex flex-col gap-4 px-8 py-4">
-            <p>{popup.body}</p>
+            <p className="text-left">{popup.body}</p>
             <div className="flex flex-row justify-end gap-2">
-              <button type="button" className="cursor-pointer p-2 px-4" onClick={handleClose}>
-                Cancel
-              </button>
+              {popup.isAlert || (
+                <Panel className="cursor-pointer p-2 px-4" padding="py-1 px-4" bgColor="bg-white" onClick={handleClose}>
+                  Cancel
+                </Panel>
+              )}
               <Panel
                 className="cursor-pointer"
                 padding="py-1 px-4"
@@ -171,7 +176,7 @@ const PopupOverlay = () => {
                   handleClose();
                 }}
               >
-                Yes
+                {popup.confirmText || 'Yes'}
               </Panel>
             </div>
           </div>

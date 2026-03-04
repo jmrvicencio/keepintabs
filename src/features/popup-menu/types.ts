@@ -19,7 +19,9 @@ export interface PopupOverlay {
 export interface PopupConfirmation {
   type: 'popup-confirmation';
   title?: string;
-  body?: string;
+  body?: string | ReactNode;
+  isAlert?: boolean;
+  confirmText?: string;
   confirmCallback?: () => any;
   closeCallback?: () => any;
 }
@@ -31,6 +33,7 @@ export interface PopupMenu {
     label: string;
     icon?: FC<LucideProps>;
     action?: () => any;
+    ignore?: boolean;
   }[];
   closeCallback?: () => any;
 }
