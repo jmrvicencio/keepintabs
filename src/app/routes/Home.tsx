@@ -61,7 +61,7 @@ function Home() {
       // console.log('user: ', userData);
       // console.log('idP: ', idP);
 
-      if (userData.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1' || import.meta.env.VITE_USE_EMULATORS === 'true') {
+      if (import.meta.env.VITE_USE_EMULATORS === 'true') {
         navigate(ROUTES.APP);
       }
     } catch (err: any) {

@@ -38,16 +38,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return (
       <div className="bg-wheat-200 text-cream flex h-dvh w-dvw items-center justify-center bg-[url(/bg/bg_pattern.png)]">
         <Logo className="fill-wheat-400 h-20 animate-pulse" />
-        {/* <img src={logo} className="w-16 animate-pulse" /> */}
       </div>
     );
-  else
-    return (import.meta.env.VITE_USE_EMULATORS === 'true' && user) ||
-      (user && user.uid === 'NgjgtqXPihQSLQfhb2Slc8POVkm1') ? (
-      children
-    ) : (
-      <Navigate to="/" replace />
-    );
+  else return (import.meta.env.VITE_USE_EMULATORS === 'true' && user) || user ? children : <Navigate to="/" replace />;
 }
 
 export default ProtectedRoute;
