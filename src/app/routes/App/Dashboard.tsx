@@ -12,6 +12,7 @@ import emptyImg from '/img/empty.svg';
 import { useAtom } from 'jotai';
 import { showSidebarFabAtom } from '@/store/sidebar';
 import useFab from '@/features/fab/hooks/useFab';
+import { filterActiveMembers } from '@/features/groups/utils/memberUtil';
 
 const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ const Dashboard = memo(function Dashboard() {
                 </div>
               ) : (
                 groups?.map((doc) => {
-                  const docData = doc.data()!;
+                  const docData = filterActiveMembers(doc.data()!);
                   return <GroupCard key={doc.id} id={doc.id} group={docData} />;
                 })
               )}

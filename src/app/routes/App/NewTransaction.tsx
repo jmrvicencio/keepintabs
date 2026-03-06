@@ -2,7 +2,12 @@ import { useState, useEffect, useMemo, useRef, type MouseEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { auth } from '@/lib/firebase/auth';
-import { getMemberPhotoUrl, getUserGroupId } from '@/features/groups/utils/memberUtil';
+import {
+  filterActiveMembers,
+  getActiveMembers,
+  getMemberPhotoUrl,
+  getUserGroupId,
+} from '@/features/groups/utils/memberUtil';
 import { BalancedSplit, SplitData, SplitTotal, Transaction } from '@/features/transactions/types';
 import { formattedStrToNum } from '@/util/helpers';
 import { formatValue as formatToDigit } from '@/hooks/useDigitField';
@@ -138,10 +143,11 @@ const NewTransaction = ({
   }, [loading]);
 
   useEffect(() => {
+    const activeMembers = getActiveMembers(currGroup?.data()?.members ?? {});
     const nextSplitData: SplitData = {
       type: 'balanced',
       data: {
-        payingMembers: new Set([...Object.keys(currGroup?.data()?.members ?? {})]),
+        payingMembers: new Set([...Object.keys(activeMembers)]),
       },
     };
 
@@ -248,7 +254,7 @@ const NewTransaction = ({
               total={total}
               splitData={splitData}
               splitTotals={splitTotals}
-              currGroup={currGroup!.data()}
+              currGroup={filterActiveMembers(currGroup!.data()!)}
             />
           </>
         ) : (
@@ -257,7 +263,7 @@ const NewTransaction = ({
               ref={splitRef}
               splitType={splitData.type}
               total={[total, setTotal]}
-              currGroup={currGroup!.data()}
+              currGroup={filterActiveMembers(currGroup!.data()!)}
               memberPhotoUrls={memberPhotoUrls}
               splitData={splitData}
             />

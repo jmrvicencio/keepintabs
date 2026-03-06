@@ -13,7 +13,7 @@ import { ListFilter, X } from 'lucide-react';
 // Import Custom Hooks
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { Group, Member } from '@/features/groups/types';
-import { PopupMenu } from '@/features/popup-menu/stores/PopupAtom';
+import { PopupMenu } from '@/features/popup-menu/types';
 
 const TransactionBreakdown = ({
   splitData,

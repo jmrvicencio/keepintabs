@@ -32,14 +32,16 @@ export const useUpdateGroup = (group: DocumentSnapshot<SerializedGroup | null> |
 
   const removeMember = (memberUid: string, groupData: Group) => {
     tryWrap(async () => {
-      const { [memberUid]: _, ...nextMembers } = groupData.members;
+      const nextMembers = { ...groupData.members, [memberUid]: { ...groupData.members[memberUid], active: false } };
       const { [memberUid]: __, ...nextExpenses } = groupData.expenses;
       const { [memberUid]: ___, ...nextSpent } = groupData.spent;
       const nextMemberUids = new Set(groupData.memberUids);
       const linkedUid = groupData.members[memberUid].linkedUid;
+      // Firebase doc refs
       const groupCollection = collection(db, collections.groups);
       const groupRef = doc(groupCollection, group?.id ?? 'a') as DocumentReference<SerializedGroup>;
       const groupMemberRef = doc(groupRef, collections.members, linkedUid ?? 'a');
+      // group data
       const nextGroup: SerializedGroup = serializeGroup({
         ...groupData,
         members: nextMembers,

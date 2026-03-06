@@ -9,11 +9,11 @@ export const serializeGroup = (group: Group) => {
   return serializedGroup;
 };
 
-export const deserializeGroup = (group: SerializedGroup) => {
+export const deserializeGroup = (group: SerializedGroup | Group) => {
   if (!group) return;
   const deserializedGroup: Group = {
     ...group,
-    invitedUids: new Set(group?.invitedUids ?? []),
+    invitedUids: new Set([...(group?.invitedUids ?? [])]),
   };
 
   return deserializedGroup;

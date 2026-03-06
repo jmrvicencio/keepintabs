@@ -42,6 +42,7 @@ import { auth } from '@/lib/firebase/auth';
 import JoinGroup from '@/features/groups/components/JoinGroup';
 import { FirebaseError } from 'firebase/app';
 import toast from 'react-hot-toast';
+import { getActiveMembers } from '@/features/groups/utils/memberUtil';
 
 const BalanceLabel = ({ total }: { total: number }) => {
   return (
@@ -76,7 +77,7 @@ const BalanceItem = ({ name, amt }: { name: string; amt: number }) => {
 };
 
 const BreakdownOverlay = ({ userBalance, groupData }: { userBalance: UserBalance; groupData: Group }) => {
-  const members = groupData.members;
+  const members = getActiveMembers(groupData.members);
 
   return (
     <>
@@ -379,7 +380,7 @@ const GroupInfo = ({
           </Link>
           <Link to={getGroupMembersRoute(groupParam!)}>
             <div className="border-wheat-400 bg-wheat-200 flex cursor-pointer flex-row items-center gap-2 rounded-full border px-2 py-1">
-              <p className="ml-1">{Object.keys(groupData?.members ?? {}).length}</p>
+              <p className="ml-1">{Object.keys(getActiveMembers(groupData?.members ?? {})).length}</p>
               <div className="flex flex-row">
                 {[...Array(3)].map((_, i) => {
                   const member = Object.values(groupData?.members!)[i];

@@ -15,6 +15,7 @@ import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
 import { DocumentSnapshot } from 'firebase/firestore';
 import { formatValue } from '@/hooks/useDigitField';
 import { auth } from '@/lib/firebase/auth';
+import { filterActiveMembers } from '@/features/groups/utils/memberUtil';
 
 const MemberItem = ({
   member,
@@ -24,7 +25,7 @@ const MemberItem = ({
 }: {
   member: Member;
   uid: string;
-  groupData: SerializedGroup | undefined;
+  groupData: Group | undefined;
   removeMember: (...args: any[]) => any;
 }) => {
   // Ref
@@ -140,8 +141,9 @@ const Members = () => {
   const [inviteEmail, setInviteEmail] = useState('');
 
   // Computed Values
-  const groupData = group?.data();
-  const loading = groupLoading || forceLoading;
+  const unfilteredGroup = group?.data();
+  const groupData = unfilteredGroup ? filterActiveMembers(unfilteredGroup) : undefined;
+  const loading = groupLoading || forceLoading || unfilteredGroup === undefined;
 
   // -------------------
   // Event Listener
@@ -165,6 +167,7 @@ const Members = () => {
     if (formRef.current?.checkValidity() === true) {
       const nextMember: Member = {
         displayName: inviteName,
+        active: true,
       };
       if (inviteEmail != '') nextMember.email = inviteEmail;
 
@@ -246,7 +249,7 @@ const Members = () => {
               </div>
             </div>
             {Object.entries(groupData!.members).map(([uid, member]) => (
-              <MemberItem key={uid} member={member} uid={uid} groupData={groupData} removeMember={removeMember} />
+              <MemberItem key={uid} member={member} uid={uid} groupData={groupData!} removeMember={removeMember} />
             ))}
           </div>
         </div>
