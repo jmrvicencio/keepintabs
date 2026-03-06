@@ -49,11 +49,12 @@ const NewGroup = () => {
     }
     setSubmitting(true);
 
+    // Add new group and send invites
     const { groupId, group: groupData } = await addGroup(groupName, members);
     await Promise.all(
       Object.entries(groupData.members).map(([uid, member]) => {
         if (member?.email && member.linkedUid != auth.currentUser?.uid)
-          return sendInvite(uid, member.email, groupName, groupId);
+          return sendInvite(uid, member, groupName, groupId);
       }),
     );
 

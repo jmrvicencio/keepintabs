@@ -168,6 +168,7 @@ const Members = () => {
       const nextMember: Member = {
         displayName: inviteName,
         active: true,
+        inviteKey: uuid(),
       };
       if (inviteEmail != '') nextMember.email = inviteEmail;
 
@@ -178,7 +179,7 @@ const Members = () => {
       await addMember(nextMember, memberUId);
       // Send user invite notification
       if (inviteEmail != '') {
-        await sendInvite(memberUId, inviteEmail, groupData?.name ?? 'a', group?.id ?? 'a');
+        await sendInvite(memberUId, nextMember, groupData?.name ?? 'a', group?.id ?? 'a');
       }
 
       setForceLoading(false);

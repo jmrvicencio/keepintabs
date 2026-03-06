@@ -10,7 +10,7 @@ import { DocumentData, QuerySnapshot } from 'firebase/firestore';
 import { Notification, NotificationInvite } from '@/features/notifications/types';
 import useGetUser from '@/features/users/hooks/useGetUser';
 import { User } from '@/features/users/types';
-import useJoinGroup from '@/features/groups/hooks/useJoinGroup';
+import useJoinGroup, { useDeleteInvite } from '@/features/groups/hooks/useJoinGroup';
 import useDeleteNotification from '@/features/notifications/hooks/deleteNotification';
 import Loading from '@/components/Loading';
 import toast from 'react-hot-toast';
@@ -24,6 +24,7 @@ const Notifications = () => {
   const { notifications, seenNotif } = useGetNotifications();
   const joinGroup = useJoinGroup();
   const deleteNotif = useDeleteNotification();
+  const deleteInvite = useDeleteInvite();
 
   // Local States
   const [notifs, setNotifs] = useState<QuerySnapshot<NotificationInvite, DocumentData>>();
@@ -84,6 +85,7 @@ const Notifications = () => {
 
       if (error.code == 'permission-denied') {
         toast.error('Your invite has expired');
+        await deleteInvite(notif.groupId, notif.inviteKey);
         await deleteNotif(notifId);
       } else {
         toast.error(error.message);

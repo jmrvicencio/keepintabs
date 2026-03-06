@@ -17,14 +17,14 @@ import { User } from '@/features/users/types';
 import { auth } from '@/lib/firebase/auth';
 import toast from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
-import { InviteKey } from '@/features/groups/types';
+import { InviteKey, Member } from '@/features/groups/types';
 
 const useSendInvite =
-  () => async (memberUid: string, email: string, groupName: string, groupId: string, inviteKey?: string) => {
+  () => async (memberUid: string, member: Member, groupName: string, groupId: string, inviteKey?: string) => {
     try {
       // Check if user is valid
       const userCollection = collection(db, collections.users) as CollectionReference<User>;
-      const q = query(userCollection, where('email', '==', email));
+      const q = query(userCollection, where('email', '==', member.email));
       const userSnap = await getDocs(q);
 
       if (userSnap.size == 0) return;

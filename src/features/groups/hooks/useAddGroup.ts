@@ -39,7 +39,11 @@ const useAddGroup = (user: User) => {
       for (let member of members) {
         console.log('members', member);
         const memberUid = uuid();
-        nextMembers[memberUid] = member;
+        const nextMember = member;
+
+        if (nextMember.email) nextMember.inviteKey = uuid();
+
+        nextMembers[memberUid] = nextMember;
       }
 
       const group: SerializedGroup = {

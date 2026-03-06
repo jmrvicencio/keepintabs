@@ -2,6 +2,7 @@ import { collections, db } from '@/lib/firebase/firestore';
 import {
   collection,
   CollectionReference,
+  deleteDoc,
   deleteField,
   doc,
   DocumentReference,
@@ -14,6 +15,17 @@ import { GroupMember, InviteKey, SerializedGroup } from '../types';
 import toast from 'react-hot-toast';
 import { deserializeGroup } from '../utils/serializer';
 import { auth } from '@/lib/firebase/auth';
+import { tryWrap } from '@/util/helpers';
+
+export const useDeleteInvite = () => async (groupId: string, inviteKey: string) => {
+  tryWrap(async () => {
+    const groupCollection = collection(db, collections.groups);
+    const groupRef = doc(groupCollection, groupId);
+    const inviteRef = doc(groupRef, collections.inviteKeys, inviteKey);
+
+    await deleteDoc(inviteRef);
+  });
+};
 
 const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey: string) => {
   try {
@@ -37,6 +49,7 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
     const nextMemberUids = [...groupData.memberUids];
     const nextMembers = { ...groupData.members };
 
+    delete nextMembers[memberUid].inviteKey;
     nextMembers[memberUid].linkedUid = userId;
     nextMemberUids.push(userId);
 
@@ -56,20 +69,12 @@ const useJoinGroup = () => async (groupId: string, memberUid: string, inviteKey:
         inviteKey: deleteField(),
       });
 
-      // await transaction.update(inviteKeyRef, {
-      //   valid: false,
-      // });
       await transaction.delete(inviteKeyRef);
     });
-
-    // await updateDoc(groupMembersRef, {
-    //   inviteKey: deleteField(),
-    // });
 
     return;
   } catch (err) {
     const error = err as Error;
-    // toast.error(error.message);
     throw err;
   }
 };

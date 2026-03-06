@@ -39,6 +39,7 @@ export interface Member {
   linkedUid?: string;
   email?: string;
   photoUrl?: string;
+  inviteKey?: string;
 }
 
 export interface SimplifiedBalance {
