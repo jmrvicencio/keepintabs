@@ -49,10 +49,10 @@ const NewGroup = () => {
     }
     setSubmitting(true);
 
-    const { groupId, inviteKey, group: groupData } = await addGroup(groupName, members);
+    const { groupId, group: groupData } = await addGroup(groupName, members);
     await Promise.all(
       Object.entries(groupData.members).map(([uid, member]) => {
-        if (member?.email) return sendInvite(uid, member.email, groupName, groupId, inviteKey);
+        if (member?.email) return sendInvite(uid, member.email, groupName, groupId);
       }),
     );
 
@@ -89,7 +89,7 @@ const NewGroup = () => {
   };
 
   const handleAddMember = () => {
-    const newMember: Member = { displayName: inviteName };
+    const newMember: Member = { displayName: inviteName, active: true };
     if (inviteEmail != '') {
       if (findMembers(inviteEmail).length > 0) {
         addEmailRef.current?.setCustomValidity('This email is already being used by another member');

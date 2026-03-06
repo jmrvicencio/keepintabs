@@ -33,9 +33,10 @@ type Lent = Record<string, number>; // Members they lent to and the amounts lent
 
 export type MemberUid = string;
 export interface Member {
+  displayName: string;
+  active: boolean;
   groupUid?: string;
   linkedUid?: string;
-  displayName: string;
   email?: string;
   photoUrl?: string;
 }

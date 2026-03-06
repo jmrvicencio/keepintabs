@@ -31,6 +31,7 @@ const useAddGroup = (user: User) => {
 
       nextMembers[userId] = {
         displayName: user.displayName ?? 'Unknown',
+        active: true,
         email: user.email!,
         linkedUid: userId,
       };
