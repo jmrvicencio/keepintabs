@@ -31,7 +31,7 @@ const useSendInvite =
 
       // Create an invite key if one is not provided yet
       if (!inviteKey) {
-        const inviteId = uuid();
+        const inviteId = member.inviteKey ?? uuid();
         const groupCollection = collection(db, collections.groups);
         const groupRef = doc(groupCollection, groupId);
         const inviteRef = doc(groupRef, collections.inviteKeys, inviteId) as DocumentReference<InviteKey>;

@@ -59,5 +59,29 @@ export const useUpdateGroup = (group: DocumentSnapshot<SerializedGroup | null> |
     });
   };
 
-  return { addMember, removeMember };
+  const refreshInviteKey = (memberUid: string, groupData: Group) => {
+    tryWrap(async () => {
+      const prevInviteKey = groupData.members[memberUid].inviteKey;
+      const nextMembers = {
+        ...groupData.members,
+        [memberUid]: {
+          ...groupData.members[memberUid],
+          inviteKey: uuid(),
+        },
+      };
+
+      await runTransaction(db, async (txn) => {
+        if (prevInviteKey) {
+          const inviteRef = doc(groupRef, collections.inviteKeys, prevInviteKey);
+          await txn.delete(inviteRef);
+        }
+
+        await txn.update(groupRef, {
+          members: nextMembers,
+        });
+      });
+    });
+  };
+
+  return { addMember, removeMember, refreshInviteKey };
 };

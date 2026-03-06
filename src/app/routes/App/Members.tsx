@@ -21,11 +21,13 @@ const MemberItem = ({
   member,
   uid,
   groupData,
+  groupUid,
   removeMember,
 }: {
   member: Member;
   uid: string;
   groupData: Group | undefined;
+  groupUid: string;
   removeMember: (...args: any[]) => any;
 }) => {
   // Ref
@@ -33,6 +35,7 @@ const MemberItem = ({
 
   // Hooks
   const { setPopup, resetPopup, setShowPopup } = usePopupOverlay();
+  const sendInvite = useSendInvite();
 
   // Computed Values
   const hasEmail = !(member?.email == undefined || member?.email == '');
@@ -76,6 +79,10 @@ const MemberItem = ({
     }
   };
 
+  const handleResendInvite = () => {
+    if (hasEmail) sendInvite(uid, member, groupData?.name ?? 'a', groupUid);
+  };
+
   const handleMenuClicked = () => {
     const popup: PopupMenu = {
       type: 'menu',
@@ -86,6 +93,8 @@ const MemberItem = ({
         },
         {
           label: 'Resend Invite',
+          action: handleResendInvite,
+          ignore: !hasEmail,
         },
         {
           label: 'Remove Member',
@@ -250,7 +259,14 @@ const Members = () => {
               </div>
             </div>
             {Object.entries(groupData!.members).map(([uid, member]) => (
-              <MemberItem key={uid} member={member} uid={uid} groupData={groupData!} removeMember={removeMember} />
+              <MemberItem
+                key={uid}
+                member={member}
+                uid={uid}
+                groupData={groupData!}
+                groupUid={group!.id}
+                removeMember={removeMember}
+              />
             ))}
           </div>
         </div>
