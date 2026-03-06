@@ -53,6 +53,8 @@ service cloud.firestore {
       //     );
       // }
       match /inviteKeys/{inviteId} {
+        allow read: if isValidUser()
+          && isInGroupMembers(groupId)
         allow create: if isValidUser()
           && isInGroupMembers(groupId)
         allow update: if isValidUser()

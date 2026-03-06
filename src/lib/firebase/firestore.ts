@@ -11,6 +11,7 @@ export const collections = {
   transactions: 'transactions',
   users: 'users',
   notifications: 'notifications',
+  notificationCheck: 'notifExists',
   members: 'members',
   settings: 'settings',
   inviteKeys: 'inviteKeys',

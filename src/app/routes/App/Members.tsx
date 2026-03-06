@@ -12,10 +12,11 @@ import { Group, Member, SerializedGroup } from '@/features/groups/types';
 import useSendInvite from '@/features/notifications/hooks/useSendInvite';
 import { PopupConfirmation, PopupMenu } from '@/features/popup-menu/types';
 import { usePopupOverlay } from '@/features/popup-menu/hooks/usePopupOverlay';
-import { DocumentSnapshot } from 'firebase/firestore';
+import { DocumentSnapshot, FirestoreError } from 'firebase/firestore';
 import { formatValue } from '@/hooks/useDigitField';
 import { auth } from '@/lib/firebase/auth';
 import { filterActiveMembers } from '@/features/groups/utils/memberUtil';
+import toast from 'react-hot-toast';
 
 const MemberItem = ({
   member,
@@ -23,12 +24,14 @@ const MemberItem = ({
   groupData,
   groupUid,
   removeMember,
+  refreshInviteKey,
 }: {
   member: Member;
   uid: string;
   groupData: Group | undefined;
   groupUid: string;
   removeMember: (...args: any[]) => any;
+  refreshInviteKey: (memberId: string, groupData: Group, inviteKey?: string) => any;
 }) => {
   // Ref
   const menuRef = useRef<HTMLDivElement>(null);
@@ -79,8 +82,26 @@ const MemberItem = ({
     }
   };
 
-  const handleResendInvite = () => {
-    if (hasEmail) sendInvite(uid, member, groupData?.name ?? 'a', groupUid);
+  const handleResendInvite = async () => {
+    if (hasEmail) {
+      try {
+        const nextMember: Member = { ...member, inviteKey: uuid() };
+        await sendInvite(uid, nextMember, groupData!.name, groupUid);
+        await refreshInviteKey(uid, groupData!, nextMember.inviteKey);
+        toast.success('Invite Sent');
+      } catch (err) {
+        const error = err as FirestoreError;
+        if (error.code == 'permission-denied') {
+          toast('User already has a pending invite');
+        } else {
+          console.error(error.message);
+          toast.error(error.message);
+          throw error;
+        }
+      } finally {
+        resetPopup();
+      }
+    }
   };
 
   const handleMenuClicked = () => {
@@ -140,7 +161,7 @@ const Members = () => {
   // Hooks
   const { group: groupParam } = useParams();
   const { group, loading: groupLoading } = useGroupListener(groupParam!);
-  const { addMember, removeMember } = useUpdateGroup(group);
+  const { addMember, removeMember, refreshInviteKey } = useUpdateGroup(group);
   const sendInvite = useSendInvite();
 
   // States
@@ -266,6 +287,7 @@ const Members = () => {
                 groupData={groupData!}
                 groupUid={group!.id}
                 removeMember={removeMember}
+                refreshInviteKey={refreshInviteKey}
               />
             ))}
           </div>
